@@ -1,13 +1,11 @@
 ---
 import Base from '@frontend/layouts/Base.astro';
 import { env } from 'cloudflare:workers';
-import { getSessionUser } from '@backend/auth';
+import { getSessionAdmin } from '@backend/auth';
 import { rootDomain } from '@backend/config';
 
-const user = await getSessionUser(Astro.request);
-if (!user) return Astro.redirect('/login?next=admin');
-const allowed = user.email ? await env.DB.prepare('SELECT email FROM admin_accounts WHERE email = ?').bind(user.email).first() : null;
-if (!allowed) return new Response('Acesso restrito', { status: 403 });
+const admin = await getSessionAdmin(Astro.request);
+if (!admin) return Astro.redirect('/login?next=admin');
 const search = (Astro.url.searchParams.get('q') || '').trim().slice(0, 80);
 
 const [settingsResult, pricesResult, customersResult, domainsResult, auditResult, countsResult, domain] = await Promise.all([
@@ -56,13 +54,13 @@ const date = (time: number | null) => time ? new Date(time * 1000).toLocaleDateS
 ---
 <Base title="Administração · Vira" noindex>
   <div class="vira-shell admin-shell">
-    <header class="vira-nav admin-nav"><a class="vira-logo" href="/">vira<span>.</span></a><div class="admin-nav-links"><span>Administração</span><a href="/app">Painel do cliente</a><button id="admin-logout" type="button">Sair</button></div></header>
+    <header class="vira-nav admin-nav"><a class="vira-logo" href="/">vira<span>.</span></a><div class="admin-nav-links"><span>Administração</span><button id="admin-logout" type="button">Sair</button></div></header>
     <main class="admin-main">
-      <div class="admin-intro"><div><span class="eyebrow">Operação do Vira</span><h1>Seu negócio, em ordem.</h1><p>Configure o lançamento, acompanhe clientes e mantenha os planos atualizados.</p></div><div class="admin-owner">Acesso autorizado<br /><strong>{user.email}</strong></div></div>
+      <div class="admin-intro"><div><span class="eyebrow">Operação do Vira</span><h1>Seu negócio, em ordem.</h1><p>Configure o lançamento, acompanhe clientes e mantenha os planos atualizados.</p></div><div class="admin-owner">Acesso autorizado<br /><strong>{admin.email}</strong></div></div>
       <nav class="admin-tabs" aria-label="Seções do painel"><a href="#visao">Visão geral</a><a href="#precos">Preços</a><a href="#configuracoes">Configurações</a><a href="#clientes">Clientes</a><a href="#dominios">Domínios</a><a href="#atividade">Atividade</a></nav>
       <section id="visao" class="admin-section">
         <div class="admin-section-title"><span class="eyebrow">Visão geral</span><h2>Estado da operação</h2></div>
-        <div class="admin-stats"><div><strong>{counts.users}</strong><span>contas</span></div><div><strong>{counts.published}</strong><span>páginas publicadas</span></div><div><strong>{counts.domains}</strong><span>domínios conectados</span></div></div>
+        <div class="admin-stats"><div><strong>{counts.users}</strong><span>clientes</span></div><div><strong>{counts.published}</strong><span>páginas publicadas</span></div><div><strong>{counts.domains}</strong><span>domínios conectados</span></div></div>
         <div class="admin-readiness"><div><h3>Antes de abrir as vendas</h3><p>Estes itens dependem das configurações abaixo. O DNS e o Cloudflare for SaaS também devem estar ativos.</p></div><ul>{required.map(item => <li><span class={item.ready ? 'admin-dot ready' : 'admin-dot'}></span>{item.label}<strong>{item.ready ? 'Pronto' : 'Pendente'}</strong></li>)}</ul></div>
       </section>
       <section id="precos" class="admin-section">

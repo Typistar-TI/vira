@@ -1,10 +1,11 @@
 ---
 import Base from '@frontend/layouts/Base.astro';
-import { getSessionUser } from '@backend/auth';
+import { getSessionAdmin, getSessionUser } from '@backend/auth';
 import { setting } from '@backend/config';
 
 const adminLogin = Astro.url.searchParams.get('next') === 'admin';
-if (await getSessionUser(Astro.request)) return Astro.redirect(adminLogin ? '/admin' : '/app');
+if (await getSessionAdmin(Astro.request)) return Astro.redirect('/admin');
+if (await getSessionUser(Astro.request)) return Astro.redirect('/app');
 const en = Astro.url.searchParams.get('lang') === 'en';
 const clientId = await setting('GOOGLE_CLIENT_ID');
 const [controller, contact, resendKey, emailFrom] = await Promise.all([

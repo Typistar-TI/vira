@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
-import { createSession, sameOrigin, sha256 } from '@backend/auth';
+import { createAdminSession, createSession, sameOrigin, sha256 } from '@backend/auth';
 import { setting } from '@backend/config';
 import { getOrCreateEmailUser } from '@backend/db';
 import { json, readJson } from '@backend/http';
@@ -26,8 +26,11 @@ export const POST: APIRoute = async ({ request }) => {
       setting('PRIVACY_CONTROLLER_NAME'), setting('PRIVACY_CONTACT_EMAIL'),
     ]);
     if (!existing && !admin && (!controller || !contact)) return fail();
+    if (admin) return json({ redirect: '/admin' }, 200, {
+      'set-cookie': await createAdminSession(row.email), 'cache-control': 'no-store',
+    });
     const user = await getOrCreateEmailUser(row.email);
-    return json({ redirect: admin ? '/admin' : '/app' }, 200, {
+    return json({ redirect: '/app' }, 200, {
       'set-cookie': await createSession(user.id), 'cache-control': 'no-store',
     });
   } catch { return fail(); }

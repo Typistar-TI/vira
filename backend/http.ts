@@ -1,10 +1,11 @@
-import { getSessionUser, sameOrigin } from './auth';
+import { getSessionAdmin, getSessionUser, sameOrigin } from './auth';
 import { consumeLimit } from './db';
-import { env } from 'cloudflare:workers';
 import type { UserRow } from './db';
 
 export function json(value: unknown, status = 200, headers: HeadersInit = {}) {
-  return new Response(JSON.stringify(value), { status, headers: { 'content-type': 'application/json; charset=utf-8', ...headers } });
+  const responseHeaders = new Headers(headers);
+  responseHeaders.set('content-type', 'application/json; charset=utf-8');
+  return new Response(JSON.stringify(value), { status, headers: responseHeaders });
 }
 
 export async function readBody(request: Request, maxBytes: number): Promise<Uint8Array> {
@@ -54,15 +55,17 @@ export async function requireUser(request: Request): Promise<UserRow | Response>
   return allowed ? user : json({ error: 'Muitas requisições. Aguarde um minuto.' }, 429, { 'retry-after': '60' });
 }
 
-export function isResponse(value: UserRow | Response): value is Response {
+export function isResponse(value: unknown): value is Response {
   return value instanceof Response;
 }
 
-export async function requireAdmin(request: Request): Promise<UserRow | Response> {
-  const user = await requireUser(request);
-  if (isResponse(user)) return user;
-  const row = user.email ? await env.DB.prepare('SELECT email FROM admin_accounts WHERE email = ?').bind(user.email).first() : null;
-  return row ? user : json({ error: 'Acesso restrito' }, 403);
+export async function requireAdmin(request: Request): Promise<{ id: string; email: string } | Response> {
+  if (request.method !== 'GET' && !sameOrigin(request)) return json({ error: 'Origem inválida' }, 403);
+  const admin = await getSessionAdmin(request);
+  if (!admin) return json({ error: 'Acesso restrito' }, 403);
+  const path = new URL(request.url).pathname;
+  const allowed = await consumeLimit(`admin-api:${admin.id}:${request.method}:${path}`, request.method === 'GET' ? 30 : 60, 60);
+  return allowed ? admin : json({ error: 'Muitas requisições. Aguarde um minuto.' }, 429, { 'retry-after': '60' });
 }
 
 export function clientIp(request: Request) {

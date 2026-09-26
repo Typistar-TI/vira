@@ -2,11 +2,11 @@
 import Base from '@frontend/layouts/Base.astro';
 import { publicPrices } from '@backend/billing';
 import { rootDomain } from '@backend/config';
-import { getSessionUser } from '@backend/auth';
+import { getSessionAdmin, getSessionUser } from '@backend/auth';
 import { getSiteForUser } from '@backend/db';
 import { hasAccess, parseSite } from '@shared/site';
 const user = await getSessionUser(Astro.request);
-if (!user) return Astro.redirect('/login');
+if (!user) return Astro.redirect(await getSessionAdmin(Astro.request) ? '/admin' : '/login');
 const site = await getSiteForUser(user.id);
 if (!site) return new Response('Página não encontrada', { status: 404 });
 const content = parseSite(JSON.parse(site.draft_json));

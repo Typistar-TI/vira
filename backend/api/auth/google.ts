@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
 import { createRemoteJWKSet, jwtVerify } from 'jose';
-import { createSession, sha256 } from '@backend/auth';
+import { createAdminSession, createSession, sha256 } from '@backend/auth';
 import { requiredSetting, setting } from '@backend/config';
 import { consumeLimit, getOrCreateGoogleUser } from '@backend/db';
 import { clientIp, readFormData } from '@backend/http';
@@ -37,13 +37,17 @@ export const POST: APIRoute = async ({ request }) => {
       setting('PRIVACY_CONTROLLER_NAME'), setting('PRIVACY_CONTACT_EMAIL'),
     ]);
     const isAdmin = Boolean(admin && (!admin.google_sub || admin.google_sub === sub));
+    if (admin && !isAdmin) return fail('Conta Google não autorizada');
     if (!existing && !isAdmin && (!controller || !contact)) return fail('Cadastro temporariamente indisponível');
     if (isAdmin && admin && !admin.google_sub) {
       await env.DB.prepare('UPDATE admin_accounts SET google_sub = ? WHERE email = ? AND google_sub IS NULL').bind(sub, admin.email).run();
     }
+    if (isAdmin) return new Response(null, { status: 303, headers: {
+      location: '/admin', 'set-cookie': await createAdminSession(admin!.email), 'cache-control': 'no-store',
+    } });
     const user = await getOrCreateGoogleUser(sub, email);
     return new Response(null, { status: 303, headers: {
-      location: isAdmin ? '/admin' : '/app', 'set-cookie': await createSession(user.id), 'cache-control': 'no-store',
+      location: '/app', 'set-cookie': await createSession(user.id), 'cache-control': 'no-store',
     } });
   } catch {
     return fail('Não foi possível entrar com Google. Tente novamente');
