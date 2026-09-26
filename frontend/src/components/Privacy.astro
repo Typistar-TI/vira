@@ -1,5 +1,6 @@
 ---
 import Base from '@frontend/components/Base.astro';
+import Brand from '@frontend/components/Brand.astro';
 import { getSetting } from '@frontend/api/config/setting';
 interface Props {
   lang: 'pt' | 'en';
@@ -14,18 +15,13 @@ const ready = Boolean(controller && email);
 ---
 
 <Base title={en ? 'Privacy · Vira' : 'Privacidade · Vira'} lang={lang} noindex={!ready}>
-  <div class="min-h-screen bg-[#f3eefa] text-[#292534] font-['DM_Sans',sans-serif] min-h-screen">
-    <header class="mx-auto flex max-w-[1180px] flex-wrap items-center justify-between gap-5 px-6 py-5">
-      <a
-        class="inline-flex items-center gap-1.5 font-[Outfit] text-[31px] leading-none font-extrabold tracking-[-0.08em] text-[#513b70] no-underline [&_span]:text-[#f27668]"
-        href={en ? '/en' : '/'}
-      >
-        vira<span>.</span>
-      </a>
+  <div class="min-h-screen bg-[#090d16] text-[#f3f6fc]">
+    <header class="mx-auto flex max-w-[1320px] items-center justify-between gap-5 border-b border-[#273145] px-5 py-4 sm:px-8">
+      <Brand href={en ? '/en' : '/'} />
       <a href={en ? '/' : '/en'}>{en ? 'Português' : 'English'}</a>
     </header>
     <main class="mx-auto max-w-[1250px] p-6 max-w-3xl">
-      <span class="text-xs font-extrabold uppercase tracking-[0.15em] text-[#513b70]">Vira</span>
+      <span class="text-xs font-extrabold uppercase tracking-[0.15em] text-[#f3f6fc]">Vira</span>
       <h1 class="text-4xl mt-2 mb-6">
         {en ? 'Privacy and your data' : 'Privacidade e seus dados'}
       </h1>

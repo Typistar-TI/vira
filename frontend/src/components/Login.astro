@@ -1,5 +1,6 @@
 ---
 import Base from '@frontend/components/Base.astro';
+import Brand from '@frontend/components/Brand.astro';
 import { getSetting } from '@frontend/api/config/setting';
 import { googleLoginUrl } from '@frontend/api/auth/google-url';
 
@@ -20,24 +21,19 @@ const loginUri = googleLoginUrl(url);
 ---
 
 <Base title={en ? 'Sign in · Vira' : 'Entrar · Vira'} lang={en ? 'en' : 'pt'} noindex>
-  <div class="min-h-screen bg-[#f3eefa] text-[#292534] font-['DM_Sans',sans-serif] min-h-screen">
-    <header class="mx-auto flex max-w-[1180px] flex-wrap items-center justify-between gap-5 px-6 py-5">
-      <a
-        class="inline-flex items-center gap-1.5 font-[Outfit] text-[31px] leading-none font-extrabold tracking-[-0.08em] text-[#513b70] no-underline [&_span]:text-[#f27668]"
-        href="/"
-      >
-        vira<span>.</span>
-      </a>
+  <div class="min-h-screen bg-[#090d16] text-[#f3f6fc]">
+    <header class="mx-auto flex max-w-[1320px] items-center justify-between gap-5 border-b border-[#273145] px-5 py-4 sm:px-8">
+      <Brand href={'/'} />
       <a href={en ? '/login' : '/login?lang=en'}>{en ? 'Português' : 'English'}</a>
     </header>
-    <main class="card rounded-[22px] border border-[#e4dcec] bg-white p-6 shadow-[0_10px_30px_#513b700c] [&_h2]:mb-4 [&_h2]:text-[1.45rem] [&_h2]:text-[#513b70] [&_h3]:mt-7 [&_h3]:mb-3 [&_h3]:text-lg [&_label]:mt-4 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold [&_.input]:w-full [&_.textarea]:w-full [&_.select]:w-full [&_small]:text-[#6f647d] mx-auto my-[50px] max-w-[450px]">
-      <span class="badge badge-secondary h-auto rounded-full px-3 py-2 text-xs font-bold">
+    <main class="card rounded-2xl border border-[#35425b] bg-[#111723] p-7 [&_h2]:mb-4 [&_h2]:text-[1.45rem] [&_h2]:text-[#f3f6fc] [&_h3]:mt-7 [&_h3]:mb-3 [&_h3]:text-lg [&_label]:mt-4 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold [&_.input]:w-full [&_.textarea]:w-full [&_.select]:w-full [&_small]:text-[#9eabc0] mx-auto my-12 max-w-[480px] sm:my-24">
+      <span class="badge badge-outline h-auto rounded-full border-[#536b9e] px-3 py-2 text-xs font-bold text-[#c9d5ff]">
         {en ? '7 days free' : '7 dias grátis'}
       </span>
-      <h1 class="text-4xl mt-4 mb-3">
+      <h1 class="mt-6 mb-4 font-[Outfit] text-[clamp(2.6rem,5vw,3.6rem)] leading-none tracking-[-0.055em]">
         {en ? 'Your page starts here.' : 'Sua página começa aqui.'}
       </h1>
-      <p class="text-[#6f647d] mb-6">
+      <p class="text-[#9eabc0] mb-6">
         {clientId
           ? en
             ? 'Use your email to receive a sign-in link, or continue with Google.'
@@ -80,7 +76,7 @@ const loginUri = googleLoginUrl(url);
       )}
       {clientId && (
         <>
-          <p class="text-[#6f647d] mb-4">{en ? 'Or' : 'Ou'}</p>
+          <p class="text-[#9eabc0] mb-4">{en ? 'Or' : 'Ou'}</p>
           <div
             id="g_id_onload"
             data-client_id={clientId}
@@ -107,7 +103,7 @@ const loginUri = googleLoginUrl(url);
         </p>
       )}
       {adminLogin && (
-        <p class="text-xs text-[#6f647d] mt-3">
+        <p class="text-xs text-[#9eabc0] mt-3">
           {en
             ? 'Administrative access is limited to authorized email addresses.'
             : 'Acesso administrativo restrito a e-mails autorizados.'}
@@ -118,7 +114,7 @@ const loginUri = googleLoginUrl(url);
           {error}
         </p>
       )}
-      <p class="text-xs text-[#6f647d] mt-6">
+      <p class="text-xs text-[#9eabc0] mt-6">
         <a href={en ? '/en/privacy' : '/privacidade'}>
           {en ? 'How we use your data' : 'Como usamos seus dados'}
         </a>

@@ -14,7 +14,7 @@ const { title, description = '', lang = 'pt', noindex = false } = Astro.props;
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#513B70" />
+    <meta name="theme-color" content="#0b101a" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -27,7 +27,7 @@ const { title, description = '', lang = 'pt', noindex = false } = Astro.props;
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <slot name="head" />
   </head>
-  <body class="font-['DM_Sans',sans-serif]">
+  <body class="bg-[#090d16] font-['DM_Sans',sans-serif] text-[#f3f6fc] antialiased selection:bg-[#8199ff] selection:text-[#080d19] [&_.input]:border-[#3c4c69] [&_.input]:bg-[#0d1422] [&_.textarea]:border-[#3c4c69] [&_.textarea]:bg-[#0d1422] [&_.select]:border-[#3c4c69] [&_.select]:bg-[#0d1422] [&_.file-input]:border-[#3c4c69] [&_.file-input]:bg-[#0d1422]">
     <slot />
   </body>
 </html>

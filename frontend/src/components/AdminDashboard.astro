@@ -1,5 +1,6 @@
 ---
 import Base from '@frontend/components/Base.astro';
+import Brand from '@frontend/components/Brand.astro';
 import { adminDashboard } from '@frontend/api/admin/dashboard';
 
 const { admin, url } = Astro.props;
@@ -45,366 +46,419 @@ const date = (time: number | null) =>
 ---
 
 <Base title="Administração · Vira" noindex>
-  <div class="min-h-screen bg-[#f3eefa] text-[#292534] font-['DM_Sans',sans-serif] bg-[#f7f4fb]">
-    <header class="mx-auto flex max-w-[1180px] flex-wrap items-center justify-between gap-5 px-6 py-5 max-w-none border-b border-[#e6ddec] bg-white lg:px-[max(24px,calc((100vw-1200px)/2))]">
-      <a
-        class="inline-flex items-center gap-1.5 font-[Outfit] text-[31px] leading-none font-extrabold tracking-[-0.08em] text-[#513b70] no-underline [&_span]:text-[#f27668]"
-        href="/"
-      >
-        vira<span>.</span>
-      </a>
-      <div class="flex items-center gap-3 text-sm sm:gap-5 [&_span]:hidden [&_span]:font-extrabold [&_span]:text-[#513b70] sm:[&_span]:inline">
+  <div class="min-h-screen bg-[#090d16] text-[#f3f6fc]">
+    <header class="flex items-center justify-between gap-5 border-b border-[#273145] bg-[#0d1422] px-5 py-4 sm:px-8">
+      <Brand />
+      <div class="flex items-center gap-4 text-sm text-[#a6b2c8]">
         <span>Administração</span>
-        <button id="admin-logout" type="button">
+        <button id="admin-logout" class="btn btn-ghost btn-sm" type="button">
           Sair
         </button>
       </div>
     </header>
-    <main class="mx-auto max-w-[1200px] px-6 pt-10 pb-24">
-      <div class="flex flex-col justify-between gap-5 sm:flex-row sm:items-end [&_h1]:my-2 [&_h1]:font-[Outfit] [&_h1]:text-[clamp(2.4rem,5vw,4.4rem)] [&_h1]:leading-none [&_h1]:text-[#513b70] [&_p]:text-[#6f647d]">
-        <div>
-          <span class="text-xs font-extrabold uppercase tracking-[0.15em] text-[#513b70]">
-            Operação do Vira
-          </span>
-          <h1>Seu negócio, em ordem.</h1>
-          <p>Configure o lançamento, acompanhe clientes e mantenha os planos atualizados.</p>
-        </div>
-        <div class="text-left text-sm text-[#6f647d] sm:text-right [&_strong]:text-base [&_strong]:text-[#513b70]">
-          Acesso autorizado
-          <br />
-          <strong>{admin.email}</strong>
-        </div>
-      </div>
-      <nav
-        class="my-9 mb-12 flex gap-7 overflow-auto whitespace-nowrap border-b border-[#dacfe5] [&_a]:px-0.5 [&_a]:pb-4 [&_a]:font-bold [&_a]:text-[#6f647d] [&_a:hover]:border-b-[3px] [&_a:hover]:border-[#f27668] [&_a:hover]:text-[#513b70]"
-        aria-label="Seções do painel"
-      >
-        <a href="#visao">Visão geral</a>
-        <a href="#precos">Preços</a>
-        <a href="#configuracoes">Configurações</a>
-        <a href="#clientes">Clientes</a>
-        <a href="#dominios">Domínios</a>
-        <a href="#atividade">Atividade</a>
-      </nav>
-      <section id="visao" class="mb-[70px] scroll-mt-6">
-        <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#513b70] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#6f647d]">
-          <span class="text-xs font-extrabold uppercase tracking-[0.15em] text-[#513b70]">
-            Visão geral
-          </span>
-          <h2>Estado da operação</h2>
-        </div>
-        <div class="grid grid-cols-3 gap-2 sm:gap-3.5 [&_div]:flex [&_div]:flex-col [&_div]:rounded-[20px] [&_div]:bg-[#513b70] [&_div]:p-3.5 [&_div]:text-white sm:[&_div]:p-6 [&_strong]:font-[Outfit] [&_strong]:text-3xl sm:[&_strong]:text-[2.7rem] [&_span]:mt-2 [&_span]:text-xs [&_span]:text-[#e6ddec] sm:[&_span]:text-sm">
-          <div>
-            <strong>{counts.users}</strong>
-            <span>clientes</span>
-          </div>
-          <div>
-            <strong>{counts.published}</strong>
-            <span>páginas publicadas</span>
-          </div>
-          <div>
-            <strong>{counts.domains}</strong>
-            <span>domínios conectados</span>
-          </div>
-        </div>
-        <div class="mt-4 grid items-center gap-7 rounded-[22px] border border-[#e4dcec] bg-white p-7 md:grid-cols-[1fr_1.2fr] [&_h3]:mb-2 [&_h3]:text-xl [&_h3]:text-[#513b70] [&_p]:leading-relaxed [&_p]:text-[#6f647d] [&_li]:flex [&_li]:items-center [&_li]:gap-2.5 [&_li]:border-b [&_li]:border-[#f0eaf4] [&_li]:py-2 [&_li]:text-sm [&_li_strong]:ml-auto [&_li_strong]:text-xs [&_li_strong]:text-[#6f647d]">
-          <div>
-            <h3>Antes de abrir as vendas</h3>
-            <p>
-              Estes itens dependem das configurações abaixo. O DNS e o Cloudflare for SaaS também
-              devem estar ativos.
-            </p>
-          </div>
-          <ul>
-            {required.map((item) => (
-              <li>
-                <span
-                  class={
-                    item.ready
-                      ? 'h-2.5 w-2.5 flex-none rounded-full bg-[#42a672]'
-                      : 'h-2.5 w-2.5 flex-none rounded-full bg-[#f27668]'
-                  }
-                ></span>
-                {item.label}
-                <strong>{item.ready ? 'Pronto' : 'Pendente'}</strong>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
-      <section id="precos" class="mb-[70px] scroll-mt-6">
-        <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#513b70] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#6f647d]">
-          <span class="text-xs font-extrabold uppercase tracking-[0.15em] text-[#513b70]">
-            Cobrança
-          </span>
-          <h2>Preços e planos</h2>
-          <p>
-            Ao ativar um preço, o Vira confere o valor, a moeda e a periodicidade na Stripe. Use um
-            Price ID já criado na Stripe.
-          </p>
-        </div>
-        <div class="grid gap-4 md:grid-cols-2">
-          {prices.map((row) => (
-            <form
-              class="card rounded-[20px] border border-[#e4dcec] bg-white p-4 shadow-sm sm:p-6 [&_h3]:mb-4 [&_h3]:text-xl [&_h3]:text-[#513b70] [&_label]:mt-3 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold"
-              data-api-price-form
-              data-plan={row.plan}
-              data-currency={row.currency}
-            >
-              <div class="flex items-start justify-between [&_span]:badge [&_span]:badge-secondary">
-                <h3>{planName[row.plan]}</h3>
-                <span>{row.currency.toUpperCase()}</span>
-              </div>
-              <label>
-                Valor em {row.currency.toUpperCase()}
-                <input
-                  class="input input-bordered w-full"
-                  name="amount"
-                  type="number"
-                  min="0"
-                  max="1000000"
-                  step="0.01"
-                  value={row.amount_minor === null ? '' : (row.amount_minor / 100).toFixed(2)}
-                  placeholder="0,00"
-                  required
-                />
-              </label>
-              <label>
-                Price ID da Stripe
-                <input
-                  class="input input-bordered w-full"
-                  name="stripe_price_id"
-                  value={row.stripe_price_id ?? ''}
-                  placeholder="price_..."
-                  autocomplete="off"
-                />
-              </label>
-              <label class="my-4 flex! items-center gap-2 [&_input]:checkbox [&_input]:checkbox-primary">
-                <input name="active" type="checkbox" checked={Boolean(row.active)} /> Disponível
-                para compra
-              </label>
-              <button
-                class="btn btn-primary rounded-xl border-0 font-bold shadow-none"
-                type="submit"
-              >
-                Salvar preço
-              </button>
-              <p
-                class="mt-2 text-sm text-success [hidden]:hidden"
-                data-api-status
-                role="status"
-                hidden
-              ></p>
-            </form>
-          ))}
-        </div>
-      </section>
-      <section id="configuracoes" class="mb-[70px] scroll-mt-6">
-        <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#513b70] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#6f647d]">
-          <span class="text-xs font-extrabold uppercase tracking-[0.15em] text-[#513b70]">
-            Serviços
-          </span>
-          <h2>Configurações</h2>
-          <p>
-            Os segredos ficam criptografados no banco. Depois de salvos, apenas o estado
-            “configurado” aparece aqui.
-          </p>
-        </div>
-        <div class="grid gap-4 md:grid-cols-2">
-          {groups.map((group) => (
-            <div class="card rounded-[20px] border border-[#e4dcec] bg-white p-4 shadow-sm sm:p-6 [&_h3]:mb-4 [&_h3]:text-xl [&_h3]:text-[#513b70] [&_label]:mt-3 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold">
-              <h3>{group.title}</h3>
-              {group.keys.map((key) => {
-                const row = settings.find((item) => item.key === key);
-                if (!row) return null;
-                return (
-                  <form
-                    class="border-t border-[#f0eaf4] py-3 [&_label]:flex [&_label]:justify-between [&_label]:gap-2.5"
-                    data-key={key}
-                    data-secret={Boolean(row.encrypted)}
-                    data-api-setting-form
-                  >
-                    <label for={`setting-${key}`}>
-                      {labels[key]}{' '}
-                      <span
-                        class={row.value ? 'text-xs text-success' : 'text-xs text-error'}
-                        data-api-config-state
-                      >
-                        {row.value ? 'Configurado' : 'Pendente'}
-                      </span>
-                    </label>
-                    <div class="flex gap-2 [&_input]:min-w-0 [&_input]:flex-1">
-                      <input
-                        class="input input-bordered w-full"
-                        id={`setting-${key}`}
-                        name="value"
-                        type={
-                          row.encrypted
-                            ? 'password'
-                            : key === 'PRIVACY_CONTACT_EMAIL'
-                              ? 'email'
-                              : 'text'
-                        }
-                        value={row.encrypted ? '' : row.value}
-                        placeholder={row.encrypted && row.value ? 'Novo valor para substituir' : ''}
-                        autocomplete="off"
-                      />
-                      <button class="btn btn-outline" type="submit">
-                        Salvar
-                      </button>
-                    </div>
-                    <p
-                      class="mt-2 text-sm text-success [hidden]:hidden"
-                      data-api-status
-                      role="status"
-                      hidden
-                    ></p>
-                  </form>
-                );
-              })}
-            </div>
-          ))}
-        </div>
-      </section>
-      <section id="clientes" class="mb-[70px] scroll-mt-6">
-        <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#513b70] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#6f647d]">
-          <span class="text-xs font-extrabold uppercase tracking-[0.15em] text-[#513b70]">
-            Contas
-          </span>
-          <h2>Clientes e assinaturas</h2>
-          <p>
-            Busque por e-mail ou endereço da página. Os planos mudam apenas pelos eventos de
-            cobrança da Stripe.
-          </p>
-        </div>
-        <form
-          class="mb-3.5 flex gap-2 [&_input]:w-full [&_input]:max-w-[360px]"
-          action="/admin#clientes"
-          method="get"
+    <div class="mx-auto grid max-w-[1480px] grid-cols-[minmax(0,1fr)] lg:grid-cols-[230px_minmax(0,1fr)]">
+      <aside class="min-w-0 border-b border-[#273145] px-5 py-6 lg:sticky lg:top-0 lg:h-screen lg:border-r lg:border-b-0 lg:px-6 lg:py-10">
+        <p class="mb-5 font-mono text-[11px] uppercase tracking-[0.18em] text-[#8199ff]">
+          Vira / Admin
+        </p>
+        <nav
+          class="flex gap-1 overflow-x-auto whitespace-nowrap lg:flex-col lg:overflow-visible"
+          aria-label="Seções do painel"
         >
-          <input
-            class="input input-bordered w-full"
-            name="q"
-            type="search"
-            value={search}
-            placeholder="E-mail ou endereço da página"
-            maxlength="80"
-          />
-          <button class="btn btn-primary" type="submit">
-            Buscar
-          </button>
-        </form>
-        <div class="card rounded-[20px] border border-[#e4dcec] bg-white p-4 shadow-sm sm:p-6 [&_h3]:mb-4 [&_h3]:text-xl [&_h3]:text-[#513b70] [&_label]:mt-3 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold overflow-auto [&_table]:table [&_table]:w-full [&_th]:text-xs [&_th]:uppercase [&_th]:text-[#6f647d] [&_td]:whitespace-nowrap [&_td_small]:text-[#6f647d]">
-          <table class="table table-zebra">
-            <thead>
-              <tr>
-                <th>E-mail</th>
-                <th>Plano</th>
-                <th>Acesso até</th>
-                <th>Cadastro</th>
-                <th>Página</th>
-                <th>Assinatura</th>
-              </tr>
-            </thead>
-            <tbody>
-              {customers.map((row) => (
-                <tr>
-                  <td>{row.email ?? 'Conta antiga'}</td>
-                  <td>{row.plan}</td>
-                  <td>
-                    {date(row.access_until ?? (row.plan === 'trial' ? row.trial_ends_at : null))}
-                  </td>
-                  <td>{date(row.created_at)}</td>
-                  <td>
-                    <a
-                      href={`https://${row.slug}.${domain}/`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {row.slug}
-                    </a>
-                    <small>{row.published_at ? 'Publicada' : 'Rascunho'}</small>
-                  </td>
-                  <td>
-                    <code>{row.stripe_subscription_id ?? '—'}</code>
-                  </td>
-                </tr>
+          <a
+            class="rounded-lg px-3 py-2.5 text-sm text-[#dce6ff] transition-colors hover:bg-[#1b273d]"
+            href="#visao"
+          >
+            ↗ &nbsp;Visão geral
+          </a>
+          <a
+            class="rounded-lg px-3 py-2.5 text-sm text-[#9eabc0] transition-colors hover:bg-[#1b273d] hover:text-white"
+            href="#precos"
+          >
+            ↗ &nbsp;Preços
+          </a>
+          <a
+            class="rounded-lg px-3 py-2.5 text-sm text-[#9eabc0] transition-colors hover:bg-[#1b273d] hover:text-white"
+            href="#configuracoes"
+          >
+            ↗ &nbsp;Configurações
+          </a>
+          <a
+            class="rounded-lg px-3 py-2.5 text-sm text-[#9eabc0] transition-colors hover:bg-[#1b273d] hover:text-white"
+            href="#clientes"
+          >
+            ↗ &nbsp;Clientes
+          </a>
+          <a
+            class="rounded-lg px-3 py-2.5 text-sm text-[#9eabc0] transition-colors hover:bg-[#1b273d] hover:text-white"
+            href="#dominios"
+          >
+            ↗ &nbsp;Domínios
+          </a>
+          <a
+            class="rounded-lg px-3 py-2.5 text-sm text-[#9eabc0] transition-colors hover:bg-[#1b273d] hover:text-white"
+            href="#atividade"
+          >
+            ↗ &nbsp;Atividade
+          </a>
+        </nav>
+      </aside>
+      <main class="min-w-0 px-5 pt-10 pb-24 sm:px-8 lg:px-10">
+        <div class="flex flex-col justify-between gap-5 sm:flex-row sm:items-end [&_h1]:my-2 [&_h1]:font-[Outfit] [&_h1]:text-[clamp(2.4rem,5vw,4.4rem)] [&_h1]:leading-none [&_h1]:text-[#f3f6fc] [&_p]:text-[#9eabc0]">
+          <div>
+            <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#8199ff]">
+              Operação do Vira
+            </span>
+            <h1>Seu negócio, em ordem.</h1>
+            <p>Configure o lançamento, acompanhe clientes e mantenha os planos atualizados.</p>
+          </div>
+          <div class="text-left text-sm text-[#9eabc0] sm:text-right [&_strong]:text-base [&_strong]:text-[#f3f6fc]">
+            Acesso autorizado
+            <br />
+            <strong>{admin.email}</strong>
+          </div>
+        </div>
+
+        <section
+          id="visao"
+          class="mb-20 scroll-mt-8 border-t border-[#273145] pt-9 first:border-t-0 first:pt-0"
+        >
+          <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#f3f6fc] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#9eabc0]">
+            <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#8199ff]">
+              Visão geral
+            </span>
+            <h2>Estado da operação</h2>
+          </div>
+          <div class="grid gap-3 sm:grid-cols-3 [&_div]:flex [&_div]:min-h-36 [&_div]:flex-col [&_div]:justify-between [&_div]:rounded-2xl [&_div]:border [&_div]:border-[#344055] [&_div]:bg-[#111b2c] [&_div]:p-5 [&_strong]:font-[Outfit] [&_strong]:text-5xl [&_strong]:font-medium [&_strong]:tracking-tight [&_strong]:text-[#dce6ff] [&_span]:font-mono [&_span]:text-xs [&_span]:uppercase [&_span]:tracking-wide [&_span]:text-[#8798b5]">
+            <div>
+              <strong>{counts.users}</strong>
+              <span>clientes</span>
+            </div>
+            <div>
+              <strong>{counts.published}</strong>
+              <span>páginas publicadas</span>
+            </div>
+            <div>
+              <strong>{counts.domains}</strong>
+              <span>domínios conectados</span>
+            </div>
+          </div>
+          <div class="mt-4 grid items-center gap-7 rounded-2xl border border-[#273145] bg-[#111723] p-7 md:grid-cols-[1fr_1.2fr] [&_h3]:mb-2 [&_h3]:text-xl [&_h3]:text-[#f3f6fc] [&_p]:leading-relaxed [&_p]:text-[#9eabc0] [&_li]:flex [&_li]:items-center [&_li]:gap-2.5 [&_li]:border-b [&_li]:border-[#273145] [&_li]:py-2 [&_li]:text-sm [&_li_strong]:ml-auto [&_li_strong]:text-xs [&_li_strong]:text-[#9eabc0]">
+            <div>
+              <h3>Antes de abrir as vendas</h3>
+              <p>
+                Estes itens dependem das configurações abaixo. O DNS e o Cloudflare for SaaS também
+                devem estar ativos.
+              </p>
+            </div>
+            <ul>
+              {required.map((item) => (
+                <li>
+                  <span
+                    class={
+                      item.ready
+                        ? 'h-2.5 w-2.5 flex-none rounded-full bg-[#7ddcb7]'
+                        : 'h-2.5 w-2.5 flex-none rounded-full bg-[#8199ff]'
+                    }
+                  ></span>
+                  {item.label}
+                  <strong>{item.ready ? 'Pronto' : 'Pendente'}</strong>
+                </li>
               ))}
-            </tbody>
-          </table>
-          {customers.length === 0 && (
-            <p class="my-2 text-[#6f647d]">
-              {search
-                ? 'Nenhuma conta corresponde à busca.'
-                : 'Nenhum cliente ainda. As contas aparecerão aqui após o primeiro cadastro.'}
+            </ul>
+          </div>
+        </section>
+        <section
+          id="precos"
+          class="mb-20 scroll-mt-8 border-t border-[#273145] pt-9 first:border-t-0 first:pt-0"
+        >
+          <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#f3f6fc] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#9eabc0]">
+            <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#8199ff]">
+              Cobrança
+            </span>
+            <h2>Preços e planos</h2>
+            <p>
+              Ao ativar um preço, o Vira confere o valor, a moeda e a periodicidade na Stripe. Use
+              um Price ID já criado na Stripe.
             </p>
-          )}
-        </div>
-      </section>
-      <section id="dominios" class="mb-[70px] scroll-mt-6">
-        <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#513b70] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#6f647d]">
-          <span class="text-xs font-extrabold uppercase tracking-[0.15em] text-[#513b70]">
-            Publicação
-          </span>
-          <h2>Domínios dos clientes</h2>
-          <p>Acompanhe a ativação do hostname e do certificado TLS.</p>
-        </div>
-        <div class="card rounded-[20px] border border-[#e4dcec] bg-white p-4 shadow-sm sm:p-6 [&_h3]:mb-4 [&_h3]:text-xl [&_h3]:text-[#513b70] [&_label]:mt-3 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold overflow-auto [&_table]:table [&_table]:w-full [&_th]:text-xs [&_th]:uppercase [&_th]:text-[#6f647d] [&_td]:whitespace-nowrap [&_td_small]:text-[#6f647d]">
-          <table class="table table-zebra">
-            <thead>
-              <tr>
-                <th>Domínio</th>
-                <th>Cliente</th>
-                <th>Hostname</th>
-                <th>TLS</th>
-                <th>Adicionado</th>
-              </tr>
-            </thead>
-            <tbody>
-              {domains.map((row) => (
-                <tr>
-                  <td>{row.hostname}</td>
-                  <td>{row.email ?? 'Conta antiga'}</td>
-                  <td>{row.status}</td>
-                  <td>{row.ssl_status}</td>
-                  <td>{date(row.created_at)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {domains.length === 0 && (
-            <p class="my-2 text-[#6f647d]">Nenhum domínio de cliente conectado ainda.</p>
-          )}
-        </div>
-      </section>
-      <section id="atividade" class="mb-[70px] scroll-mt-6">
-        <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#513b70] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#6f647d]">
-          <span class="text-xs font-extrabold uppercase tracking-[0.15em] text-[#513b70]">
-            Segurança
-          </span>
-          <h2>Atividade administrativa</h2>
-        </div>
-        <div class="card rounded-[20px] border border-[#e4dcec] bg-white p-4 shadow-sm sm:p-6 [&_h3]:mb-4 [&_h3]:text-xl [&_h3]:text-[#513b70] [&_label]:mt-3 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold [&>div]:flex [&>div]:items-center [&>div]:gap-5 [&>div]:border-b [&>div]:border-[#eee7f4] [&>div]:py-3 [&>div]:text-sm [&_span]:min-w-20 [&_span]:text-[#6f647d] [&_code]:ml-auto [&_code]:text-[#513b70]">
-          {audit.length ? (
-            audit.map((item) => (
-              <div>
-                <span>{date(item.created_at)}</span>
-                <strong>
-                  {item.action === 'update_price'
-                    ? 'Preço alterado'
-                    : item.action === 'clear_setting'
-                      ? 'Configuração limpa'
-                      : 'Configuração alterada'}
-                </strong>
-                <code>{item.target}</code>
+          </div>
+          <div class="grid gap-4 md:grid-cols-2">
+            {prices.map((row) => (
+              <form
+                class="card rounded-2xl border border-[#2c3850] bg-[#111723] p-4 shadow-none sm:p-6 [&_h3]:mb-4 [&_h3]:text-xl [&_h3]:text-[#f3f6fc] [&_label]:mt-3 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold"
+                data-api-price-form
+                data-plan={row.plan}
+                data-currency={row.currency}
+              >
+                <div class="flex items-start justify-between [&_span]:badge [&_span]:badge-secondary">
+                  <h3>{planName[row.plan]}</h3>
+                  <span>{row.currency.toUpperCase()}</span>
+                </div>
+                <label>
+                  Valor em {row.currency.toUpperCase()}
+                  <input
+                    class="input input-bordered w-full"
+                    name="amount"
+                    type="number"
+                    min="0"
+                    max="1000000"
+                    step="0.01"
+                    value={row.amount_minor === null ? '' : (row.amount_minor / 100).toFixed(2)}
+                    placeholder="0,00"
+                    required
+                  />
+                </label>
+                <label>
+                  Price ID da Stripe
+                  <input
+                    class="input input-bordered w-full"
+                    name="stripe_price_id"
+                    value={row.stripe_price_id ?? ''}
+                    placeholder="price_..."
+                    autocomplete="off"
+                  />
+                </label>
+                <label class="my-4 flex! items-center gap-2 [&_input]:checkbox [&_input]:checkbox-primary">
+                  <input name="active" type="checkbox" checked={Boolean(row.active)} /> Disponível
+                  para compra
+                </label>
+                <button
+                  class="btn btn-primary rounded-xl border-0 font-bold shadow-none"
+                  type="submit"
+                >
+                  Salvar preço
+                </button>
+                <p
+                  class="mt-2 text-sm text-success [hidden]:hidden"
+                  data-api-status
+                  role="status"
+                  hidden
+                ></p>
+              </form>
+            ))}
+          </div>
+        </section>
+        <section
+          id="configuracoes"
+          class="mb-20 scroll-mt-8 border-t border-[#273145] pt-9 first:border-t-0 first:pt-0"
+        >
+          <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#f3f6fc] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#9eabc0]">
+            <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#8199ff]">
+              Serviços
+            </span>
+            <h2>Configurações</h2>
+            <p>
+              Os segredos ficam criptografados no banco. Depois de salvos, apenas o estado
+              “configurado” aparece aqui.
+            </p>
+          </div>
+          <div class="grid gap-4 md:grid-cols-2">
+            {groups.map((group) => (
+              <div class="card rounded-2xl border border-[#2c3850] bg-[#111723] p-4 shadow-none sm:p-6 [&_h3]:mb-4 [&_h3]:text-xl [&_h3]:text-[#f3f6fc] [&_label]:mt-3 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold">
+                <h3>{group.title}</h3>
+                {group.keys.map((key) => {
+                  const row = settings.find((item) => item.key === key);
+                  if (!row) return null;
+                  return (
+                    <form
+                      class="border-t border-[#273145] py-3 [&_label]:flex [&_label]:justify-between [&_label]:gap-2.5"
+                      data-key={key}
+                      data-secret={Boolean(row.encrypted)}
+                      data-api-setting-form
+                    >
+                      <label for={`setting-${key}`}>
+                        {labels[key]}{' '}
+                        <span
+                          class={row.value ? 'text-xs text-success' : 'text-xs text-error'}
+                          data-api-config-state
+                        >
+                          {row.value ? 'Configurado' : 'Pendente'}
+                        </span>
+                      </label>
+                      <div class="flex gap-2 [&_input]:min-w-0 [&_input]:flex-1">
+                        <input
+                          class="input input-bordered w-full"
+                          id={`setting-${key}`}
+                          name="value"
+                          type={
+                            row.encrypted
+                              ? 'password'
+                              : key === 'PRIVACY_CONTACT_EMAIL'
+                                ? 'email'
+                                : 'text'
+                          }
+                          value={row.encrypted ? '' : row.value}
+                          placeholder={
+                            row.encrypted && row.value ? 'Novo valor para substituir' : ''
+                          }
+                          autocomplete="off"
+                        />
+                        <button class="btn btn-outline" type="submit">
+                          Salvar
+                        </button>
+                      </div>
+                      <p
+                        class="mt-2 text-sm text-success [hidden]:hidden"
+                        data-api-status
+                        role="status"
+                        hidden
+                      ></p>
+                    </form>
+                  );
+                })}
               </div>
-            ))
-          ) : (
-            <p class="my-2 text-[#6f647d]">Nenhuma alteração registrada ainda.</p>
-          )}
-        </div>
-      </section>
-    </main>
+            ))}
+          </div>
+        </section>
+        <section
+          id="clientes"
+          class="mb-20 scroll-mt-8 border-t border-[#273145] pt-9 first:border-t-0 first:pt-0"
+        >
+          <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#f3f6fc] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#9eabc0]">
+            <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#8199ff]">
+              Contas
+            </span>
+            <h2>Clientes e assinaturas</h2>
+            <p>
+              Busque por e-mail ou endereço da página. Os planos mudam apenas pelos eventos de
+              cobrança da Stripe.
+            </p>
+          </div>
+          <form
+            class="mb-3.5 flex gap-2 [&_input]:w-full [&_input]:max-w-[360px]"
+            action="/admin#clientes"
+            method="get"
+          >
+            <input
+              class="input input-bordered w-full"
+              name="q"
+              type="search"
+              value={search}
+              placeholder="E-mail ou endereço da página"
+              maxlength="80"
+            />
+            <button class="btn btn-primary" type="submit">
+              Buscar
+            </button>
+          </form>
+          <div class="card rounded-2xl border border-[#2c3850] bg-[#111723] p-4 shadow-none sm:p-6 [&_h3]:mb-4 [&_h3]:text-xl [&_h3]:text-[#f3f6fc] [&_label]:mt-3 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold overflow-auto [&_table]:table [&_table]:w-full [&_th]:text-xs [&_th]:uppercase [&_th]:text-[#9eabc0] [&_td]:whitespace-nowrap [&_td_small]:text-[#9eabc0]">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>E-mail</th>
+                  <th>Plano</th>
+                  <th>Acesso até</th>
+                  <th>Cadastro</th>
+                  <th>Página</th>
+                  <th>Assinatura</th>
+                </tr>
+              </thead>
+              <tbody>
+                {customers.map((row) => (
+                  <tr>
+                    <td>{row.email ?? 'Conta antiga'}</td>
+                    <td>{row.plan}</td>
+                    <td>
+                      {date(row.access_until ?? (row.plan === 'trial' ? row.trial_ends_at : null))}
+                    </td>
+                    <td>{date(row.created_at)}</td>
+                    <td>
+                      <a
+                        href={`https://${row.slug}.${domain}/`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {row.slug}
+                      </a>
+                      <small>{row.published_at ? 'Publicada' : 'Rascunho'}</small>
+                    </td>
+                    <td>
+                      <code>{row.stripe_subscription_id ?? '—'}</code>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {customers.length === 0 && (
+              <p class="my-2 text-[#9eabc0]">
+                {search
+                  ? 'Nenhuma conta corresponde à busca.'
+                  : 'Nenhum cliente ainda. As contas aparecerão aqui após o primeiro cadastro.'}
+              </p>
+            )}
+          </div>
+        </section>
+        <section
+          id="dominios"
+          class="mb-20 scroll-mt-8 border-t border-[#273145] pt-9 first:border-t-0 first:pt-0"
+        >
+          <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#f3f6fc] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#9eabc0]">
+            <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#8199ff]">
+              Publicação
+            </span>
+            <h2>Domínios dos clientes</h2>
+            <p>Acompanhe a ativação do hostname e do certificado TLS.</p>
+          </div>
+          <div class="card rounded-2xl border border-[#2c3850] bg-[#111723] p-4 shadow-none sm:p-6 [&_h3]:mb-4 [&_h3]:text-xl [&_h3]:text-[#f3f6fc] [&_label]:mt-3 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold overflow-auto [&_table]:table [&_table]:w-full [&_th]:text-xs [&_th]:uppercase [&_th]:text-[#9eabc0] [&_td]:whitespace-nowrap [&_td_small]:text-[#9eabc0]">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Domínio</th>
+                  <th>Cliente</th>
+                  <th>Hostname</th>
+                  <th>TLS</th>
+                  <th>Adicionado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {domains.map((row) => (
+                  <tr>
+                    <td>{row.hostname}</td>
+                    <td>{row.email ?? 'Conta antiga'}</td>
+                    <td>{row.status}</td>
+                    <td>{row.ssl_status}</td>
+                    <td>{date(row.created_at)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {domains.length === 0 && (
+              <p class="my-2 text-[#9eabc0]">Nenhum domínio de cliente conectado ainda.</p>
+            )}
+          </div>
+        </section>
+        <section
+          id="atividade"
+          class="mb-20 scroll-mt-8 border-t border-[#273145] pt-9 first:border-t-0 first:pt-0"
+        >
+          <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#f3f6fc] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#9eabc0]">
+            <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#8199ff]">
+              Segurança
+            </span>
+            <h2>Atividade administrativa</h2>
+          </div>
+          <div class="card rounded-2xl border border-[#2c3850] bg-[#111723] p-4 shadow-none sm:p-6 [&_h3]:mb-4 [&_h3]:text-xl [&_h3]:text-[#f3f6fc] [&_label]:mt-3 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold [&>div]:flex [&>div]:items-center [&>div]:gap-5 [&>div]:border-b [&>div]:border-[#273145] [&>div]:py-3 [&>div]:text-sm [&_span]:min-w-20 [&_span]:text-[#9eabc0] [&_code]:ml-auto [&_code]:text-[#f3f6fc]">
+            {audit.length ? (
+              audit.map((item) => (
+                <div>
+                  <span>{date(item.created_at)}</span>
+                  <strong>
+                    {item.action === 'update_price'
+                      ? 'Preço alterado'
+                      : item.action === 'clear_setting'
+                        ? 'Configuração limpa'
+                        : 'Configuração alterada'}
+                  </strong>
+                  <code>{item.target}</code>
+                </div>
+              ))
+            ) : (
+              <p class="my-2 text-[#9eabc0]">Nenhuma alteração registrada ainda.</p>
+            )}
+          </div>
+        </section>
+      </main>
+    </div>
   </div>
   <script>
     import { updateSetting } from '@frontend/api/admin/update-setting';

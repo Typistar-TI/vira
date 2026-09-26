@@ -1,5 +1,6 @@
 ---
 import Base from '@frontend/components/Base.astro';
+import Brand from '@frontend/components/Brand.astro';
 import { getPublicPrices, type Plan } from '@frontend/api/billing/public-prices';
 import { getRootDomain } from '@frontend/api/config/root-domain';
 interface Props {
@@ -95,167 +96,273 @@ const t = en
   description={t.intro}
   lang={lang}
 >
-  <link slot="head" rel="alternate" hreflang="pt-BR" href={`https://${domain}/`} />
-  <link slot="head" rel="alternate" hreflang="en-US" href={`https://${domain}/en/`} />
-  <link slot="head" rel="alternate" hreflang="x-default" href={`https://${domain}/`} />
-  <div class="min-h-screen bg-[#f3eefa] text-[#292534] font-['DM_Sans',sans-serif]">
-    <header class="mx-auto flex max-w-[1180px] flex-wrap items-center justify-between gap-5 px-6 py-5">
-      <a
-        class="inline-flex items-center gap-1.5 font-[Outfit] text-[31px] leading-none font-extrabold tracking-[-0.08em] text-[#513b70] no-underline [&_span]:text-[#f27668]"
-        href={en ? '/en' : '/'}
-        aria-label="Vira"
-      >
-        vira<span>.</span>
-      </a>
-      <nav class="flex gap-5 items-center">
-        <a href="#como-funciona" class="hidden sm:inline">
-          {en ? 'How it works' : 'Como funciona'}
-        </a>
-        <a href="#planos" class="hidden sm:inline">
-          {en ? 'Plans' : 'Planos'}
-        </a>
-        <a href={en ? '/' : '/en'} aria-label={en ? 'Português' : 'English'}>
-          {en ? 'PT' : 'EN'}
-        </a>
-        <a href="/login" class="btn btn-primary rounded-xl border-0 font-bold shadow-none">
-          {t.nav}
-        </a>
-      </nav>
-    </header>
-    <main class="mx-auto max-w-[1180px] px-6 pt-11 pb-24">
-      <section class="grid items-center gap-[6vw] pt-8 pb-20 md:grid-cols-[1.15fr_0.85fr] md:pt-16 md:pb-28 [&_h1]:mt-4 [&_h1]:mb-6 [&_h1]:max-w-[11ch] [&_h1]:font-[Outfit] [&_h1]:text-[clamp(3.4rem,7vw,6.7rem)] [&_h1]:leading-[0.98] [&_h1]:tracking-tight [&_h1]:text-[#513b70] [&_em]:not-italic [&_em]:text-[#f27668] [&_p]:max-w-[55ch] [&_p]:leading-relaxed">
-        <div>
-          <span class="text-xs font-extrabold uppercase tracking-[0.15em] text-[#513b70]">
-            {t.eyebrow}
-          </span>
-          <h1>
-            {t.titleA} <em>{t.titleB}</em>
-          </h1>
-          <p>{t.intro}</p>
-          <div class="mt-8 flex flex-wrap gap-3">
-            <a
-              class="btn btn-primary rounded-xl border-0 font-bold shadow-none btn-secondary text-[#292534]"
-              href="/login"
-            >
-              {t.cta} <span aria-hidden="true">↗</span>
-            </a>
-            <a
-              class="btn btn-outline rounded-xl bg-white font-bold text-[#513b70]"
-              href="#como-funciona"
-            >
-              {t.demo}
-            </a>
-          </div>
-          <p class="text-sm mt-5">
-            {en
-              ? 'No card required · Email or Google sign-in'
-              : 'Sem cartão · Entre por e-mail ou Google'}
-          </p>
-        </div>
-        <div
-          class="relative min-h-[330px] max-w-[520px] rotate-2 rounded-[30px] border border-[#ded3ea] bg-white p-5 shadow-[0_30px_70px_#513b7021] md:min-h-[420px] md:max-w-none"
-          aria-label={en ? 'Page preview' : 'Prévia de uma página'}
+  <link slot="head" rel="alternate" hreflang="pt-BR" href={'https://' + domain + '/'} />
+  <link slot="head" rel="alternate" hreflang="en-US" href={'https://' + domain + '/en/'} />
+  <link slot="head" rel="alternate" hreflang="x-default" href={'https://' + domain + '/'} />
+  <div class="min-h-screen overflow-hidden bg-[#090d16] text-[#f3f6fc]">
+    <header class="relative z-10 border-b border-[#202839]">
+      <div class="mx-auto flex max-w-[1320px] items-center justify-between gap-4 px-5 py-4 sm:px-8">
+        <Brand href={en ? '/en' : '/'} />
+        <nav
+          class="flex items-center gap-3 text-sm sm:gap-7"
+          aria-label={en ? 'Main navigation' : 'Navegação principal'}
         >
-          <div class="h-full overflow-hidden rounded-[18px] bg-[#f8f6fc]">
-            <div class="flex h-9 items-center gap-1 bg-[#eee8f4] px-3.5 [&_i]:h-[7px] [&_i]:w-[7px] [&_i]:rounded-full [&_i]:bg-[#b8a8cb]">
-              <i></i>
-              <i></i>
-              <i></i>
+          <a
+            href="#como-funciona"
+            class="hidden text-[#a6b2c8] transition-colors hover:text-white sm:inline"
+          >
+            {en ? 'How it works' : 'Como funciona'}
+          </a>
+          <a
+            href="#planos"
+            class="hidden text-[#a6b2c8] transition-colors hover:text-white sm:inline"
+          >
+            {en ? 'Plans' : 'Planos'}
+          </a>
+          <a
+            href={en ? '/' : '/en'}
+            class="text-[#a6b2c8] transition-colors hover:text-white"
+            aria-label={en ? 'Português' : 'English'}
+          >
+            {en ? 'PT' : 'EN'}
+          </a>
+          <a href="/login" class="btn btn-primary btn-sm border-0 px-4 font-bold sm:btn-md">
+            {t.nav}
+            <span aria-hidden="true">↗</span>
+          </a>
+        </nav>
+      </div>
+    </header>
+    <main>
+      <section class="relative isolate border-b border-[#202839]">
+        <div class="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_70%_40%,#283e782b,transparent_48%)]"></div>
+        <div class="mx-auto grid max-w-[1320px] items-center gap-8 px-5 pb-16 pt-16 sm:px-8 md:grid-cols-[1.05fr_0.95fr] md:pb-24 md:pt-24 lg:min-h-[690px]">
+          <div data-reveal>
+            <div class="mb-7 inline-flex items-center gap-3 rounded-full border border-[#344263] bg-[#151e31] px-3 py-2 text-xs font-semibold uppercase tracking-[0.17em] text-[#c2d0ff]">
+              <span class="h-1.5 w-1.5 rounded-full bg-[#8199ff] shadow-[0_0_15px_#8199ff]"></span>
+              {t.eyebrow}
             </div>
-            <div class="p-8">
-              <span class="badge badge-secondary h-auto rounded-full px-3 py-2 text-xs font-bold">
-                {en ? 'Your space' : 'Seu espaço'}
-              </span>
-              <div class="my-3 h-[13px] rounded-lg bg-[#dfd3eb] h-[42px] w-3/4 bg-[#513b70]"></div>
-              <div class="my-3 h-[13px] w-[90%] rounded-lg bg-[#dfd3eb]"></div>
-              <div class="my-3 h-[13px] w-[65%] rounded-lg bg-[#dfd3eb]"></div>
-              <div class="mt-7 h-[145px] rounded-[14px] bg-gradient-to-br from-[#f9b7b5] to-[#c6afe1]"></div>
-              <div class="flex gap-3 mt-6">
-                <span class="badge badge-secondary h-auto rounded-full px-3 py-2 text-xs font-bold">
-                  ✦ {en ? 'Beautiful' : 'Bonito'}
-                </span>
-                <span class="badge badge-secondary h-auto rounded-full px-3 py-2 text-xs font-bold">
-                  ↗ {en ? 'Ready to share' : 'Pronto para compartilhar'}
-                </span>
-              </div>
+            <h1 class="max-w-[13ch] font-[Outfit] text-[clamp(3.8rem,7.4vw,7.3rem)] font-semibold leading-[0.96] tracking-[-0.065em]">
+              {t.titleA}
+              <br />
+              <span class="text-[#8199ff]">{t.titleB}</span>
+            </h1>
+            <p class="mt-8 max-w-[52ch] text-lg leading-relaxed text-[#acb7ca]">{t.intro}</p>
+            <div class="mt-9 flex flex-wrap gap-3">
+              <a href="/login" class="btn btn-primary h-12 border-0 px-6 font-bold">
+                {t.cta}
+                <span aria-hidden="true">↗</span>
+              </a>
+              <a
+                href="#como-funciona"
+                class="btn btn-outline h-12 border-[#3a465f] px-6 text-[#ecf1fa] hover:border-[#8199ff] hover:bg-[#151d2e]"
+              >
+                {t.demo}
+              </a>
             </div>
+            <p class="mt-5 text-sm text-[#7f8ba0]">
+              {en
+                ? 'No card required · Email or Google sign-in'
+                : 'Sem cartão · Entre por e-mail ou Google'}
+            </p>
           </div>
+          <div
+            class="relative flex min-h-[350px] items-center justify-center md:min-h-[530px]"
+            aria-hidden="true"
+          >
+            <div class="absolute h-[min(82vw,510px)] w-[min(82vw,510px)] rounded-full border border-[#26324c]"></div>
+            <div class="absolute h-[min(64vw,390px)] w-[min(64vw,390px)] rounded-full border border-[#34456b]"></div>
+            <div class="absolute h-[min(42vw,270px)] w-[min(42vw,270px)] rounded-full border border-[#3f5484]"></div>
+            <div class="absolute top-[14%] left-[11%] h-2 w-2 rounded-full bg-[#9bb0ff] shadow-[0_0_25px_#8199ff]"></div>
+            <div class="absolute right-[11%] bottom-[22%] h-1.5 w-1.5 rounded-full bg-[#9bb0ff] shadow-[0_0_25px_#8199ff]"></div>
+            <div class="absolute left-1/2 top-1/2 h-[230px] w-[230px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#536fca2d] blur-[70px]"></div>
+            <img
+              id="hero-symbol"
+              src="/vira-symbol.png"
+              width="560"
+              height="560"
+              alt=""
+              class="relative z-10 w-[min(78vw,560px)] drop-shadow-[0_25px_50px_#3158bd40]"
+            />
+          </div>
+        </div>
+        <div class="mx-auto flex max-w-[1320px] flex-wrap items-center justify-between gap-3 border-t border-[#202839] px-5 py-5 text-xs font-semibold uppercase tracking-[0.15em] text-[#8794ab] sm:px-8">
+          <span>{en ? 'One place to launch' : 'Um lugar para publicar'}</span>
+          <span>{en ? 'Build · Publish · Grow' : 'Crie · Publique · Evolua'}</span>
+          <span>01 / 03</span>
         </div>
       </section>
-      <section id="como-funciona" class="py-16">
-        <div class="mb-8 max-w-[700px] [&_h2]:my-2.5 [&_h2]:font-[Outfit] [&_h2]:text-[clamp(2.3rem,4vw,3.6rem)] [&_h2]:leading-tight [&_h2]:text-[#513b70]">
-          <span class="text-xs font-extrabold uppercase tracking-[0.15em] text-[#513b70]">
-            Vira
+      <section
+        id="como-funciona"
+        class="mx-auto max-w-[1320px] scroll-mt-10 px-5 py-24 sm:px-8 md:py-32"
+      >
+        <div class="mb-12 max-w-[780px]" data-reveal>
+          <span class="text-xs font-bold uppercase tracking-[0.2em] text-[#8199ff]">
+            01 / {en ? 'The process' : 'O processo'}
           </span>
-          <h2>{t.section}</h2>
-          <p class="text-[#6f647d]">{t.sectionText}</p>
+          <h2 class="mt-5 font-[Outfit] text-[clamp(2.8rem,5vw,5rem)] leading-[1.04] tracking-[-0.05em]">
+            {t.section}
+          </h2>
+          <p class="mt-5 text-lg leading-relaxed text-[#acb7ca]">{t.sectionText}</p>
         </div>
-        <div class="grid gap-[18px] md:grid-cols-3">
+        <div class="grid border-t border-[#344055] md:grid-cols-3">
           {t.features.map((feature, i) => (
-            <article class="card rounded-[22px] border border-[#e3daed] bg-white p-[30px] shadow-sm [&_strong]:my-3 [&_strong]:block [&_strong]:font-[Outfit] [&_strong]:text-[22px] [&_strong]:font-bold [&_p]:leading-relaxed [&_p]:text-[#6f647d]">
-              <span
-                class="grid h-[45px] w-[45px] place-items-center rounded-[13px] bg-[#fbe6e6] text-2xl text-[#a34257]"
-                aria-hidden="true"
-              >
-                {['◇', '✳', '↗'][i]}
-              </span>
-              <strong>{feature[0]}</strong>
-              <p>{feature[1]}</p>
+            <article
+              data-reveal
+              class="group border-b border-[#344055] py-8 md:border-r md:px-8 md:py-10 md:first:pl-0 md:last:border-r-0"
+            >
+              <span class="font-mono text-xs text-[#8199ff]">0{i + 1} / 03</span>
+              <div class="mt-10 mb-6 flex items-start justify-between">
+                <span class="font-[Outfit] text-5xl font-light text-[#879fff]" aria-hidden="true">
+                  {['◇', '⌘', '↗'][i]}
+                </span>
+                <span
+                  class="text-[#647592] transition-transform duration-300 group-hover:-translate-y-1 group-hover:translate-x-1"
+                  aria-hidden="true"
+                >
+                  ↗
+                </span>
+              </div>
+              <h3 class="font-[Outfit] text-2xl font-medium tracking-tight">{feature[0]}</h3>
+              <p class="mt-3 max-w-[34ch] leading-relaxed text-[#9eabc0]">{feature[1]}</p>
             </article>
           ))}
         </div>
       </section>
-      <section id="planos" class="py-16">
-        <div class="mb-8 max-w-[700px] [&_h2]:my-2.5 [&_h2]:font-[Outfit] [&_h2]:text-[clamp(2.3rem,4vw,3.6rem)] [&_h2]:leading-tight [&_h2]:text-[#513b70]">
-          <span class="text-xs font-extrabold uppercase tracking-[0.15em] text-[#513b70]">
-            {en ? 'Simple plans' : 'Planos simples'}
+      <section class="border-y border-[#202839] bg-[#0d1422]">
+        <div
+          class="mx-auto grid max-w-[1320px] gap-10 px-5 py-20 sm:px-8 md:grid-cols-[0.85fr_1.15fr] md:items-center md:py-24"
+          data-reveal
+        >
+          <span class="font-[Outfit] text-[clamp(4rem,10vw,10rem)] leading-none tracking-[-0.08em] text-[#8199ff]">
+            vira<span class="text-[#dce6ff]">.</span>
           </span>
-          <h2>{t.plans}</h2>
-          <p class="text-[#6f647d]">{t.plansText}</p>
+          <div>
+            <span class="text-xs font-bold uppercase tracking-[0.2em] text-[#8199ff]">
+              02 / {en ? 'Your space' : 'Seu espaço'}
+            </span>
+            <h2 class="mt-5 max-w-[17ch] font-[Outfit] text-[clamp(2.3rem,4vw,4.2rem)] leading-[1.08] tracking-[-0.05em]">
+              {en ? 'Your idea deserves a place of its own.' : 'Sua ideia merece um lugar só dela.'}
+            </h2>
+            <p class="mt-6 max-w-[48ch] leading-relaxed text-[#a6b2c8]">
+              {en
+                ? 'Choose a layout, add your own images and connect your domain. What you see in the editor is the page you publish.'
+                : 'Escolha um layout, adicione suas imagens e conecte seu domínio. O que você vê no editor é a página que publica.'}
+            </p>
+          </div>
         </div>
-        <div class="grid gap-[18px] md:grid-cols-3">
+      </section>
+      <section id="planos" class="mx-auto max-w-[1320px] scroll-mt-10 px-5 py-24 sm:px-8 md:py-32">
+        <div class="mb-12 max-w-[720px]" data-reveal>
+          <span class="text-xs font-bold uppercase tracking-[0.2em] text-[#8199ff]">
+            03 / {en ? 'Pricing' : 'Preços'}
+          </span>
+          <h2 class="mt-5 font-[Outfit] text-[clamp(2.8rem,5vw,5rem)] leading-[1.04] tracking-[-0.05em]">
+            {t.plans}
+          </h2>
+          <p class="mt-5 text-lg text-[#acb7ca]">{t.plansText}</p>
+        </div>
+        <div class="grid gap-4 lg:grid-cols-3">
           {[t.monthly, t.yearly, t.lifetime].map((name, i) => (
             <article
+              data-reveal
               class:list={[
-                'card rounded-[22px] border border-[#e3daed] bg-white p-[30px] shadow-sm [&_h3]:my-2.5 [&_h3]:text-[1.6rem] [&_p]:leading-relaxed [&_p]:text-[#6f647d] [&_ul]:min-h-[130px] [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:leading-loose [&_ul]:text-[#6f647d]',
-                i === 1 && 'border-2 border-[#f27668] md:-translate-y-2',
+                'flex flex-col rounded-2xl border bg-[#111723] p-7 transition-transform duration-300 hover:-translate-y-1 sm:p-8',
+                i === 1 ? 'border-[#8199ff] shadow-[0_0_50px_#536fca24]' : 'border-[#2a3448]',
               ]}
             >
-              <span class="badge badge-secondary h-auto rounded-full px-3 py-2 text-xs font-bold">
-                {i === 2
-                  ? en
-                    ? 'One payment'
-                    : 'Pagamento único'
-                  : en
-                    ? 'Subscription'
-                    : 'Assinatura'}
-              </span>
-              <h3>{name}</h3>
-              <p>{[t.monthlyDesc, t.yearlyDesc, t.lifetimeDesc][i]}</p>
-              <div class="my-7 font-[Outfit] text-[1.8rem] font-bold text-[#513b70]">
+              <div class="mb-8 flex items-center justify-between">
+                <span class="font-mono text-xs text-[#8ea4ff]">0{i + 1} / 03</span>
+                <span class="badge badge-outline border-[#3b4964] text-[#aab7ce]">
+                  {i === 2
+                    ? en
+                      ? 'One payment'
+                      : 'Pagamento único'
+                    : en
+                      ? 'Subscription'
+                      : 'Assinatura'}
+                </span>
+              </div>
+              <h3 class="font-[Outfit] text-2xl font-medium">{name}</h3>
+              <p class="mt-3 min-h-14 leading-relaxed text-[#9eabc0]">
+                {[t.monthlyDesc, t.yearlyDesc, t.lifetimeDesc][i]}
+              </p>
+              <div class="mt-8 border-b border-[#344055] pb-7 font-[Outfit] text-[clamp(1.9rem,3vw,2.7rem)] font-semibold tracking-tight text-white">
                 {displayPrice((['monthly', 'yearly', 'lifetime'] as const)[i]) || t.priceLater}
               </div>
-              <ul>
+              <ul class="my-7 space-y-3 text-sm text-[#b5c1d4]">
                 {t.included.map((item) => (
-                  <li>{item}</li>
+                  <li class="flex gap-3">
+                    <span class="text-[#8199ff]" aria-hidden="true">
+                      ↗
+                    </span>
+                    {item}
+                  </li>
                 ))}
               </ul>
-              <a class="btn btn-primary rounded-xl border-0 font-bold shadow-none" href="/login">
+              <a
+                class:list={[
+                  'btn mt-auto w-full font-bold',
+                  i === 1
+                    ? 'btn-primary'
+                    : 'btn-outline border-[#4a5872] text-white hover:border-[#8199ff] hover:bg-[#1b2943]',
+                ]}
+                href="/login"
+              >
                 {t.select}
+                <span aria-hidden="true">↗</span>
               </a>
             </article>
           ))}
         </div>
       </section>
     </main>
-    <footer class="mx-auto flex max-w-[1180px] flex-col justify-between gap-4 border-t border-[#e4dcec] px-6 py-8 text-[#6f647d] sm:flex-row">
-      <span>
-        © {new Date().getFullYear()} Vira. {t.footer}
-      </span>
-      <div class="flex gap-4">
-        <a href={en ? '/en/privacy' : '/privacidade'}>{en ? 'Privacy' : 'Privacidade'}</a>
-        <a href={en ? '/' : '/en'}>{en ? 'Português' : 'English'}</a>
+    <footer class="border-t border-[#202839]">
+      <div class="mx-auto flex max-w-[1320px] flex-col justify-between gap-4 px-5 py-8 text-sm text-[#8592a9] sm:flex-row sm:px-8">
+        <span>
+          © {new Date().getFullYear()} Vira. {t.footer}
+        </span>
+        <div class="flex gap-6">
+          <a class="hover:text-white" href={en ? '/en/privacy' : '/privacidade'}>
+            {en ? 'Privacy' : 'Privacidade'}
+          </a>
+          <a class="hover:text-white" href={en ? '/' : '/en'}>
+            {en ? 'Português' : 'English'}
+          </a>
+        </div>
       </div>
     </footer>
   </div>
+  <script>
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!reducedMotion) {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (!entry.isIntersecting) continue;
+            entry.target.animate(
+              [
+                { opacity: 0, transform: 'translateY(22px)' },
+                { opacity: 1, transform: 'translateY(0)' },
+              ],
+              { duration: 650, easing: 'cubic-bezier(.2,.7,.2,1)' },
+            );
+            observer.unobserve(entry.target);
+          }
+        },
+        { threshold: 0.14 },
+      );
+      document.querySelectorAll('[data-reveal]').forEach((node) => observer.observe(node));
+      document
+        .querySelector('#hero-symbol')
+        ?.animate(
+          [
+            { transform: 'translateY(0)' },
+            { transform: 'translateY(-14px)' },
+            { transform: 'translateY(0)' },
+          ],
+          { duration: 6500, iterations: Infinity, easing: 'ease-in-out' },
+        );
+    }
+  </script>
 </Base>
