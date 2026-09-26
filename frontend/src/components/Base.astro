@@ -14,20 +14,20 @@ const { title, description = '', lang = 'pt', noindex = false } = Astro.props;
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#0b101a" />
+    <meta name="theme-color" content="#050505" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=Outfit:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
     {noindex && <meta name="robots" content="noindex,nofollow" />}
     {description && <meta name="description" content={description} />}
     <title>{title}</title>
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon.png" type="image/png" />
     <slot name="head" />
   </head>
-  <body class="bg-[#090d16] font-['DM_Sans',sans-serif] text-[#f3f6fc] antialiased selection:bg-[#8199ff] selection:text-[#080d19] [&_.input]:border-[#3c4c69] [&_.input]:bg-[#0d1422] [&_.textarea]:border-[#3c4c69] [&_.textarea]:bg-[#0d1422] [&_.select]:border-[#3c4c69] [&_.select]:bg-[#0d1422] [&_.file-input]:border-[#3c4c69] [&_.file-input]:bg-[#0d1422]">
+  <body class="bg-black font-['DM_Sans',sans-serif] text-[#f5f2ec] antialiased selection:bg-[#d6a85f] selection:text-black [&_.input]:border-[#45413a] [&_.input]:bg-[#0b0b0b] [&_.textarea]:border-[#45413a] [&_.textarea]:bg-[#0b0b0b] [&_.select]:border-[#45413a] [&_.select]:bg-[#0b0b0b] [&_.file-input]:border-[#45413a] [&_.file-input]:bg-[#0b0b0b]">
     <slot />
   </body>
 </html>

@@ -6,13 +6,21 @@ interface Props {
 const { href = '/', compact = false } = Astro.props;
 ---
 
-<a
-  href={href}
-  class="inline-flex items-center gap-1.5 text-[#f3f6fc] no-underline"
-  aria-label="Vira"
->
-  <img src="/vira-symbol.png" width="44" height="44" alt="" class="-m-1 h-11 w-11 object-contain" />
+<a href={href} class="inline-flex items-center gap-1.5 no-underline" aria-label="Vira">
+  <img
+    src="/vira-mark.png"
+    width="40"
+    height="40"
+    alt=""
+    class="h-9 w-9 object-contain sm:h-10 sm:w-10"
+  />
   {!compact && (
-    <span class="font-[Outfit] text-[1.65rem] font-semibold tracking-[-0.06em]">vira</span>
+    <img
+      src="/vira-wordmark.png"
+      width="122"
+      height="50"
+      alt=""
+      class="h-[38px] w-[93px] object-contain sm:h-[45px] sm:w-[110px]"
+    />
   )}
 </a>
