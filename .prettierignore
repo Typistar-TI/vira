@@ -1,2 +1,2 @@
 package-lock.json
-migrations/*.sql
+backend/migrations/*.sql

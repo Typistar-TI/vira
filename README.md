@@ -59,7 +59,8 @@ As integrações externas são chamadas pelas rotas de API; suas credenciais nã
 | `backend/api/`               | Implementação das rotas da API.                                                             |
 | `backend/`                   | Autenticação, cobrança, domínios, dados, contas, validação das páginas e entrada do Worker. |
 | `frontend/src/middleware.ts` | Roteamento por hostname.                                                                    |
-| `migrations/`                | Evolução do esquema do D1.                                                                  |
+| `frontend/wrangler.jsonc`    | Configuração do Worker e dos serviços Cloudflare.                                           |
+| `backend/migrations/`        | Evolução do esquema do D1.                                                                  |
 
 ## Desenvolvimento local
 
@@ -68,10 +69,10 @@ Requer Node.js 22.12 ou superior. Após instalar as dependências, aplique as mi
 ```sh
 npm install
 npm run db:local
-npx astro dev --background
+npm run dev -- --background
 ```
 
-Use `npx astro dev status`, `npx astro dev logs` e `npx astro dev stop` para acompanhar ou encerrar o servidor. Para verificar o projeto:
+Use `npm run astro -- dev status`, `npm run astro -- dev logs` e `npm run astro -- dev stop` para acompanhar ou encerrar o servidor. Para verificar o projeto:
 
 ```sh
 npm run check

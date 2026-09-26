@@ -1,7 +1,7 @@
 {
   "name": "vira",
   "workers_dev": true,
-  "main": "./backend/worker.ts",
+  "main": "../backend/worker.ts",
   "compatibility_date": "2026-09-26",
   "compatibility_flags": ["nodejs_compat"],
   "assets": { "directory": "./dist", "binding": "ASSETS" },
@@ -10,7 +10,7 @@
       "binding": "DB",
       "database_name": "vira",
       "database_id": "21eb5547-581e-4cd0-86a5-95d8ea86c582",
-      "migrations_dir": "migrations",
+      "migrations_dir": "../backend/migrations",
     },
   ],
   "r2_buckets": [{ "binding": "MEDIA", "bucket_name": "vira-media" }],

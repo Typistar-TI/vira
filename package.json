@@ -6,15 +6,15 @@
     "node": ">=22.12.0"
   },
   "scripts": {
-    "dev": "astro dev",
-    "check": "astro check",
-    "build": "astro build",
+    "dev": "astro dev --root frontend",
+    "check": "astro check --root frontend",
+    "build": "astro build --root frontend",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
-    "db:local": "wrangler d1 migrations apply vira --local",
-    "db:remote": "wrangler d1 migrations apply vira --remote",
-    "preview": "astro preview",
-    "astro": "astro"
+    "db:local": "wrangler d1 migrations apply vira --local --config frontend/wrangler.jsonc",
+    "db:remote": "wrangler d1 migrations apply vira --remote --config frontend/wrangler.jsonc",
+    "preview": "astro preview --root frontend",
+    "astro": "astro --root frontend"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.3.3",

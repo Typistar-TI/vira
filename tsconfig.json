@@ -7,6 +7,6 @@
       "@backend/*": ["backend/*"]
     }
   },
-  "include": [".astro/types.d.ts", "frontend/src/**/*", "backend/**/*"],
+  "include": ["frontend/.astro/types.d.ts", "frontend/src/**/*", "backend/**/*"],
   "exclude": ["dist", "worker-configuration.d.ts"]
 }
