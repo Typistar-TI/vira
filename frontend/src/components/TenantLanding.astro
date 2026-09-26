@@ -1,0 +1,48 @@
+---
+import Base from '@frontend/components/Base.astro';
+import SitePage from '@frontend/components/SitePage.astro';
+import { userHasAccess } from '@frontend/api/sites/has-access';
+import { parseSiteContent } from '@frontend/api/sites/parse-site';
+import { recordView } from '@frontend/api/analytics/record-view';
+const { tenant, url } = Astro.props;
+const active = userHasAccess(tenant.user);
+const content = tenant.site.published_json
+  ? parseSiteContent(JSON.parse(tenant.site.published_json))
+  : null;
+if (active && content) recordView(tenant.site.id);
+const canonical = `https://${url.hostname}/`;
+---
+
+{!active ? (
+  <Base title="Página temporariamente indisponível · Vira" noindex>
+    <main class="min-h-screen grid place-items-center p-8 text-center">
+      <div>
+        <h1 class="text-4xl">Página temporariamente indisponível</h1>
+        <p>O responsável por esta página pode reativá-la no Vira.</p>
+      </div>
+    </main>
+  </Base>
+) : !content ? (
+  <Base title="Página em preparação · Vira" noindex>
+    <main class="min-h-screen grid place-items-center p-8 text-center">
+      <div>
+        <h1 class="text-4xl">Página em preparação</h1>
+        <p>Volte em breve.</p>
+      </div>
+    </main>
+  </Base>
+) : (
+  <Base title={content.title} description={content.subtitle} lang={content.language}>
+    <link slot="head" rel="canonical" href={canonical} />
+    <meta slot="head" property="og:title" content={content.title} />
+    <meta slot="head" property="og:description" content={content.subtitle} />
+    {content.heroImage && (
+      <meta
+        slot="head"
+        property="og:image"
+        content={`https://${Astro.url.hostname}${content.heroImage}`}
+      />
+    )}
+    <SitePage content={content} />
+  </Base>
+)}

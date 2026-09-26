@@ -1,0 +1,11 @@
+---
+import Base from '@frontend/components/Base.astro';
+import SitePage from '@frontend/components/SitePage.astro';
+import { parseSiteContent } from '@frontend/api/sites/parse-site';
+const { site } = Astro.props;
+const content = parseSiteContent(JSON.parse(site.draft_json));
+---
+
+<Base title={`Prévia — ${content.title}`} lang={content.language} noindex>
+  <SitePage content={content} preview />
+</Base>

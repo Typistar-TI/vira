@@ -45,7 +45,7 @@ flowchart LR
 
 O middleware identifica o hostname da requisição e encaminha domínios dos clientes para as rotas públicas. O conteúdo editado fica como rascunho no D1; a publicação cria uma versão separada para os visitantes. A prévia e a página publicada usam o mesmo componente Astro, para manter o resultado visual consistente.
 
-O Worker entrega as requisições `/api/*` ao Hono e as demais ao Astro. As páginas Astro chamam a API pelo módulo `frontend/src/lib/api.ts`, que usa TanStack Query Core sem React. As regras da API ficam em `backend/api/`, sem rotas duplicadas em `frontend/`.
+O Worker entrega as requisições `/api/*` ao Hono e as demais ao Astro. As páginas e os componentes Astro acessam o backend apenas por módulos em `frontend/src/api/`, organizados por funcionalidade e chamada. No navegador, esses módulos usam TanStack Query Core para consultas, mutações e cache. Durante a renderização no servidor, os módulos chamam as funções necessárias no mesmo Worker. O backend Hono organiza rotas, regras e consultas por funcionalidade em `backend/features/`.
 
 O servidor valida as operações dos painéis e mantém a sessão em cookie `HttpOnly`, `Secure` e `SameSite=Lax`. No login com Google, verifica a assinatura e as declarações do token. No login por e-mail, gera um link aleatório de uso único, armazena apenas seu hash e exige confirmação por POST para evitar que prévias automáticas de e-mail consumam o link. O acesso administrativo exige que o e-mail esteja autorizado em `admin_accounts` no D1. As rotas administrativas verificam a permissão em cada requisição e registram mudanças em `admin_audit`.
 
@@ -53,17 +53,20 @@ As integrações externas são chamadas pelas rotas de API; suas credenciais nã
 
 ## Organização do projeto
 
-| Caminho                      | Responsabilidade                                                                            |
-| ---------------------------- | ------------------------------------------------------------------------------------------- |
-| `frontend/src/pages/`        | Páginas Astro e rotas públicas renderizadas no servidor.                                    |
-| `frontend/src/components/`   | Componentes de apresentação e renderização das páginas.                                     |
-| `frontend/src/lib/api.ts`    | Cliente de API com TanStack Query Core para consultas e mutações.                           |
-| `backend/routes.ts`          | Registro das rotas da API no Hono.                                                          |
-| `backend/api/`               | Implementação das operações da API.                                                         |
-| `backend/`                   | Autenticação, cobrança, domínios, dados, contas, validação das páginas e entrada do Worker. |
-| `frontend/src/middleware.ts` | Roteamento por hostname.                                                                    |
-| `frontend/wrangler.jsonc`    | Configuração do Worker e dos serviços Cloudflare.                                           |
-| `backend/migrations/`        | Evolução do esquema do D1.                                                                  |
+| Caminho                      | Responsabilidade                                                |
+| ---------------------------- | --------------------------------------------------------------- |
+| `frontend/src/pages/`        | Rotas Astro e verificação inicial de acesso.                    |
+| `frontend/src/components/`   | Toda a interface, inclusive os painéis e as páginas publicadas. |
+| `frontend/src/api/`          | Uma chamada por arquivo, agrupada por funcionalidade.           |
+| `frontend/src/styles/`       | Entrada do Tailwind e configuração do tema daisyUI.             |
+| `backend/app.ts`             | Middleware da API e montagem das rotas Hono.                    |
+| `backend/features/`          | Rotas, regras e consultas de cada funcionalidade.               |
+| `backend/platform/`          | Configuração e utilitários HTTP comuns.                         |
+| `backend/jobs/`              | Tarefas agendadas pelo Worker.                                  |
+| `backend/worker.ts`          | Entrada única do Worker para Hono, Astro e tarefas agendadas.   |
+| `backend/migrations/`        | Evolução do esquema do D1.                                      |
+| `frontend/src/middleware.ts` | Roteamento por hostname.                                        |
+| `frontend/wrangler.jsonc`    | Configuração do Worker e dos serviços Cloudflare.               |
 
 ## Desenvolvimento local
 

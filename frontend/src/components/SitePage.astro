@@ -1,11 +1,13 @@
 ---
-import type { SiteContent } from '@backend/site';
+import type { SiteContent } from '@frontend/api/sites/parse-site';
 interface Props {
   content: SiteContent;
   preview?: boolean;
 }
 const { content, preview = false } = Astro.props;
 const en = content.language === 'en';
+const editorial = content.layout === 'editorial';
+const showcase = content.layout === 'showcase';
 const go = (type: string, index?: number) =>
   preview
     ? type === 'primary'
@@ -15,56 +17,115 @@ const go = (type: string, index?: number) =>
 const hasHero = !!content.heroImage;
 ---
 
-<div class:list={['customer-page', `theme-${content.layout}`]}>
-  <header class="customer-nav">
-    <a href="#top" class="customer-brand">
+<div
+  class:list={[
+    'min-h-screen bg-[var(--bg)] text-[var(--fg)] font-[DM_Sans,sans-serif]',
+    content.layout === 'editorial'
+      ? '[--bg:#f6f5f0] [--surface:#fff] [--fg:#243942] [--accent:#1e7778] [--soft:#dfebe6] [--line:#d9e1dc]'
+      : content.layout === 'showcase'
+        ? '[--bg:#121b27] [--surface:#1d2938] [--fg:#f6f4f0] [--accent:#f3a77d] [--soft:#394353] [--line:#3d4955]'
+        : '[--bg:#f9f7fc] [--surface:#fff] [--fg:#30243c] [--accent:#684395] [--soft:#eadff7] [--line:#e5dbeb]',
+  ]}
+>
+  <header class="mx-auto flex max-w-[1180px] items-center justify-between gap-4 px-5 py-6 max-[420px]:p-[18px] [&_a]:text-[var(--fg)] [&_a]:no-underline [&_nav]:flex [&_nav]:items-center [&_nav]:gap-6">
+    <a
+      href="#top"
+      class="max-w-[220px] overflow-hidden text-ellipsis whitespace-nowrap font-[Outfit] text-[22px] font-extrabold"
+    >
       {content.title.split(' ').slice(0, 2).join(' ')}
     </a>
     <nav>
-      <a href="#sobre">{en ? 'About' : 'Sobre'}</a>
-      <a href="#catalogo">{en ? 'Explore' : 'Conheça'}</a>
+      <a class="hidden md:inline" href="#sobre">
+        {en ? 'About' : 'Sobre'}
+      </a>
+      <a class="hidden md:inline" href="#catalogo">
+        {en ? 'Explore' : 'Conheça'}
+      </a>
       {content.primaryUrl && (
-        <a class="customer-mini-cta" href={go('primary')} target="_blank" rel="noopener noreferrer">
+        <a
+          class="btn btn-outline rounded-full border-[var(--line)] px-4 text-[var(--fg)]"
+          href={go('primary')}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           {content.primaryLabel || (en ? 'Contact' : 'Contato')}
         </a>
       )}
     </nav>
   </header>
   <main id="top">
-    <section class="customer-hero">
-      <div class="hero-copy">
-        <span class="customer-kicker">{en ? 'Welcome' : 'Bem-vindo'}</span>
-        <h1>{content.title}</h1>
+    <section
+      class:list={[
+        'mx-auto grid min-h-[560px] max-w-[1180px] items-center gap-[6%] px-6 pt-5 pb-[70px] md:grid-cols-[1.05fr_0.95fr] md:pt-11 md:pb-24',
+        editorial && 'md:grid-cols-2',
+        showcase && 'md:min-h-[650px]',
+      ]}
+    >
+      <div class="max-w-[650px] [&_p]:text-lg [&_p]:leading-relaxed [&_p]:opacity-80">
+        <span class="text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--accent)]">
+          {en ? 'Welcome' : 'Bem-vindo'}
+        </span>
+        <h1
+          class:list={[
+            'my-5 font-[Outfit] text-[clamp(3.3rem,6.5vw,6.5rem)] leading-none tracking-tight break-words',
+            editorial && 'font-medium',
+          ]}
+        >
+          {content.title}
+        </h1>
         <p>{content.subtitle}</p>
         {content.primaryUrl && (
-          <a class="customer-cta" href={go('primary')} target="_blank" rel="noopener noreferrer">
+          <a
+            class="btn mt-5 gap-6 rounded-full border-0 bg-[var(--accent)] px-6 font-extrabold text-[var(--bg)]"
+            href={go('primary')}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             {content.primaryLabel || (en ? 'Contact us' : 'Fale conosco')} <span>↗</span>
           </a>
         )}
       </div>
       {hasHero ? (
-        <img class="customer-hero-image" src={content.heroImage} alt="" />
+        <img
+          class:list={[
+            'h-[320px] w-full rounded-[26px] object-cover shadow-[24px_24px_0_var(--soft)] md:h-[440px]',
+            editorial && 'rounded-[3px] shadow-[18px_18px_0_var(--soft)]',
+            showcase && 'rounded-t-[100px] rounded-b-[24px]',
+          ]}
+          src={content.heroImage}
+          alt=""
+        />
       ) : (
-        <div class="customer-hero-placeholder" aria-hidden="true">
+        <div
+          class="grid h-[320px] w-full place-items-center rounded-[26px] bg-gradient-to-br from-[var(--accent)] to-[var(--soft)] text-[170px] text-[var(--bg)] shadow-[24px_24px_0_var(--soft)] md:h-[440px]"
+          aria-hidden="true"
+        >
           <span>✳</span>
         </div>
       )}
     </section>
     {(content.about || content.benefits.length > 0) && (
-      <section id="sobre" class="customer-section customer-about">
+      <section
+        id="sobre"
+        class="mx-auto max-w-[1180px] px-6 py-16 md:py-[90px] grid gap-[10%] md:grid-cols-2 [&_p]:text-lg [&_p]:leading-relaxed [&_p]:opacity-80"
+      >
         <div>
-          <span class="customer-kicker">{en ? 'What makes us different' : 'O que nos move'}</span>
-          <h2>{content.aboutTitle || (en ? 'About us' : 'Sobre nós')}</h2>
+          <span class="text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--accent)]">
+            {en ? 'What makes us different' : 'O que nos move'}
+          </span>
+          <h2 class="my-4 font-[Outfit] text-[clamp(2.1rem,4vw,4rem)] leading-tight tracking-tight">
+            {content.aboutTitle || (en ? 'About us' : 'Sobre nós')}
+          </h2>
           <p>{content.about}</p>
         </div>
-        <div class="benefit-list">
+        <div class="space-y-0">
           {content.benefits
             .filter((x) => x.title)
             .map((benefit, i) => (
-              <article class="benefit">
+              <article class="flex gap-5 border-t border-[var(--line)] py-6 [&_b]:text-sm [&_b]:text-[var(--accent)] [&_p]:leading-relaxed [&_p]:opacity-70">
                 <b>{String(i + 1).padStart(2, '0')}</b>
                 <div>
-                  <h3>{benefit.title}</h3>
+                  <h3 class="mb-2 font-[Outfit] text-2xl tracking-tight">{benefit.title}</h3>
                   <p>{benefit.description}</p>
                 </div>
               </article>
@@ -73,7 +134,10 @@ const hasHero = !!content.heroImage;
       </section>
     )}
     {content.stats.length > 0 && (
-      <section class="customer-stats" aria-label={en ? 'Key numbers' : 'Números em destaque'}>
+      <section
+        class="flex flex-wrap justify-center gap-[8vw] bg-[var(--accent)] px-6 py-14 text-[var(--bg)] [&_div]:flex [&_div]:flex-col [&_strong]:font-[Outfit] [&_strong]:text-[clamp(2.6rem,4vw,4rem)] [&_strong]:font-bold [&_span]:text-sm"
+        aria-label={en ? 'Key numbers' : 'Números em destaque'}
+      >
         {content.stats
           .filter((x) => x.value)
           .map((stat) => (
@@ -85,17 +149,21 @@ const hasHero = !!content.heroImage;
       </section>
     )}
     {content.products.length > 0 && (
-      <section id="catalogo" class="customer-section">
-        <span class="customer-kicker">{en ? 'Explore' : 'Conheça'}</span>
-        <h2>{en ? 'What we offer' : 'O que oferecemos'}</h2>
-        <div class="customer-products">
+      <section id="catalogo" class="mx-auto max-w-[1180px] px-6 py-16 md:py-[90px]">
+        <span class="text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--accent)]">
+          {en ? 'Explore' : 'Conheça'}
+        </span>
+        <h2 class="my-4 font-[Outfit] text-[clamp(2.1rem,4vw,4rem)] leading-tight tracking-tight">
+          {en ? 'What we offer' : 'O que oferecemos'}
+        </h2>
+        <div class="mt-9 grid gap-[18px] md:grid-cols-3">
           {content.products
             .filter((x) => x.title)
             .map((product, i) => (
-              <article class="customer-product">
+              <article class="card overflow-hidden rounded-[20px] border border-[var(--line)] bg-[var(--surface)] [&_img]:h-[190px] [&_img]:w-full [&_img]:object-cover [&_p]:leading-relaxed [&_p]:opacity-70 [&_a]:font-extrabold [&_a]:text-[var(--accent)]">
                 {product.image && <img src={product.image} alt="" loading="lazy" />}
-                <div class="product-body">
-                  <h3>{product.title}</h3>
+                <div class="p-6">
+                  <h3 class="mb-2 font-[Outfit] text-2xl tracking-tight">{product.title}</h3>
                   <p>{product.description}</p>
                   {product.url && (
                     <a href={go('product', i)} target="_blank" rel="noopener noreferrer">
@@ -109,14 +177,18 @@ const hasHero = !!content.heroImage;
       </section>
     )}
     {content.testimonials.length > 0 && (
-      <section class="customer-section customer-proof">
-        <span class="customer-kicker">{en ? 'People say' : 'Quem conhece, conta'}</span>
-        <h2>{en ? 'Real stories' : 'Histórias reais'}</h2>
-        <div class="testimonial-grid">
+      <section class="mx-auto max-w-[1180px] px-6 py-16 md:py-[90px] border-t border-[var(--line)]">
+        <span class="text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--accent)]">
+          {en ? 'People say' : 'Quem conhece, conta'}
+        </span>
+        <h2 class="my-4 font-[Outfit] text-[clamp(2.1rem,4vw,4rem)] leading-tight tracking-tight">
+          {en ? 'Real stories' : 'Histórias reais'}
+        </h2>
+        <div class="mt-9 grid gap-[18px] md:grid-cols-3">
           {content.testimonials
             .filter((x) => x.quote)
             .map((testimonial) => (
-              <blockquote>
+              <blockquote class="card m-0 rounded-[20px] border border-[var(--line)] bg-[var(--surface)] p-6 [&_p]:text-lg [&_p]:leading-relaxed [&_cite]:font-extrabold [&_cite]:not-italic [&_cite]:text-[var(--accent)]">
                 <p>“{testimonial.quote}”</p>
                 <cite>{testimonial.name}</cite>
               </blockquote>
@@ -125,316 +197,24 @@ const hasHero = !!content.heroImage;
       </section>
     )}
     {content.primaryUrl && (
-      <section class="customer-final">
-        <h2>{en ? 'Ready to talk?' : 'Vamos conversar?'}</h2>
+      <section class="bg-[var(--soft)] px-6 pt-[90px] pb-[110px] text-center [&_p]:mx-auto [&_p]:max-w-[550px] [&_p]:text-lg [&_p]:leading-relaxed [&_p]:opacity-80">
+        <h2 class="my-4 font-[Outfit] text-[clamp(2.1rem,4vw,4rem)] leading-tight tracking-tight">
+          {en ? 'Ready to talk?' : 'Vamos conversar?'}
+        </h2>
         <p>{content.subtitle}</p>
-        <a class="customer-cta" href={go('primary')} target="_blank" rel="noopener noreferrer">
+        <a
+          class="btn mt-5 gap-6 rounded-full border-0 bg-[var(--accent)] px-6 font-extrabold text-[var(--bg)]"
+          href={go('primary')}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           {content.primaryLabel || (en ? 'Contact us' : 'Fale conosco')} ↗
         </a>
       </section>
     )}
   </main>
-  <footer class="customer-footer">
+  <footer class="mx-auto flex max-w-[1180px] justify-between border-t border-[var(--line)] px-6 py-8">
     <span>{content.footerText || content.title}</span>
     <span>© {new Date().getFullYear()}</span>
   </footer>
 </div>
-<style>
-  .customer-page {
-    --bg: #f9f7fc;
-    --surface: white;
-    --fg: #30243c;
-    --accent: #684395;
-    --soft: #eadff7;
-    --line: #e5dbeb;
-    background: var(--bg);
-    color: var(--fg);
-    font-family: 'DM Sans', sans-serif;
-    min-height: 100vh;
-  }
-  .theme-editorial {
-    --bg: #f6f5f0;
-    --surface: #fff;
-    --fg: #243942;
-    --accent: #1e7778;
-    --soft: #dfebe6;
-    --line: #d9e1dc;
-  }
-  .theme-showcase {
-    --bg: #121b27;
-    --surface: #1d2938;
-    --fg: #f6f4f0;
-    --accent: #f3a77d;
-    --soft: #394353;
-    --line: #3d4955;
-  }
-  .customer-page * {
-    box-sizing: border-box;
-  }
-  .customer-nav {
-    max-width: 1180px;
-    margin: auto;
-    padding: 24px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-  }
-  .customer-nav a {
-    color: var(--fg);
-    text-decoration: none;
-  }
-  .customer-brand {
-    font:
-      800 22px 'Outfit',
-      sans-serif;
-    max-width: 220px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .customer-nav nav {
-    display: flex;
-    gap: 24px;
-    align-items: center;
-  }
-  .customer-mini-cta {
-    border: 1px solid var(--line);
-    border-radius: 100px;
-    padding: 9px 16px;
-  }
-  .customer-hero {
-    max-width: 1180px;
-    margin: auto;
-    display: grid;
-    grid-template-columns: 1.05fr 0.95fr;
-    gap: 6%;
-    align-items: center;
-    min-height: 560px;
-    padding: 45px 24px 100px;
-  }
-  .hero-copy {
-    max-width: 650px;
-  }
-  .customer-kicker {
-    text-transform: uppercase;
-    font-size: 12px;
-    font-weight: 800;
-    letter-spacing: 0.14em;
-    color: var(--accent);
-  }
-  h1,
-  h2,
-  h3 {
-    font-family: 'Outfit', sans-serif;
-    letter-spacing: -0.04em;
-  }
-  h1 {
-    font-size: clamp(3.4rem, 6.5vw, 6.5rem);
-    line-height: 1;
-    margin: 20px 0 26px;
-    overflow-wrap: anywhere;
-  }
-  h2 {
-    font-size: clamp(2.1rem, 4vw, 4rem);
-    line-height: 1.06;
-    margin: 16px 0 24px;
-  }
-  h3 {
-    font-size: 1.45rem;
-    margin: 0 0 8px;
-  }
-  .hero-copy p,
-  .customer-about p,
-  .customer-final p {
-    font-size: 1.15rem;
-    line-height: 1.6;
-    opacity: 0.78;
-  }
-  .customer-cta {
-    display: inline-flex;
-    gap: 25px;
-    align-items: center;
-    border-radius: 100px;
-    padding: 15px 24px;
-    margin-top: 20px;
-    color: var(--bg);
-    background: var(--accent);
-    font-weight: 800;
-    text-decoration: none;
-  }
-  .customer-hero-image,
-  .customer-hero-placeholder {
-    width: 100%;
-    height: 440px;
-    object-fit: cover;
-    border-radius: 26px;
-    box-shadow: 24px 24px 0 var(--soft);
-  }
-  .customer-hero-placeholder {
-    display: grid;
-    place-items: center;
-    background: linear-gradient(135deg, var(--accent), var(--soft));
-    color: var(--bg);
-    font-size: 170px;
-  }
-  .customer-section {
-    max-width: 1180px;
-    margin: auto;
-    padding: 90px 24px;
-  }
-  .customer-about {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10%;
-  }
-  .benefit {
-    display: flex;
-    gap: 22px;
-    padding: 23px 0;
-    border-top: 1px solid var(--line);
-  }
-  .benefit b {
-    font-size: 0.82rem;
-    color: var(--accent);
-  }
-  .benefit p {
-    margin: 0;
-    opacity: 0.72;
-    line-height: 1.5;
-  }
-  .customer-stats {
-    display: flex;
-    justify-content: center;
-    gap: 8vw;
-    flex-wrap: wrap;
-    padding: 55px 24px;
-    background: var(--accent);
-    color: var(--bg);
-  }
-  .customer-stats div {
-    display: flex;
-    flex-direction: column;
-  }
-  .customer-stats strong {
-    font:
-      700 clamp(2.6rem, 4vw, 4rem) 'Outfit',
-      sans-serif;
-  }
-  .customer-stats span {
-    font-size: 0.9rem;
-  }
-  .customer-products,
-  .testimonial-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 18px;
-    margin-top: 36px;
-  }
-  .customer-product,
-  blockquote {
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: 20px;
-    overflow: hidden;
-    margin: 0;
-  }
-  .customer-product img {
-    width: 100%;
-    height: 190px;
-    object-fit: cover;
-  }
-  .product-body {
-    padding: 25px;
-  }
-  .customer-product p {
-    opacity: 0.7;
-    line-height: 1.5;
-  }
-  .customer-product a {
-    color: var(--accent);
-    font-weight: 800;
-  }
-  .customer-proof {
-    border-top: 1px solid var(--line);
-  }
-  blockquote {
-    padding: 26px;
-  }
-  blockquote p {
-    font-size: 1.12rem;
-    line-height: 1.6;
-  }
-  blockquote cite {
-    font-style: normal;
-    font-weight: 800;
-    color: var(--accent);
-  }
-  .customer-final {
-    text-align: center;
-    padding: 90px 24px 110px;
-    background: var(--soft);
-  }
-  .customer-final p {
-    max-width: 550px;
-    margin: auto;
-  }
-  .customer-footer {
-    max-width: 1180px;
-    margin: auto;
-    padding: 30px 24px;
-    display: flex;
-    justify-content: space-between;
-    border-top: 1px solid var(--line);
-  }
-  .theme-editorial .customer-hero {
-    grid-template-columns: 1fr 1fr;
-  }
-  .theme-editorial h1 {
-    font-weight: 500;
-  }
-  .theme-editorial .customer-hero-image {
-    border-radius: 3px;
-    box-shadow: 18px 18px 0 var(--soft);
-  }
-  .theme-showcase .customer-hero {
-    min-height: 650px;
-  }
-  .theme-showcase .customer-hero-image {
-    border-radius: 100px 100px 24px 24px;
-  }
-  @media (max-width: 760px) {
-    .customer-nav nav a:not(.customer-mini-cta) {
-      display: none;
-    }
-    .customer-hero,
-    .customer-about {
-      grid-template-columns: 1fr;
-    }
-    .customer-hero {
-      padding-bottom: 70px;
-    }
-    .customer-hero-image,
-    .customer-hero-placeholder {
-      height: 320px;
-    }
-    .customer-products,
-    .testimonial-grid {
-      grid-template-columns: 1fr;
-    }
-    .customer-section {
-      padding: 60px 24px;
-    }
-  }
-  @media (max-width: 420px) {
-    .customer-hero {
-      padding-top: 20px;
-    }
-    h1 {
-      font-size: 3.3rem;
-    }
-    .customer-nav {
-      padding: 18px;
-    }
-  }
-</style>

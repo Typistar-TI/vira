@@ -1,0 +1,88 @@
+---
+import Base from '@frontend/components/Base.astro';
+
+const { url } = Astro.props;
+const token = url.searchParams.get('token') || '';
+const valid = /^[a-f0-9]{64}$/.test(token);
+const en = url.searchParams.get('lang') === 'en';
+---
+
+<Base
+  title={en ? 'Confirm sign-in · Vira' : 'Confirmar acesso · Vira'}
+  lang={en ? 'en' : 'pt'}
+  noindex
+>
+  <div class="min-h-screen bg-[#f3eefa] text-[#292534] font-['DM_Sans',sans-serif] min-h-screen">
+    <header class="mx-auto flex max-w-[1180px] flex-wrap items-center justify-between gap-5 px-6 py-5">
+      <a
+        class="inline-flex items-center gap-1.5 font-[Outfit] text-[31px] leading-none font-extrabold tracking-[-0.08em] text-[#513b70] no-underline [&_span]:text-[#f27668]"
+        href="/"
+      >
+        vira<span>.</span>
+      </a>
+    </header>
+    <main class="card rounded-[22px] border border-[#e4dcec] bg-white p-6 shadow-[0_10px_30px_#513b700c] [&_h2]:mb-4 [&_h2]:text-[1.45rem] [&_h2]:text-[#513b70] [&_h3]:mt-7 [&_h3]:mb-3 [&_h3]:text-lg [&_label]:mt-4 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold [&_.input]:w-full [&_.textarea]:w-full [&_.select]:w-full [&_small]:text-[#6f647d] mx-auto my-[50px] max-w-[450px]">
+      <h1 class="text-4xl mb-3">{en ? 'Confirm your sign-in' : 'Confirme seu acesso'}</h1>
+      {valid ? (
+        <>
+          <p class="text-[#6f647d] mb-6">
+            {en
+              ? 'Continue to your Vira account. This link works once and expires 15 minutes after it was sent.'
+              : 'Continue para sua conta no Vira. Este link funciona uma vez e expira 15 minutos após o envio.'}
+          </p>
+          <input id="login-token" type="hidden" value={token} />
+          <button
+            id="confirm-login"
+            class="btn btn-primary rounded-xl border-0 font-bold shadow-none"
+            type="button"
+          >
+            {en ? 'Sign in' : 'Entrar'}
+          </button>
+          <p
+            id="confirm-status"
+            class="alert alert-info my-3 [hidden]:hidden mt-3"
+            role="status"
+            hidden
+          ></p>
+        </>
+      ) : (
+        <>
+          <p class="alert alert-error my-3 [hidden]:hidden">
+            {en ? 'This link is invalid.' : 'Este link é inválido.'}
+          </p>
+          <a class="btn btn-primary rounded-xl border-0 font-bold shadow-none mt-5" href="/login">
+            {en ? 'Request another link' : 'Pedir outro link'}
+          </a>
+        </>
+      )}
+    </main>
+  </div>
+  <script>
+    import { verifyEmail } from '@frontend/api/auth/verify-email';
+    document
+      .querySelector<HTMLButtonElement>('#confirm-login')
+      ?.addEventListener('click', async (event) => {
+        const button = event.currentTarget as HTMLButtonElement;
+        const status = document.querySelector<HTMLElement>('#confirm-status')!;
+        button.disabled = true;
+        status.hidden = false;
+        status.classList.remove('alert-error');
+        status.classList.add('alert-info');
+        status.textContent =
+          document.documentElement.lang === 'en' ? 'Signing in...' : 'Entrando...';
+        try {
+          const token = document.querySelector<HTMLInputElement>('#login-token')!.value;
+          const data = await verifyEmail(token);
+          window.location.assign(data.redirect);
+        } catch {
+          status.classList.remove('alert-info');
+          status.classList.add('alert-error');
+          status.textContent =
+            document.documentElement.lang === 'en'
+              ? 'This link is invalid or expired. Request another link.'
+              : 'Este link é inválido ou expirou. Peça outro link.';
+          button.disabled = false;
+        }
+      });
+  </script>
+</Base>
