@@ -30,12 +30,31 @@ const t = en
         'A page that looks like your business. Choose a layout, edit every detail, and publish in minutes.',
       cta: 'Try 7 days free',
       demo: 'See how it works',
-      section: 'Everything in one place',
-      sectionText: 'From the first draft to your own domain, Vira keeps the work simple.',
-      features: [
-        ['Choose a layout', 'Three responsive starting points with room for your content.'],
-        ['Make it yours', 'Edit images, benefits, numbers, testimonials and a product catalog.'],
-        ['Publish and learn', 'Use your domain and see page views and button clicks.'],
+      section: 'Three steps to your page.',
+      sectionText:
+        'See the actual screens you will use. No code or technical setup is needed to begin.',
+      steps: [
+        {
+          title: 'Open your space',
+          text: 'Sign in with your email or Google. Your page, its address, and a preview are ready in the dashboard.',
+          image: '/step-start-en.webp',
+          mobile: '/step-start-en-mobile.webp',
+          alt: 'Actual Vira dashboard showing the page address and preview',
+        },
+        {
+          title: 'Add your information',
+          text: 'Pick a layout, write a headline, and add your images. You can see the page take shape beside the form.',
+          image: '/step-edit-en.webp',
+          mobile: '/step-edit-en-mobile.webp',
+          alt: 'Actual Vira editor with layout, text fields, and a live preview',
+        },
+        {
+          title: 'Check and publish',
+          text: 'Review the page on desktop or mobile, then press Publish. Share your Vira address right away; connect your own domain when you choose a plan.',
+          image: '/step-preview-en.webp',
+          mobile: '/step-preview-en-mobile.webp',
+          alt: 'Actual preview of a page made in Vira',
+        },
       ],
       plans: 'Choose your plan',
       plansText: 'Start without a card. Pick a plan when you are ready.',
@@ -64,12 +83,31 @@ const t = en
         'Uma página com a cara do seu negócio. Escolha um layout, edite cada detalhe e publique em minutos.',
       cta: 'Testar 7 dias grátis',
       demo: 'Ver como funciona',
-      section: 'Tudo em um só lugar',
-      sectionText: 'Do primeiro rascunho ao seu domínio, o Vira deixa o caminho simples.',
-      features: [
-        ['Escolha um layout', 'Três pontos de partida responsivos com espaço para seu conteúdo.'],
-        ['Deixe com a sua cara', 'Edite imagens, benefícios, números, depoimentos e um catálogo.'],
-        ['Publique e acompanhe', 'Use seu domínio e veja visualizações e cliques nos botões.'],
+      section: 'Sua página em três passos.',
+      sectionText:
+        'Veja as telas que você vai usar de verdade. Você pode começar sem mexer em código.',
+      steps: [
+        {
+          title: 'Entre no seu espaço',
+          text: 'Acesse por e-mail ou Google. Seu painel já mostra a página, o endereço e a prévia para começar.',
+          image: '/step-start-pt.webp',
+          mobile: '/step-start-pt-mobile.webp',
+          alt: 'Painel real do Vira com endereço da página e prévia',
+        },
+        {
+          title: 'Coloque suas informações',
+          text: 'Escolha um visual, escreva o título e adicione suas imagens. Você vê o resultado ao lado enquanto edita.',
+          image: '/step-edit-pt.webp',
+          mobile: '/step-edit-pt-mobile.webp',
+          alt: 'Editor real do Vira com modelo, campos de texto e prévia',
+        },
+        {
+          title: 'Confira e publique',
+          text: 'Veja como fica no computador ou no celular e clique em Publicar. Compartilhe seu endereço Vira; seu domínio próprio pode ser conectado após escolher um plano.',
+          image: '/step-preview-pt.webp',
+          mobile: '/step-preview-pt-mobile.webp',
+          alt: 'Prévia real de uma página criada no Vira',
+        },
       ],
       plans: 'Escolha seu plano',
       plansText: 'Comece sem cartão. Escolha um plano quando estiver pronto.',
@@ -99,24 +137,24 @@ const t = en
   <link slot="head" rel="alternate" hreflang="pt-BR" href={'https://' + domain + '/'} />
   <link slot="head" rel="alternate" hreflang="en-US" href={'https://' + domain + '/en/'} />
   <link slot="head" rel="alternate" hreflang="x-default" href={'https://' + domain + '/'} />
-  <div class="min-h-screen overflow-hidden bg-[#faf9f6] text-[#201d18]">
+  <div class="min-h-screen overflow-hidden bg-black text-[#f5f2ec]">
     <header class="relative z-20 mx-auto flex max-w-[1380px] items-center justify-between gap-4 px-5 pt-5 sm:px-8 sm:pt-7">
       <Brand href={en ? '/en' : '/'} />
       <nav
-        class="hidden items-center gap-7 rounded-full border border-[#e1dbd1] bg-white/90 px-7 py-3 text-sm text-[#625c53] backdrop-blur-md md:flex"
+        class="hidden items-center gap-7 rounded-full border border-[#32302b] bg-[#0d0d0d]/90 px-7 py-3 text-sm text-[#b8b5ae] backdrop-blur-md md:flex"
         aria-label={en ? 'Main navigation' : 'Navegação principal'}
       >
-        <a class="transition-colors hover:text-[#201d18]" href="#como-funciona">
+        <a class="transition-colors hover:text-white" href="#como-funciona">
           {en ? 'How it works' : 'Como funciona'}
         </a>
-        <a class="transition-colors hover:text-[#201d18]" href="#planos">
+        <a class="transition-colors hover:text-white" href="#planos">
           {en ? 'Plans' : 'Planos'}
         </a>
       </nav>
       <div class="flex items-center gap-2 sm:gap-4">
         <a
           href="/login"
-          class="btn btn-sm rounded-full border border-[#201d18] bg-[#201d18] px-5 font-semibold text-white shadow-none transition-colors hover:border-[#b37a2c] hover:bg-[#39332b] sm:btn-md"
+          class="btn btn-sm rounded-full border border-[#3b3934] bg-[#161616] px-5 font-semibold text-[#f5f2ec] shadow-none transition-colors hover:border-[#d6a85f] hover:bg-[#24211c] sm:btn-md"
         >
           {t.nav}
           <span aria-hidden="true">↗</span>
@@ -129,7 +167,7 @@ const t = en
         aria-labelledby="hero-title"
       >
         <div class="relative z-10 max-w-[690px] text-left" data-reveal>
-          <span class="inline-flex items-center gap-2 rounded-full border border-[#e3cba7] bg-[#f5e9d6] px-4 py-2 font-mono text-[10px] uppercase tracking-[0.19em] text-[#8a5b1e]">
+          <span class="inline-flex items-center gap-2 rounded-full border border-[#4a3a24] bg-[#1c1711] px-4 py-2 font-mono text-[10px] uppercase tracking-[0.19em] text-[#dfbc7b]">
             <span class="h-1.5 w-1.5 rounded-full bg-[#d6a85f]"></span>
             {t.eyebrow}
           </span>
@@ -139,34 +177,34 @@ const t = en
           >
             {t.titleA}
             <br />
-            <span class="text-[#a76e23]">{t.titleB}</span>
+            <span class="text-[#d6a85f]">{t.titleB}</span>
           </h1>
-          <p class="mt-8 max-w-[48ch] text-[clamp(1rem,1.6vw,1.2rem)] leading-relaxed text-[#675f55]">
+          <p class="mt-8 max-w-[48ch] text-[clamp(1rem,1.6vw,1.2rem)] leading-relaxed text-[#a9a6a0]">
             {t.intro}
           </p>
           <div class="mt-9 flex flex-wrap items-center gap-4">
             <a
               href="/login"
-              class="btn h-12 rounded-full border-0 bg-[#201d18] px-7 font-semibold text-white shadow-none transition-transform duration-300 hover:-translate-y-0.5 hover:bg-[#39332b]"
+              class="btn h-12 rounded-full border-0 bg-[#f5f2ec] px-7 font-semibold text-black shadow-none transition-transform duration-300 hover:-translate-y-0.5 hover:bg-[#e8d7b9]"
             >
               {t.cta}
               <span aria-hidden="true">↗</span>
             </a>
             <a
               href="#como-funciona"
-              class="px-5 py-3 text-sm font-semibold text-[#4f473d] underline decoration-[#6d6250] underline-offset-8 transition-colors hover:text-[#201d18]"
+              class="px-5 py-3 text-sm font-semibold text-[#d5d1c9] underline decoration-[#6d6250] underline-offset-8 transition-colors hover:text-[#f5f2ec]"
             >
               {t.demo}
             </a>
           </div>
-          <p class="mt-6 text-xs text-[#786f64]">
+          <p class="mt-6 text-xs text-[#77736e]">
             {en
               ? 'No card required · Email or Google sign-in'
               : 'Sem cartão · Entre por e-mail ou Google'}
           </p>
           <a
             href="#como-funciona"
-            class="mt-12 inline-flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.2em] text-[#756c61]"
+            class="mt-12 inline-flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.2em] text-[#8c877f]"
             aria-label={en ? 'Scroll to discover' : 'Role para descobrir'}
           >
             <span class="h-px w-8 bg-[#d6a85f]"></span>
@@ -174,7 +212,7 @@ const t = en
           </a>
         </div>
         <div
-          class="overflow-hidden rounded-[2rem] bg-[#0a0908] shadow-[0_34px_90px_-48px_rgba(40,29,13,0.6)]"
+          class="overflow-hidden rounded-[2rem] bg-[#0a0908] shadow-[0_34px_90px_-48px_rgba(0,0,0,0.7)]"
           data-reveal
         >
           <img
@@ -188,57 +226,67 @@ const t = en
           />
         </div>
       </section>
-      <section id="como-funciona" class="border-y border-[#e3ddd4] bg-[#f2efe9] py-24 md:py-32">
-        <div class="mx-auto max-w-[1280px] px-5 sm:px-8">
-          <div class="grid items-center gap-8 lg:grid-cols-[0.82fr_1.18fr]">
-            <div class="max-w-[560px]" data-reveal>
-              <p class="font-mono text-[11px] uppercase tracking-[0.22em] text-[#a76e23]">
-                {en ? 'From idea to published' : 'Da ideia à publicação'}
-              </p>
-              <h2 class="mt-6 font-['Outfit',sans-serif] text-[clamp(3rem,5.3vw,5.6rem)] font-medium leading-[1.02] tracking-[-0.055em]">
-                {t.section}
-              </h2>
-              <p class="mt-6 max-w-[46ch] text-lg leading-relaxed text-[#675f55]">
-                {t.sectionText}
-              </p>
-              <a
-                href="/login"
-                class="mt-10 inline-flex items-center gap-3 border-b border-[#aa7835] pb-2 text-sm font-semibold text-[#8d5a1d] transition-all hover:gap-5"
-              >
-                {en ? 'Create your page' : 'Criar minha página'} <span aria-hidden="true">↗</span>
-              </a>
-            </div>
-            <img
-              src="/vira-process.webp"
-              width="1586"
-              height="992"
-              loading="lazy"
-              alt=""
-              data-reveal
-              class="w-full rounded-[2rem] object-contain shadow-[0_24px_60px_-42px_rgba(40,29,13,0.45)]"
-            />
+      <section id="como-funciona" class="border-y border-[#25231f] bg-[#080808] py-24 md:py-32">
+        <div class="mx-auto max-w-[1380px] px-5 sm:px-8">
+          <div class="max-w-[760px]" data-reveal>
+            <p class="font-mono text-[11px] uppercase tracking-[0.22em] text-[#d6a85f]">
+              {en ? 'See it for yourself' : 'Veja como funciona'}
+            </p>
+            <h2 class="mt-6 font-['Outfit',sans-serif] text-[clamp(3rem,5.3vw,5.6rem)] font-medium leading-[1.02] tracking-[-0.055em]">
+              {t.section}
+            </h2>
+            <p class="mt-6 max-w-[52ch] text-lg leading-relaxed text-[#a9a6a0]">{t.sectionText}</p>
           </div>
-          <div class="mt-16 grid border-t border-[#ddd5ca] md:grid-cols-3">
-            {t.features.map((feature, i) => (
+          <div class="mt-14 space-y-6 md:mt-20">
+            {t.steps.map((step, i) => (
               <article
                 data-reveal
-                class="border-b border-[#ddd5ca] py-8 md:border-r md:px-8 md:py-10 md:first:pl-0 md:last:border-r-0"
+                class="group grid items-center gap-8 overflow-hidden rounded-[2rem] border border-[#34312b] bg-[#111110] p-6 transition-[border-color,transform] duration-500 ease-out hover:-translate-y-1 hover:border-[#745b38] sm:p-8 lg:grid-cols-[0.38fr_0.62fr] lg:gap-10 lg:p-10 motion-reduce:transition-none"
               >
-                <span class="font-mono text-xs text-[#8c5d20]">0{i + 1}</span>
-                <h3 class="mt-8 font-['Outfit',sans-serif] text-[clamp(1.5rem,2.4vw,2rem)] font-medium tracking-[-0.04em]">
-                  {feature[0]}
-                </h3>
-                <p class="mt-4 max-w-[34ch] leading-relaxed text-[#6b6257]">{feature[1]}</p>
+                <div class="max-w-[420px]">
+                  <span class="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#6c5434] bg-[#2a2117] font-mono text-xs font-semibold text-[#e5bd82]">
+                    0{i + 1}
+                  </span>
+                  <h3 class="mt-7 font-['Outfit',sans-serif] text-[clamp(2rem,3.5vw,3.2rem)] font-medium leading-[1.08] tracking-[-0.05em]">
+                    {step.title}
+                  </h3>
+                  <p class="mt-5 max-w-[36ch] text-base leading-relaxed text-[#a9a6a0] sm:text-lg">
+                    {step.text}
+                  </p>
+                  <div class="mt-9 flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.15em] text-[#9a8b77]">
+                    <span class="h-px w-8 bg-[#a17c49]"></span>
+                    {en ? 'Real Vira screen' : 'Tela real do Vira'}
+                  </div>
+                </div>
+                <div class="overflow-hidden rounded-2xl border border-[#393630] bg-black shadow-[0_18px_60px_-30px_rgba(0,0,0,0.8)]">
+                  <picture>
+                    <source media="(max-width: 639px)" srcset={step.mobile} />
+                    <img
+                      src={step.image}
+                      width="1280"
+                      height="760"
+                      loading="lazy"
+                      alt={step.alt}
+                      class="aspect-[9/16] w-full object-cover object-top transition-transform duration-700 ease-out group-hover:scale-[1.025] sm:aspect-[16/10] motion-reduce:transform-none motion-reduce:transition-none"
+                    />
+                  </picture>
+                </div>
               </article>
             ))}
           </div>
+          <a
+            href="/login"
+            class="mt-12 inline-flex items-center gap-3 border-b border-[#8e7043] pb-2 text-sm font-semibold text-[#e2bf83] transition-all hover:gap-5"
+          >
+            {en ? 'Create your page' : 'Criar minha página'} <span aria-hidden="true">↗</span>
+          </a>
         </div>
       </section>
       <section
-        class="border-b border-[#e3ddd4] bg-[#faf9f6] px-5 py-24 text-center sm:px-8 md:py-32"
+        class="border-b border-[#25231f] bg-[#050505] px-5 py-24 text-center sm:px-8 md:py-32"
         data-reveal
       >
-        <p class="font-mono text-[11px] uppercase tracking-[0.22em] text-[#a76e23]">
+        <p class="font-mono text-[11px] uppercase tracking-[0.22em] text-[#d6a85f]">
           {en ? 'Made for your business' : 'Feito para o seu negócio'}
         </p>
         <h2 class="mx-auto mt-6 max-w-[17ch] font-['Outfit',sans-serif] text-[clamp(2.8rem,5.6vw,6rem)] font-medium leading-[1.02] tracking-[-0.055em]">
@@ -246,33 +294,33 @@ const t = en
             ? 'Your corner of the internet, ready to share.'
             : 'Um lugar seu na internet, pronto para compartilhar.'}
         </h2>
-        <p class="mx-auto mt-7 max-w-[55ch] leading-relaxed text-[#675f55]">
+        <p class="mx-auto mt-7 max-w-[55ch] leading-relaxed text-[#a9a6a0]">
           {en
             ? 'Choose a layout, add your own images, connect your domain and publish when you are ready.'
             : 'Escolha um layout, adicione suas imagens, conecte seu domínio e publique quando estiver pronto.'}
         </p>
       </section>
-      <section id="planos" class="mx-auto max-w-[1280px] scroll-mt-12 px-5 py-24 sm:px-8 md:py-32">
+      <section id="planos" class="mx-auto max-w-[1380px] scroll-mt-12 px-5 py-24 sm:px-8 md:py-32">
         <div class="mb-14 text-center" data-reveal>
-          <p class="font-mono text-[11px] uppercase tracking-[0.22em] text-[#a76e23]">
+          <p class="font-mono text-[11px] uppercase tracking-[0.22em] text-[#d6a85f]">
             {en ? 'Plans' : 'Planos'}
           </p>
           <h2 class="mt-5 font-['Outfit',sans-serif] text-[clamp(3.3rem,6.2vw,6.4rem)] font-medium leading-none tracking-[-0.06em]">
             {t.plans}
           </h2>
-          <p class="mt-5 text-[#675f55]">{t.plansText}</p>
+          <p class="mt-5 text-[#a9a6a0]">{t.plansText}</p>
         </div>
-        <div class="grid border-y border-[#ddd5ca] lg:grid-cols-3">
+        <div class="grid border-y border-[#34312b] lg:grid-cols-3">
           {[t.monthly, t.yearly, t.lifetime].map((name, i) => (
             <article
               data-reveal
               class:list={[
-                'flex flex-col border-b border-[#ddd5ca] px-1 py-9 lg:border-r lg:border-b-0 lg:px-8 lg:py-10 lg:first:pl-0 lg:last:border-r-0',
-                i === 1 && 'bg-[#f2e9d8] lg:px-8',
+                'flex flex-col border-b border-[#34312b] px-1 py-9 lg:border-r lg:border-b-0 lg:px-8 lg:py-10 lg:first:pl-0 lg:last:border-r-0',
+                i === 1 && 'bg-[#14100b] lg:px-8',
               ]}
             >
               <div class="flex items-center justify-between">
-                <span class="font-mono text-[11px] uppercase tracking-[0.16em] text-[#8c5d20]">
+                <span class="font-mono text-[11px] uppercase tracking-[0.16em] text-[#b18b52]">
                   {i === 2
                     ? en
                       ? 'One payment'
@@ -286,16 +334,16 @@ const t = en
               <h3 class="mt-8 font-['Outfit',sans-serif] text-[clamp(1.7rem,3vw,2.2rem)] font-medium tracking-[-0.04em]">
                 {name}
               </h3>
-              <p class="mt-4 min-h-16 max-w-[34ch] leading-relaxed text-[#675f55]">
+              <p class="mt-4 min-h-16 max-w-[34ch] leading-relaxed text-[#a9a6a0]">
                 {[t.monthlyDesc, t.yearlyDesc, t.lifetimeDesc][i]}
               </p>
-              <p class="mt-10 border-b border-[#ddd5ca] pb-7 font-['Outfit',sans-serif] text-[clamp(2.2rem,4vw,3.4rem)] font-medium leading-none tracking-[-0.05em]">
+              <p class="mt-10 border-b border-[#34312b] pb-7 font-['Outfit',sans-serif] text-[clamp(2.2rem,4vw,3.4rem)] font-medium leading-none tracking-[-0.05em]">
                 {displayPrice((['monthly', 'yearly', 'lifetime'] as const)[i]) || t.priceLater}
               </p>
-              <ul class="my-8 space-y-3 text-sm text-[#494139]">
+              <ul class="my-8 space-y-3 text-sm text-[#c5c1b9]">
                 {t.included.map((item) => (
                   <li class="flex gap-3">
-                    <span class="text-[#a76e23]" aria-hidden="true">
+                    <span class="text-[#d6a85f]" aria-hidden="true">
                       ↗
                     </span>
                     {item}
@@ -307,8 +355,8 @@ const t = en
                 class:list={[
                   'btn mt-auto h-12 w-full rounded-full font-semibold shadow-none',
                   i === 1
-                    ? 'border-0 bg-[#c89243] text-[#201d18] hover:bg-[#e6b867]'
-                    : 'border border-[#d0c7bb] bg-white text-[#201d18] hover:border-[#b37a2c] hover:bg-[#f3eee5]',
+                    ? 'border-0 bg-[#d6a85f] text-black hover:bg-[#e8bf7c]'
+                    : 'border border-[#4a453d] bg-[#181818] text-[#f5f2ec] hover:border-[#d6a85f] hover:bg-[#211c15]',
                 ]}
               >
                 {t.select}
@@ -319,19 +367,19 @@ const t = en
         </div>
       </section>
     </main>
-    <footer class="border-t border-[#e3ddd4] bg-[#f2efe9]">
-      <div class="mx-auto flex max-w-[1280px] flex-col gap-10 px-5 py-12 sm:px-8 md:flex-row md:items-end md:justify-between">
+    <footer class="border-t border-[#25231f] bg-[#080808]">
+      <div class="mx-auto flex max-w-[1380px] flex-col gap-10 px-5 py-12 sm:px-8 md:flex-row md:items-end md:justify-between">
         <div>
           <Brand href={en ? '/en' : '/'} />
-          <p class="mt-5 max-w-[30ch] text-sm leading-relaxed text-[#6f665b]">{t.footer}</p>
+          <p class="mt-5 max-w-[30ch] text-sm leading-relaxed text-[#928d86]">{t.footer}</p>
         </div>
-        <div class="flex flex-wrap gap-6 text-sm text-[#675f55]">
-          <a class="hover:text-[#201d18]" href={en ? '/en/privacy' : '/privacidade'}>
+        <div class="flex flex-wrap gap-6 text-sm text-[#a9a6a0]">
+          <a class="hover:text-white" href={en ? '/en/privacy' : '/privacidade'}>
             {en ? 'Privacy' : 'Privacidade'}
           </a>
         </div>
       </div>
-      <div class="mx-auto flex max-w-[1280px] justify-between border-t border-[#e3ddd4] px-5 py-5 font-mono text-[10px] uppercase tracking-[0.14em] text-[#766d62] sm:px-8">
+      <div class="mx-auto flex max-w-[1380px] justify-between border-t border-[#25231f] px-5 py-5 font-mono text-[10px] uppercase tracking-[0.14em] text-[#78736d] sm:px-8">
         <span>© {new Date().getFullYear()} Vira</span>
         <span>vira.ia.br</span>
       </div>

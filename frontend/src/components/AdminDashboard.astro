@@ -46,19 +46,21 @@ const date = (time: number | null) =>
 ---
 
 <Base title="Administração · Vira" noindex>
-  <div class="min-h-screen bg-[#faf9f6] text-[#201d18]">
-    <header class="flex items-center justify-between gap-5 border-b border-[#e4ded5] bg-[#ffffff] px-5 py-4 sm:px-8">
-      <Brand />
-      <div class="flex items-center gap-4 text-sm text-[#6b6359]">
-        <span>Administração</span>
-        <button id="admin-logout" class="btn btn-ghost btn-sm" type="button">
-          Sair
-        </button>
+  <div class="min-h-screen bg-[#050505] text-[#f5f2ec]">
+    <header class="border-b border-[#2d2a25] bg-[#0c0c0b]">
+      <div class="mx-auto flex max-w-[1380px] items-center justify-between gap-5 px-5 py-4 sm:px-8">
+        <Brand />
+        <div class="flex items-center gap-4 text-sm text-[#aaa69f]">
+          <span>Administração</span>
+          <button id="admin-logout" class="btn btn-ghost btn-sm" type="button">
+            Sair
+          </button>
+        </div>
       </div>
     </header>
-    <div class="mx-auto grid max-w-[1480px] grid-cols-[minmax(0,1fr)] lg:grid-cols-[230px_minmax(0,1fr)]">
-      <aside class="min-w-0 border-b border-[#e4ded5] px-5 py-6 lg:sticky lg:top-0 lg:h-screen lg:border-r lg:border-b-0 lg:px-6 lg:py-10">
-        <p class="mb-5 font-mono text-[11px] uppercase tracking-[0.18em] text-[#a76e23]">
+    <div class="mx-auto grid max-w-[1380px] grid-cols-[minmax(0,1fr)] px-5 sm:px-8 lg:grid-cols-[230px_minmax(0,1fr)]">
+      <aside class="min-w-0 border-b border-[#2d2a25] py-6 lg:sticky lg:top-0 lg:h-screen lg:border-r lg:border-b-0 lg:pr-6 lg:py-10">
+        <p class="mb-5 font-mono text-[11px] uppercase tracking-[0.18em] text-[#d6a85f]">
           Vira / Admin
         </p>
         <nav
@@ -66,45 +68,45 @@ const date = (time: number | null) =>
           aria-label="Seções do painel"
         >
           <a
-            class="rounded-lg px-3 py-2.5 text-sm text-[#29241d] transition-colors hover:bg-[#f2e8d8]"
+            class="rounded-lg px-3 py-2.5 text-sm text-[#eee8dc] transition-colors hover:bg-[#211b14]"
             href="#visao"
           >
             ↗ &nbsp;Visão geral
           </a>
           <a
-            class="rounded-lg px-3 py-2.5 text-sm text-[#6b6359] transition-colors hover:bg-[#f2e8d8] hover:text-[#201d18]"
+            class="rounded-lg px-3 py-2.5 text-sm text-[#aaa69f] transition-colors hover:bg-[#211b14] hover:text-white"
             href="#precos"
           >
             ↗ &nbsp;Preços
           </a>
           <a
-            class="rounded-lg px-3 py-2.5 text-sm text-[#6b6359] transition-colors hover:bg-[#f2e8d8] hover:text-[#201d18]"
+            class="rounded-lg px-3 py-2.5 text-sm text-[#aaa69f] transition-colors hover:bg-[#211b14] hover:text-white"
             href="#configuracoes"
           >
             ↗ &nbsp;Configurações
           </a>
           <a
-            class="rounded-lg px-3 py-2.5 text-sm text-[#6b6359] transition-colors hover:bg-[#f2e8d8] hover:text-[#201d18]"
+            class="rounded-lg px-3 py-2.5 text-sm text-[#aaa69f] transition-colors hover:bg-[#211b14] hover:text-white"
             href="#clientes"
           >
             ↗ &nbsp;Clientes
           </a>
           <a
-            class="rounded-lg px-3 py-2.5 text-sm text-[#6b6359] transition-colors hover:bg-[#f2e8d8] hover:text-[#201d18]"
+            class="rounded-lg px-3 py-2.5 text-sm text-[#aaa69f] transition-colors hover:bg-[#211b14] hover:text-white"
             href="#dominios"
           >
             ↗ &nbsp;Domínios
           </a>
           <a
-            class="rounded-lg px-3 py-2.5 text-sm text-[#6b6359] transition-colors hover:bg-[#f2e8d8] hover:text-[#201d18]"
+            class="rounded-lg px-3 py-2.5 text-sm text-[#aaa69f] transition-colors hover:bg-[#211b14] hover:text-white"
             href="#atividade"
           >
             ↗ &nbsp;Atividade
           </a>
         </nav>
       </aside>
-      <main class="min-w-0 px-5 pt-10 pb-24 sm:px-8 lg:px-10">
-        <div class="relative mb-10 min-h-[260px] overflow-hidden rounded-xl border border-[#38322a] bg-[#100d09] p-7 text-[#f5f2ec] sm:p-9 [&_h1]:my-3 [&_h1]:font-[Outfit] [&_h1]:text-[clamp(2.4rem,5vw,4.4rem)] [&_h1]:leading-none [&_h1]:text-[#f5f2ec] [&_p]:max-w-[56ch] [&_p]:text-[#c6c0b6]">
+      <main class="min-w-0 pt-10 pb-24 lg:pl-10">
+        <div class="relative mb-10 min-h-[260px] overflow-hidden rounded-xl border border-[#38322a] bg-[#100d09] p-7 sm:p-9 [&_h1]:my-3 [&_h1]:font-[Outfit] [&_h1]:text-[clamp(2.4rem,5vw,4.4rem)] [&_h1]:leading-none [&_h1]:text-[#f5f2ec] [&_p]:max-w-[56ch] [&_p]:text-[#aaa69f]">
           <img
             src="/vira-hero.webp"
             width="1586"
@@ -127,15 +129,15 @@ const date = (time: number | null) =>
 
         <section
           id="visao"
-          class="mb-20 scroll-mt-8 border-t border-[#e4ded5] pt-9 first:border-t-0 first:pt-0"
+          class="mb-20 scroll-mt-8 border-t border-[#2d2a25] pt-9 first:border-t-0 first:pt-0"
         >
-          <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#201d18] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#6b6359]">
-            <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#a76e23]">
+          <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#f5f2ec] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#aaa69f]">
+            <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#d6a85f]">
               Visão geral
             </span>
             <h2>Estado da operação</h2>
           </div>
-          <div class="grid gap-3 sm:grid-cols-3 [&_div]:flex [&_div]:min-h-36 [&_div]:flex-col [&_div]:justify-between [&_div]:rounded-xl [&_div]:border [&_div]:border-[#ded7cd] [&_div]:bg-[#f5f2ed] [&_div]:p-5 [&_strong]:font-[Outfit] [&_strong]:text-5xl [&_strong]:font-medium [&_strong]:tracking-tight [&_strong]:text-[#29241d] [&_span]:font-mono [&_span]:text-xs [&_span]:uppercase [&_span]:tracking-wide [&_span]:text-[#766d62]">
+          <div class="grid gap-3 sm:grid-cols-3 [&_div]:flex [&_div]:min-h-36 [&_div]:flex-col [&_div]:justify-between [&_div]:rounded-xl [&_div]:border [&_div]:border-[#3a3630] [&_div]:bg-[#151310] [&_div]:p-5 [&_strong]:font-[Outfit] [&_strong]:text-5xl [&_strong]:font-medium [&_strong]:tracking-tight [&_strong]:text-[#eee8dc] [&_span]:font-mono [&_span]:text-xs [&_span]:uppercase [&_span]:tracking-wide [&_span]:text-[#8f8a83]">
             <div>
               <strong>{counts.users}</strong>
               <span>clientes</span>
@@ -149,7 +151,7 @@ const date = (time: number | null) =>
               <span>domínios conectados</span>
             </div>
           </div>
-          <div class="mt-4 grid items-center gap-7 rounded-xl border border-[#e4ded5] bg-[#ffffff] p-7 md:grid-cols-[1fr_1.2fr] [&_h3]:mb-2 [&_h3]:text-xl [&_h3]:text-[#201d18] [&_p]:leading-relaxed [&_p]:text-[#6b6359] [&_li]:flex [&_li]:items-center [&_li]:gap-2.5 [&_li]:border-b [&_li]:border-[#e4ded5] [&_li]:py-2 [&_li]:text-sm [&_li_strong]:ml-auto [&_li_strong]:text-xs [&_li_strong]:text-[#6b6359]">
+          <div class="mt-4 grid items-center gap-7 rounded-xl border border-[#2d2a25] bg-[#111110] p-7 md:grid-cols-[1fr_1.2fr] [&_h3]:mb-2 [&_h3]:text-xl [&_h3]:text-[#f5f2ec] [&_p]:leading-relaxed [&_p]:text-[#aaa69f] [&_li]:flex [&_li]:items-center [&_li]:gap-2.5 [&_li]:border-b [&_li]:border-[#2d2a25] [&_li]:py-2 [&_li]:text-sm [&_li_strong]:ml-auto [&_li_strong]:text-xs [&_li_strong]:text-[#aaa69f]">
             <div>
               <h3>Antes de abrir as vendas</h3>
               <p>
@@ -163,8 +165,8 @@ const date = (time: number | null) =>
                   <span
                     class={
                       item.ready
-                        ? 'h-2.5 w-2.5 flex-none rounded-full bg-[#5b9d76]'
-                        : 'h-2.5 w-2.5 flex-none rounded-full bg-[#a76e23]'
+                        ? 'h-2.5 w-2.5 flex-none rounded-full bg-[#7ddcb7]'
+                        : 'h-2.5 w-2.5 flex-none rounded-full bg-[#d6a85f]'
                     }
                   ></span>
                   {item.label}
@@ -176,10 +178,10 @@ const date = (time: number | null) =>
         </section>
         <section
           id="precos"
-          class="mb-20 scroll-mt-8 border-t border-[#e4ded5] pt-9 first:border-t-0 first:pt-0"
+          class="mb-20 scroll-mt-8 border-t border-[#2d2a25] pt-9 first:border-t-0 first:pt-0"
         >
-          <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#201d18] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#6b6359]">
-            <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#a76e23]">
+          <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#f5f2ec] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#aaa69f]">
+            <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#d6a85f]">
               Cobrança
             </span>
             <h2>Preços e planos</h2>
@@ -191,7 +193,7 @@ const date = (time: number | null) =>
           <div class="grid gap-4 md:grid-cols-2">
             {prices.map((row) => (
               <form
-                class="card rounded-xl border border-[#e0d9cf] bg-[#ffffff] p-4 shadow-none sm:p-6 [&_h3]:mb-4 [&_h3]:text-xl [&_h3]:text-[#201d18] [&_label]:mt-3 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold"
+                class="card rounded-xl border border-[#34312b] bg-[#111110] p-4 shadow-none sm:p-6 [&_h3]:mb-4 [&_h3]:text-xl [&_h3]:text-[#f5f2ec] [&_label]:mt-3 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold"
                 data-api-price-form
                 data-plan={row.plan}
                 data-currency={row.currency}
@@ -246,10 +248,10 @@ const date = (time: number | null) =>
         </section>
         <section
           id="configuracoes"
-          class="mb-20 scroll-mt-8 border-t border-[#e4ded5] pt-9 first:border-t-0 first:pt-0"
+          class="mb-20 scroll-mt-8 border-t border-[#2d2a25] pt-9 first:border-t-0 first:pt-0"
         >
-          <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#201d18] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#6b6359]">
-            <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#a76e23]">
+          <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#f5f2ec] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#aaa69f]">
+            <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#d6a85f]">
               Serviços
             </span>
             <h2>Configurações</h2>
@@ -260,14 +262,14 @@ const date = (time: number | null) =>
           </div>
           <div class="grid gap-4 md:grid-cols-2">
             {groups.map((group) => (
-              <div class="card rounded-xl border border-[#e0d9cf] bg-[#ffffff] p-4 shadow-none sm:p-6 [&_h3]:mb-4 [&_h3]:text-xl [&_h3]:text-[#201d18] [&_label]:mt-3 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold">
+              <div class="card rounded-xl border border-[#34312b] bg-[#111110] p-4 shadow-none sm:p-6 [&_h3]:mb-4 [&_h3]:text-xl [&_h3]:text-[#f5f2ec] [&_label]:mt-3 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold">
                 <h3>{group.title}</h3>
                 {group.keys.map((key) => {
                   const row = settings.find((item) => item.key === key);
                   if (!row) return null;
                   return (
                     <form
-                      class="border-t border-[#e4ded5] py-3 [&_label]:flex [&_label]:justify-between [&_label]:gap-2.5"
+                      class="border-t border-[#2d2a25] py-3 [&_label]:flex [&_label]:justify-between [&_label]:gap-2.5"
                       data-key={key}
                       data-secret={Boolean(row.encrypted)}
                       data-api-setting-form
@@ -318,10 +320,10 @@ const date = (time: number | null) =>
         </section>
         <section
           id="clientes"
-          class="mb-20 scroll-mt-8 border-t border-[#e4ded5] pt-9 first:border-t-0 first:pt-0"
+          class="mb-20 scroll-mt-8 border-t border-[#2d2a25] pt-9 first:border-t-0 first:pt-0"
         >
-          <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#201d18] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#6b6359]">
-            <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#a76e23]">
+          <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#f5f2ec] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#aaa69f]">
+            <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#d6a85f]">
               Contas
             </span>
             <h2>Clientes e assinaturas</h2>
@@ -347,7 +349,7 @@ const date = (time: number | null) =>
               Buscar
             </button>
           </form>
-          <div class="card rounded-xl border border-[#e0d9cf] bg-[#ffffff] p-4 shadow-none sm:p-6 [&_h3]:mb-4 [&_h3]:text-xl [&_h3]:text-[#201d18] [&_label]:mt-3 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold overflow-auto [&_table]:table [&_table]:w-full [&_th]:text-xs [&_th]:uppercase [&_th]:text-[#6b6359] [&_td]:whitespace-nowrap [&_td_small]:text-[#6b6359]">
+          <div class="card rounded-xl border border-[#34312b] bg-[#111110] p-4 shadow-none sm:p-6 [&_h3]:mb-4 [&_h3]:text-xl [&_h3]:text-[#f5f2ec] [&_label]:mt-3 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold overflow-auto [&_table]:table [&_table]:w-full [&_th]:text-xs [&_th]:uppercase [&_th]:text-[#aaa69f] [&_td]:whitespace-nowrap [&_td_small]:text-[#aaa69f]">
             <table class="table">
               <thead>
                 <tr>
@@ -386,7 +388,7 @@ const date = (time: number | null) =>
               </tbody>
             </table>
             {customers.length === 0 && (
-              <p class="my-2 text-[#6b6359]">
+              <p class="my-2 text-[#aaa69f]">
                 {search
                   ? 'Nenhuma conta corresponde à busca.'
                   : 'Nenhum cliente ainda. As contas aparecerão aqui após o primeiro cadastro.'}
@@ -396,16 +398,16 @@ const date = (time: number | null) =>
         </section>
         <section
           id="dominios"
-          class="mb-20 scroll-mt-8 border-t border-[#e4ded5] pt-9 first:border-t-0 first:pt-0"
+          class="mb-20 scroll-mt-8 border-t border-[#2d2a25] pt-9 first:border-t-0 first:pt-0"
         >
-          <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#201d18] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#6b6359]">
-            <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#a76e23]">
+          <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#f5f2ec] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#aaa69f]">
+            <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#d6a85f]">
               Publicação
             </span>
             <h2>Domínios dos clientes</h2>
             <p>Acompanhe a ativação do hostname e do certificado TLS.</p>
           </div>
-          <div class="card rounded-xl border border-[#e0d9cf] bg-[#ffffff] p-4 shadow-none sm:p-6 [&_h3]:mb-4 [&_h3]:text-xl [&_h3]:text-[#201d18] [&_label]:mt-3 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold overflow-auto [&_table]:table [&_table]:w-full [&_th]:text-xs [&_th]:uppercase [&_th]:text-[#6b6359] [&_td]:whitespace-nowrap [&_td_small]:text-[#6b6359]">
+          <div class="card rounded-xl border border-[#34312b] bg-[#111110] p-4 shadow-none sm:p-6 [&_h3]:mb-4 [&_h3]:text-xl [&_h3]:text-[#f5f2ec] [&_label]:mt-3 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold overflow-auto [&_table]:table [&_table]:w-full [&_th]:text-xs [&_th]:uppercase [&_th]:text-[#aaa69f] [&_td]:whitespace-nowrap [&_td_small]:text-[#aaa69f]">
             <table class="table">
               <thead>
                 <tr>
@@ -429,21 +431,21 @@ const date = (time: number | null) =>
               </tbody>
             </table>
             {domains.length === 0 && (
-              <p class="my-2 text-[#6b6359]">Nenhum domínio de cliente conectado ainda.</p>
+              <p class="my-2 text-[#aaa69f]">Nenhum domínio de cliente conectado ainda.</p>
             )}
           </div>
         </section>
         <section
           id="atividade"
-          class="mb-20 scroll-mt-8 border-t border-[#e4ded5] pt-9 first:border-t-0 first:pt-0"
+          class="mb-20 scroll-mt-8 border-t border-[#2d2a25] pt-9 first:border-t-0 first:pt-0"
         >
-          <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#201d18] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#6b6359]">
-            <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#a76e23]">
+          <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#f5f2ec] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#aaa69f]">
+            <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#d6a85f]">
               Segurança
             </span>
             <h2>Atividade administrativa</h2>
           </div>
-          <div class="card rounded-xl border border-[#e0d9cf] bg-[#ffffff] p-4 shadow-none sm:p-6 [&_h3]:mb-4 [&_h3]:text-xl [&_h3]:text-[#201d18] [&_label]:mt-3 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold [&>div]:flex [&>div]:items-center [&>div]:gap-5 [&>div]:border-b [&>div]:border-[#e4ded5] [&>div]:py-3 [&>div]:text-sm [&_span]:min-w-20 [&_span]:text-[#6b6359] [&_code]:ml-auto [&_code]:text-[#201d18]">
+          <div class="card rounded-xl border border-[#34312b] bg-[#111110] p-4 shadow-none sm:p-6 [&_h3]:mb-4 [&_h3]:text-xl [&_h3]:text-[#f5f2ec] [&_label]:mt-3 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold [&>div]:flex [&>div]:items-center [&>div]:gap-5 [&>div]:border-b [&>div]:border-[#2d2a25] [&>div]:py-3 [&>div]:text-sm [&_span]:min-w-20 [&_span]:text-[#aaa69f] [&_code]:ml-auto [&_code]:text-[#f5f2ec]">
             {audit.length ? (
               audit.map((item) => (
                 <div>
@@ -459,7 +461,7 @@ const date = (time: number | null) =>
                 </div>
               ))
             ) : (
-              <p class="my-2 text-[#6b6359]">Nenhuma alteração registrada ainda.</p>
+              <p class="my-2 text-[#aaa69f]">Nenhuma alteração registrada ainda.</p>
             )}
           </div>
         </section>

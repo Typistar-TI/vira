@@ -15,59 +15,63 @@ const ready = Boolean(controller && email);
 ---
 
 <Base title={en ? 'Privacy · Vira' : 'Privacidade · Vira'} lang={lang} noindex={!ready}>
-  <div class="min-h-screen bg-[#faf9f6] text-[#201d18]">
-    <header class="mx-auto flex max-w-[1320px] items-center justify-between gap-5 border-b border-[#e4ded5] px-5 py-4 sm:px-8">
+  <div class="min-h-screen bg-[#050505] text-[#f5f2ec]">
+    <header class="mx-auto flex max-w-[1380px] items-center justify-between gap-5 border-b border-[#2d2a25] px-5 py-4 sm:px-8">
       <Brand href={en ? '/en' : '/'} />
     </header>
-    <main class="mx-auto max-w-[1250px] p-6 max-w-3xl">
-      <span class="text-xs font-extrabold uppercase tracking-[0.15em] text-[#201d18]">Vira</span>
-      <h1 class="text-4xl mt-2 mb-6">
-        {en ? 'Privacy and your data' : 'Privacidade e seus dados'}
-      </h1>
-      {!ready && (
-        <p class="alert alert-error my-3 [hidden]:hidden">
-          {en
-            ? 'The service owner and privacy contact are not registered yet. This notice is a draft and the service is not ready for public launch.'
-            : 'O responsável pelo serviço e o contato de privacidade ainda não foram cadastrados. Este aviso é um rascunho e o serviço não está pronto para lançamento público.'}
-        </p>
-      )}
-      {ready && (
+    <main class="mx-auto max-w-[1380px] px-5 py-12 sm:px-8">
+      <article class="max-w-3xl">
+        <span class="text-xs font-extrabold uppercase tracking-[0.15em] text-[#f5f2ec]">Vira</span>
+        <h1 class="text-4xl mt-2 mb-6">
+          {en ? 'Privacy and your data' : 'Privacidade e seus dados'}
+        </h1>
+        {!ready && (
+          <p class="alert alert-error my-3 [hidden]:hidden">
+            {en
+              ? 'The service owner and privacy contact are not registered yet. This notice is a draft and the service is not ready for public launch.'
+              : 'O responsável pelo serviço e o contato de privacidade ainda não foram cadastrados. Este aviso é um rascunho e o serviço não está pronto para lançamento público.'}
+          </p>
+        )}
+        {ready && (
+          <p>
+            {en ? 'Data controller' : 'Responsável pelo tratamento'}: <strong>{controller}</strong>.{' '}
+            {en ? 'Privacy requests' : 'Solicitações de privacidade'}:{' '}
+            <a href={`mailto:${email}`}>{email}</a>.
+          </p>
+        )}
+        <h2 class="text-2xl mt-8 mb-2">{en ? 'What we process' : 'Quais dados tratamos'}</h2>
         <p>
-          {en ? 'Data controller' : 'Responsável pelo tratamento'}: <strong>{controller}</strong>.{' '}
-          {en ? 'Privacy requests' : 'Solicitações de privacidade'}:{' '}
-          <a href={`mailto:${email}`}>{email}</a>.
+          {en
+            ? 'We use your email for account access and, when you choose Google, its account identifier. We process your page content and images to publish your site, your domain settings to connect a custom address, and billing identifiers to manage the plan. Security controls temporarily record IP addresses. Basic analytics count page views and button clicks by site ID; they do not store visitor names or emails.'
+            : 'Usamos seu e-mail para acesso à conta e, quando você escolhe Google, o identificador dessa conta. Tratamos conteúdo e imagens para publicar sua página, dados do domínio para conectar o endereço próprio e identificadores de cobrança para gerenciar o plano. Controles de segurança registram temporariamente IPs. Estatísticas básicas contam visualizações e cliques por ID da página; não guardam nomes ou e-mails dos visitantes.'}
         </p>
-      )}
-      <h2 class="text-2xl mt-8 mb-2">{en ? 'What we process' : 'Quais dados tratamos'}</h2>
-      <p>
-        {en
-          ? 'We use your email for account access and, when you choose Google, its account identifier. We process your page content and images to publish your site, your domain settings to connect a custom address, and billing identifiers to manage the plan. Security controls temporarily record IP addresses. Basic analytics count page views and button clicks by site ID; they do not store visitor names or emails.'
-          : 'Usamos seu e-mail para acesso à conta e, quando você escolhe Google, o identificador dessa conta. Tratamos conteúdo e imagens para publicar sua página, dados do domínio para conectar o endereço próprio e identificadores de cobrança para gerenciar o plano. Controles de segurança registram temporariamente IPs. Estatísticas básicas contam visualizações e cliques por ID da página; não guardam nomes ou e-mails dos visitantes.'}
-      </p>
-      <h2 class="text-2xl mt-8 mb-2">{en ? 'Cookies and providers' : 'Cookies e fornecedores'}</h2>
-      <p>
-        {en
-          ? 'Vira uses one essential, HttpOnly session cookie for login. Google verifies your identity if you choose that option and uses a temporary cookie during sign-in. Resend delivers one-time sign-in links to your email address. We do not use advertising cookies or browser storage for authentication. Cloudflare delivers the site; Stripe processes payments. These providers may process data under their own retention rules.'
-          : 'O Vira usa um cookie essencial de sessão, HttpOnly, para login. O Google confirma sua identidade se você escolher essa opção e usa um cookie temporário durante a entrada. A Resend envia links de acesso de uso único ao seu e-mail. Não usamos cookies de publicidade nem armazenamento do navegador para autenticação. A Cloudflare entrega o site; a Stripe processa pagamentos. Esses fornecedores podem tratar dados conforme suas próprias regras de retenção.'}
-      </p>
-      <p class="mt-3">
-        {en
-          ? 'These providers may process data outside Brazil. Please use the privacy contact for questions about international transfers or to request correction of your account data.'
-          : 'Esses fornecedores podem tratar dados fora do Brasil. Use o contato de privacidade para dúvidas sobre transferências internacionais ou para solicitar correção dos dados da conta.'}
-      </p>
-      <h2 class="text-2xl mt-8 mb-2">
-        {en ? 'Retention and your choices' : 'Retenção e suas escolhas'}
-      </h2>
-      <p>
-        {en
-          ? 'Sessions expire after 30 days. Expired accounts are scheduled for removal after 90 days, including their pages and images. Security rate-limit records are periodically removed. In your dashboard you can download your account data or delete your account. Deletion cancels any Vira subscription and removes the site. Public images may remain in browser or edge caches for up to five minutes. Payment records legally required by Stripe may remain with that provider.'
-          : 'Sessões expiram em 30 dias. Contas expiradas são programadas para remoção após 90 dias, com páginas e imagens. Registros de limite de requisições são removidos periodicamente. No painel você pode baixar seus dados ou excluir a conta. A exclusão cancela a assinatura do Vira e remove a página. Imagens públicas podem permanecer em caches do navegador ou da rede por até cinco minutos. Registros de pagamento exigidos legalmente podem permanecer com a Stripe.'}
-      </p>
-      <p class="mt-8">
-        <a class="btn btn-primary rounded-xl border-0 font-bold shadow-none" href="/app">
-          {en ? 'Go to dashboard' : 'Ir ao painel'}
-        </a>
-      </p>
+        <h2 class="text-2xl mt-8 mb-2">
+          {en ? 'Cookies and providers' : 'Cookies e fornecedores'}
+        </h2>
+        <p>
+          {en
+            ? 'Vira uses one essential, HttpOnly session cookie for login. Google verifies your identity if you choose that option and uses a temporary cookie during sign-in. Resend delivers one-time sign-in links to your email address. We do not use advertising cookies or browser storage for authentication. Cloudflare delivers the site; Stripe processes payments. These providers may process data under their own retention rules.'
+            : 'O Vira usa um cookie essencial de sessão, HttpOnly, para login. O Google confirma sua identidade se você escolher essa opção e usa um cookie temporário durante a entrada. A Resend envia links de acesso de uso único ao seu e-mail. Não usamos cookies de publicidade nem armazenamento do navegador para autenticação. A Cloudflare entrega o site; a Stripe processa pagamentos. Esses fornecedores podem tratar dados conforme suas próprias regras de retenção.'}
+        </p>
+        <p class="mt-3">
+          {en
+            ? 'These providers may process data outside Brazil. Please use the privacy contact for questions about international transfers or to request correction of your account data.'
+            : 'Esses fornecedores podem tratar dados fora do Brasil. Use o contato de privacidade para dúvidas sobre transferências internacionais ou para solicitar correção dos dados da conta.'}
+        </p>
+        <h2 class="text-2xl mt-8 mb-2">
+          {en ? 'Retention and your choices' : 'Retenção e suas escolhas'}
+        </h2>
+        <p>
+          {en
+            ? 'Sessions expire after 30 days. Expired accounts are scheduled for removal after 90 days, including their pages and images. Security rate-limit records are periodically removed. In your dashboard you can download your account data or delete your account. Deletion cancels any Vira subscription and removes the site. Public images may remain in browser or edge caches for up to five minutes. Payment records legally required by Stripe may remain with that provider.'
+            : 'Sessões expiram em 30 dias. Contas expiradas são programadas para remoção após 90 dias, com páginas e imagens. Registros de limite de requisições são removidos periodicamente. No painel você pode baixar seus dados ou excluir a conta. A exclusão cancela a assinatura do Vira e remove a página. Imagens públicas podem permanecer em caches do navegador ou da rede por até cinco minutos. Registros de pagamento exigidos legalmente podem permanecer com a Stripe.'}
+        </p>
+        <p class="mt-8">
+          <a class="btn btn-primary rounded-xl border-0 font-bold shadow-none" href="/app">
+            {en ? 'Go to dashboard' : 'Ir ao painel'}
+          </a>
+        </p>
+      </article>
     </main>
   </div>
 </Base>

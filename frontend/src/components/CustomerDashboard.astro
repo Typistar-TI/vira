@@ -142,17 +142,19 @@ const trialDays = Math.max(0, Math.ceil((user.trial_ends_at * 1000 - Date.now())
 ---
 
 <Base title={`${t.dashboard} · Vira`} lang={en ? 'en' : 'pt'} noindex>
-  <div class="min-h-screen bg-[#faf9f6] text-[#201d18]">
-    <header class="flex items-center justify-between gap-5 border-b border-[#e4ded5] bg-[#ffffff] px-5 py-4 sm:px-8">
-      <Brand />
-      <div class="flex gap-4 items-center">
-        <button id="logout" class="btn btn-ghost btn-sm">
-          {t.signout}
-        </button>
+  <div class="min-h-screen bg-[#050505] text-[#f5f2ec]">
+    <header class="border-b border-[#2d2a25] bg-[#0c0c0b]">
+      <div class="mx-auto flex max-w-[1380px] items-center justify-between gap-5 px-5 py-4 sm:px-8">
+        <Brand />
+        <div class="flex gap-4 items-center">
+          <button id="logout" class="btn btn-ghost btn-sm">
+            {t.signout}
+          </button>
+        </div>
       </div>
     </header>
-    <main class="mx-auto max-w-[1480px] px-5 pb-24 pt-9 sm:px-8 lg:px-10">
-      <div class="relative mb-8 min-h-[240px] overflow-hidden rounded-xl border border-[#38322a] bg-[#100d09] p-7 text-[#f5f2ec] sm:p-9">
+    <main class="mx-auto max-w-[1380px] px-5 pb-24 pt-9 sm:px-8">
+      <div class="relative mb-8 min-h-[240px] overflow-hidden rounded-xl border border-[#38322a] bg-[#100d09] p-7 sm:p-9">
         <img
           src="/vira-process.webp"
           width="1586"
@@ -168,14 +170,14 @@ const trialDays = Math.max(0, Math.ceil((user.trial_ends_at * 1000 - Date.now())
           <h1 class="mt-3 font-[Outfit] text-[clamp(2.6rem,5vw,4.6rem)] leading-none tracking-[-0.055em]">
             {t.yourPage}
           </h1>
-          <p class="mt-3 text-[#c6c0b6]">
+          <p class="mt-3 text-[#aaa69f]">
             {user.plan === 'trial'
               ? `${t.trial} · ${trialDays} ${en ? 'days left' : 'dias restantes'}`
               : active
                 ? t.active
                 : t.expired}
           </p>
-          <span class="badge badge-outline mt-7 h-auto max-w-full border-[#62533e] px-3 py-3 text-xs text-[#eee8dc]">
+          <span class="badge badge-outline mt-7 h-auto max-w-full border-[#62533e] px-3 py-3 text-xs text-[#c6c0b6]">
             {user.email ?? 'Conta antiga'}
           </span>
         </div>
@@ -188,26 +190,26 @@ const trialDays = Math.max(0, Math.ceil((user.trial_ends_at * 1000 - Date.now())
         </div>
       )}
       <nav
-        class="mb-8 flex gap-2 overflow-x-auto border-b border-[#e4ded5] pb-3 text-sm whitespace-nowrap"
+        class="mb-8 flex gap-2 overflow-x-auto border-b border-[#2d2a25] pb-3 text-sm whitespace-nowrap"
         aria-label={en ? 'Dashboard sections' : 'Seções do painel'}
       >
-        <a class="rounded-lg bg-[#f2e8d8] px-4 py-2 text-[#29241d]" href="#editor">
+        <a class="rounded-lg bg-[#211b14] px-4 py-2 text-[#eee8dc]" href="#editor">
           {t.content}
         </a>
         <a
-          class="rounded-lg px-4 py-2 text-[#6b6359] transition-colors hover:bg-[#f2e8d8] hover:text-[#201d18]"
+          class="rounded-lg px-4 py-2 text-[#aaa69f] transition-colors hover:bg-[#211b14] hover:text-white"
           href="#plan-and-billing"
         >
           {t.plans}
         </a>
         <a
-          class="rounded-lg px-4 py-2 text-[#6b6359] transition-colors hover:bg-[#f2e8d8] hover:text-[#201d18]"
+          class="rounded-lg px-4 py-2 text-[#aaa69f] transition-colors hover:bg-[#211b14] hover:text-white"
           href="#domain-form"
         >
           {t.domain}
         </a>
         <a
-          class="rounded-lg px-4 py-2 text-[#6b6359] transition-colors hover:bg-[#f2e8d8] hover:text-[#201d18]"
+          class="rounded-lg px-4 py-2 text-[#aaa69f] transition-colors hover:bg-[#211b14] hover:text-white"
           href="#delete-account-form"
         >
           {t.account}
@@ -215,9 +217,9 @@ const trialDays = Math.max(0, Math.ceil((user.trial_ends_at * 1000 - Date.now())
       </nav>
       <div class="grid items-start gap-6 xl:grid-cols-[minmax(360px,520px)_minmax(0,1fr)]">
         <div>
-          <section class="card rounded-xl border border-[#e0d9cf] bg-[#ffffff] p-6 [&_h2]:mb-4 [&_h2]:text-[1.45rem] [&_h2]:text-[#201d18] [&_h3]:mt-7 [&_h3]:mb-3 [&_h3]:text-lg [&_label]:mt-4 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold [&_.input]:w-full [&_.textarea]:w-full [&_.select]:w-full [&_small]:text-[#6b6359] mb-5">
+          <section class="card rounded-xl border border-[#34312b] bg-[#111110] p-6 [&_h2]:mb-4 [&_h2]:text-[1.45rem] [&_h2]:text-[#f5f2ec] [&_h3]:mt-7 [&_h3]:mb-3 [&_h3]:text-lg [&_label]:mt-4 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold [&_.input]:w-full [&_.textarea]:w-full [&_.select]:w-full [&_small]:text-[#aaa69f] mb-5">
             <h2>{t.address}</h2>
-            <p class="text-sm text-[#6b6359]">
+            <p class="text-sm text-[#aaa69f]">
               {t.publicLink}:{' '}
               <a
                 id="public-url"
@@ -241,29 +243,29 @@ const trialDays = Math.max(0, Math.ceil((user.trial_ends_at * 1000 - Date.now())
               </button>
             </form>
           </section>
-          <section class="card rounded-xl border border-[#e0d9cf] bg-[#ffffff] p-6 [&_h2]:mb-4 [&_h2]:text-[1.45rem] [&_h2]:text-[#201d18] [&_h3]:mt-7 [&_h3]:mb-3 [&_h3]:text-lg [&_label]:mt-4 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold [&_.input]:w-full [&_.textarea]:w-full [&_.select]:w-full [&_small]:text-[#6b6359] mb-5">
+          <section class="card rounded-xl border border-[#34312b] bg-[#111110] p-6 [&_h2]:mb-4 [&_h2]:text-[1.45rem] [&_h2]:text-[#f5f2ec] [&_h3]:mt-7 [&_h3]:mb-3 [&_h3]:text-lg [&_label]:mt-4 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold [&_.input]:w-full [&_.textarea]:w-full [&_.select]:w-full [&_small]:text-[#aaa69f] mb-5">
             <h2>{t.metrics}</h2>
             <div class="grid gap-3 sm:grid-cols-2">
               <div>
-                <strong id="metric-views" class="font-[Outfit] text-4xl font-medium text-[#29241d]">
+                <strong id="metric-views" class="font-[Outfit] text-4xl font-medium text-[#eee8dc]">
                   —
                 </strong>
-                <p class="text-[#6b6359]">{t.views}</p>
+                <p class="text-[#aaa69f]">{t.views}</p>
               </div>
               <div>
                 <strong
                   id="metric-clicks"
-                  class="font-[Outfit] text-4xl font-medium text-[#29241d]"
+                  class="font-[Outfit] text-4xl font-medium text-[#eee8dc]"
                 >
                   —
                 </strong>
-                <p class="text-[#6b6359]">{t.clicks}</p>
+                <p class="text-[#aaa69f]">{t.clicks}</p>
               </div>
             </div>
           </section>
           <form
             id="editor"
-            class="card rounded-xl border border-[#e0d9cf] bg-[#ffffff] p-6 [&_h2]:mb-4 [&_h2]:text-[1.45rem] [&_h2]:text-[#201d18] [&_h3]:mt-7 [&_h3]:mb-3 [&_h3]:text-lg [&_label]:mt-4 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold [&_.input]:w-full [&_.textarea]:w-full [&_.select]:w-full [&_small]:text-[#6b6359] mb-5"
+            class="card rounded-xl border border-[#34312b] bg-[#111110] p-6 [&_h2]:mb-4 [&_h2]:text-[1.45rem] [&_h2]:text-[#f5f2ec] [&_h3]:mt-7 [&_h3]:mb-3 [&_h3]:text-lg [&_label]:mt-4 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold [&_.input]:w-full [&_.textarea]:w-full [&_.select]:w-full [&_small]:text-[#aaa69f] mb-5"
             data-initial={JSON.stringify(content)}
           >
             <h2>{t.content}</h2>
@@ -485,7 +487,7 @@ const trialDays = Math.max(0, Math.ceil((user.trial_ends_at * 1000 - Date.now())
             />
             <div class="mt-5 flex flex-wrap gap-2.5">
               <button
-                class="btn btn-outline border-[#d0c3b2] font-bold text-[#201d18]"
+                class="btn btn-outline border-[#5a5041] font-bold text-[#f5f2ec]"
                 type="submit"
               >
                 {t.save}
@@ -506,9 +508,9 @@ const trialDays = Math.max(0, Math.ceil((user.trial_ends_at * 1000 - Date.now())
               hidden
             ></p>
           </form>
-          <section class="card rounded-xl border border-[#e0d9cf] bg-[#ffffff] p-6 [&_h2]:mb-4 [&_h2]:text-[1.45rem] [&_h2]:text-[#201d18] [&_h3]:mt-7 [&_h3]:mb-3 [&_h3]:text-lg [&_label]:mt-4 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold [&_.input]:w-full [&_.textarea]:w-full [&_.select]:w-full [&_small]:text-[#6b6359] mb-5">
+          <section class="card rounded-xl border border-[#34312b] bg-[#111110] p-6 [&_h2]:mb-4 [&_h2]:text-[1.45rem] [&_h2]:text-[#f5f2ec] [&_h3]:mt-7 [&_h3]:mb-3 [&_h3]:text-lg [&_label]:mt-4 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold [&_.input]:w-full [&_.textarea]:w-full [&_.select]:w-full [&_small]:text-[#aaa69f] mb-5">
             <h2 id="plan-and-billing">{t.plans}</h2>
-            <p class="text-[#6b6359]">
+            <p class="text-[#aaa69f]">
               {user.plan === 'trial'
                 ? `${trialDays} ${en ? 'days left in your trial' : 'dias restantes de teste'}`
                 : user.plan}
@@ -539,9 +541,9 @@ const trialDays = Math.max(0, Math.ceil((user.trial_ends_at * 1000 - Date.now())
               </button>
             )}
           </section>
-          <section class="card rounded-xl border border-[#e0d9cf] bg-[#ffffff] p-6 [&_h2]:mb-4 [&_h2]:text-[1.45rem] [&_h2]:text-[#201d18] [&_h3]:mt-7 [&_h3]:mb-3 [&_h3]:text-lg [&_label]:mt-4 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold [&_.input]:w-full [&_.textarea]:w-full [&_.select]:w-full [&_small]:text-[#6b6359] mb-5">
+          <section class="card rounded-xl border border-[#34312b] bg-[#111110] p-6 [&_h2]:mb-4 [&_h2]:text-[1.45rem] [&_h2]:text-[#f5f2ec] [&_h3]:mt-7 [&_h3]:mb-3 [&_h3]:text-lg [&_label]:mt-4 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold [&_.input]:w-full [&_.textarea]:w-full [&_.select]:w-full [&_small]:text-[#aaa69f] mb-5">
             <h2>{t.domain}</h2>
-            <p class="text-[#6b6359] text-sm">{t.domainHint}</p>
+            <p class="text-[#aaa69f] text-sm">{t.domainHint}</p>
             <form id="domain-form" class="flex gap-2 mt-4">
               <input
                 class="input input-bordered flex-1"
@@ -553,12 +555,12 @@ const trialDays = Math.max(0, Math.ceil((user.trial_ends_at * 1000 - Date.now())
                 {t.connect}
               </button>
             </form>
-            <p class="text-sm text-[#6b6359] mt-3">
+            <p class="text-sm text-[#aaa69f] mt-3">
               CNAME: <code>connect.{domain}</code>
             </p>
             <p id="domain-status" class="alert alert-info my-3 [hidden]:hidden" hidden></p>
           </section>
-          <section class="card rounded-xl border border-[#e0d9cf] bg-[#ffffff] p-6 [&_h2]:mb-4 [&_h2]:text-[1.45rem] [&_h2]:text-[#201d18] [&_h3]:mt-7 [&_h3]:mb-3 [&_h3]:text-lg [&_label]:mt-4 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold [&_.input]:w-full [&_.textarea]:w-full [&_.select]:w-full [&_small]:text-[#6b6359] mb-5">
+          <section class="card rounded-xl border border-[#34312b] bg-[#111110] p-6 [&_h2]:mb-4 [&_h2]:text-[1.45rem] [&_h2]:text-[#f5f2ec] [&_h3]:mt-7 [&_h3]:mb-3 [&_h3]:text-lg [&_label]:mt-4 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold [&_.input]:w-full [&_.textarea]:w-full [&_.select]:w-full [&_small]:text-[#aaa69f] mb-5">
             <h2>{t.account}</h2>
             <div class="mt-5 flex flex-wrap gap-2.5">
               <a id="export-data" class="btn btn-outline" href="#export">
@@ -590,7 +592,7 @@ const trialDays = Math.max(0, Math.ceil((user.trial_ends_at * 1000 - Date.now())
             </form>
           </section>
         </div>
-        <div class="rounded-xl border border-[#e0d9cf] bg-[#ffffff] p-3 xl:sticky xl:top-[18px] [&_iframe]:h-[650px] [&_iframe]:w-full [&_iframe]:rounded-[14px] [&_iframe]:border-0 [&_iframe]:bg-[#ffffff]">
+        <div class="rounded-xl border border-[#34312b] bg-[#0c0c0b] p-3 xl:sticky xl:top-[18px] [&_iframe]:h-[650px] [&_iframe]:w-full [&_iframe]:rounded-[14px] [&_iframe]:border-0 [&_iframe]:bg-[#111110]">
           <div class="flex flex-wrap justify-between gap-2 items-center px-3 py-2">
             <strong>{t.preview}</strong>
             <div class="flex gap-2">
@@ -603,7 +605,7 @@ const trialDays = Math.max(0, Math.ceil((user.trial_ends_at * 1000 - Date.now())
             </div>
           </div>
           <iframe id="preview-frame" src="/app/preview" title={t.preview}></iframe>
-          <p class="px-3 pt-2 text-xs text-[#6b6359]">
+          <p class="px-3 pt-2 text-xs text-[#aaa69f]">
             {en
               ? 'The preview uses the same layout as the published page.'
               : 'A prévia usa o mesmo layout da página publicada.'}
