@@ -1,6 +1,7 @@
 ---
 import Base from '@frontend/components/Base.astro';
 import Brand from '@frontend/components/Brand.astro';
+import Walkthrough from '@frontend/components/Walkthrough.astro';
 import { getPublicPrices, type Plan } from '@frontend/api/billing/public-prices';
 import { getRootDomain } from '@frontend/api/config/root-domain';
 interface Props {
@@ -137,7 +138,7 @@ const t = en
   <link slot="head" rel="alternate" hreflang="pt-BR" href={'https://' + domain + '/'} />
   <link slot="head" rel="alternate" hreflang="en-US" href={'https://' + domain + '/en/'} />
   <link slot="head" rel="alternate" hreflang="x-default" href={'https://' + domain + '/'} />
-  <div class="min-h-screen overflow-hidden bg-black text-[#f5f2ec]">
+  <div class="min-h-screen overflow-x-clip bg-black text-[#f5f2ec]">
     <header class="relative z-20 mx-auto flex max-w-[1380px] items-center justify-between gap-4 px-5 pt-5 sm:px-8 sm:pt-7">
       <Brand href={en ? '/en' : '/'} />
       <nav
@@ -163,7 +164,7 @@ const t = en
     </header>
     <main>
       <section
-        class="relative mx-auto grid max-w-[1380px] items-center gap-12 px-5 pb-20 pt-14 sm:px-8 lg:min-h-[700px] lg:grid-cols-[0.95fr_1.05fr] lg:gap-14 lg:py-20"
+        class="relative mx-auto grid max-w-[1380px] items-center gap-12 px-5 pb-28 pt-14 sm:px-8 lg:min-h-[700px] lg:grid-cols-[0.95fr_1.05fr] lg:gap-14 lg:pb-28 lg:pt-20"
         aria-labelledby="hero-title"
       >
         <div class="relative z-10 max-w-[690px] text-left" data-reveal>
@@ -202,14 +203,6 @@ const t = en
               ? 'No card required · Email or Google sign-in'
               : 'Sem cartão · Entre por e-mail ou Google'}
           </p>
-          <a
-            href="#como-funciona"
-            class="mt-12 inline-flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.2em] text-[#8c877f]"
-            aria-label={en ? 'Scroll to discover' : 'Role para descobrir'}
-          >
-            <span class="h-px w-8 bg-[#d6a85f]"></span>
-            {en ? 'Explore' : 'Explore'}
-          </a>
         </div>
         <div
           class="overflow-hidden rounded-[2rem] bg-[#0a0908] shadow-[0_34px_90px_-48px_rgba(0,0,0,0.7)]"
@@ -225,63 +218,19 @@ const t = en
             class="pointer-events-none aspect-[1.08] w-full scale-[1.08] select-none object-cover"
           />
         </div>
+        <a
+          href="#como-funciona"
+          class="absolute bottom-5 left-1/2 z-10 flex -translate-x-1/2 flex-col items-center gap-3 whitespace-nowrap font-mono text-[10px] uppercase tracking-[0.2em] text-[#aaa39a] transition-colors hover:text-[#f5f2ec] focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#d6a85f]"
+          aria-label={en ? 'Scroll to discover' : 'Role para descobrir'}
+        >
+          Explore
+          <span
+            aria-hidden="true"
+            class="h-7 w-px bg-gradient-to-b from-[#d6a85f] to-transparent"
+          ></span>
+        </a>
       </section>
-      <section id="como-funciona" class="border-y border-[#25231f] bg-[#080808] py-24 md:py-32">
-        <div class="mx-auto max-w-[1380px] px-5 sm:px-8">
-          <div class="max-w-[760px]" data-reveal>
-            <p class="font-mono text-[11px] uppercase tracking-[0.22em] text-[#d6a85f]">
-              {en ? 'See it for yourself' : 'Veja como funciona'}
-            </p>
-            <h2 class="mt-6 font-['Outfit',sans-serif] text-[clamp(3rem,5.3vw,5.6rem)] font-medium leading-[1.02] tracking-[-0.055em]">
-              {t.section}
-            </h2>
-            <p class="mt-6 max-w-[52ch] text-lg leading-relaxed text-[#a9a6a0]">{t.sectionText}</p>
-          </div>
-          <div class="mt-14 space-y-6 md:mt-20">
-            {t.steps.map((step, i) => (
-              <article
-                data-reveal
-                class="group grid items-center gap-8 overflow-hidden rounded-[2rem] border border-[#34312b] bg-[#111110] p-6 transition-[border-color,transform] duration-500 ease-out hover:-translate-y-1 hover:border-[#745b38] sm:p-8 lg:grid-cols-[0.38fr_0.62fr] lg:gap-10 lg:p-10 motion-reduce:transition-none"
-              >
-                <div class="max-w-[420px]">
-                  <span class="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#6c5434] bg-[#2a2117] font-mono text-xs font-semibold text-[#e5bd82]">
-                    0{i + 1}
-                  </span>
-                  <h3 class="mt-7 font-['Outfit',sans-serif] text-[clamp(2rem,3.5vw,3.2rem)] font-medium leading-[1.08] tracking-[-0.05em]">
-                    {step.title}
-                  </h3>
-                  <p class="mt-5 max-w-[36ch] text-base leading-relaxed text-[#a9a6a0] sm:text-lg">
-                    {step.text}
-                  </p>
-                  <div class="mt-9 flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.15em] text-[#9a8b77]">
-                    <span class="h-px w-8 bg-[#a17c49]"></span>
-                    {en ? 'Real Vira screen' : 'Tela real do Vira'}
-                  </div>
-                </div>
-                <div class="overflow-hidden rounded-2xl border border-[#393630] bg-black shadow-[0_18px_60px_-30px_rgba(0,0,0,0.8)]">
-                  <picture>
-                    <source media="(max-width: 639px)" srcset={step.mobile} />
-                    <img
-                      src={step.image}
-                      width="1280"
-                      height="760"
-                      loading="lazy"
-                      alt={step.alt}
-                      class="aspect-[9/16] w-full object-cover object-top transition-transform duration-700 ease-out group-hover:scale-[1.025] sm:aspect-[16/10] motion-reduce:transform-none motion-reduce:transition-none"
-                    />
-                  </picture>
-                </div>
-              </article>
-            ))}
-          </div>
-          <a
-            href="/login"
-            class="mt-12 inline-flex items-center gap-3 border-b border-[#8e7043] pb-2 text-sm font-semibold text-[#e2bf83] transition-all hover:gap-5"
-          >
-            {en ? 'Create your page' : 'Criar minha página'} <span aria-hidden="true">↗</span>
-          </a>
-        </div>
-      </section>
+      <Walkthrough lang={lang} heading={t.section} intro={t.sectionText} steps={t.steps} />
       <section
         class="border-b border-[#25231f] bg-[#050505] px-5 py-24 text-center sm:px-8 md:py-32"
         data-reveal

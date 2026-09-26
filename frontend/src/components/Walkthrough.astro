@@ -1,0 +1,165 @@
+---
+interface Props {
+  lang: 'pt' | 'en';
+  heading: string;
+  intro: string;
+  steps: {
+    title: string;
+    text: string;
+    image: string;
+    mobile: string;
+    alt: string;
+  }[];
+}
+
+const { lang, heading, intro, steps } = Astro.props;
+const en = lang === 'en';
+---
+
+<section
+  id="como-funciona"
+  data-walkthrough
+  class="relative h-[300svh] border-y border-[#25231f] bg-[#080808]"
+  aria-labelledby="walkthrough-heading"
+>
+  <div class="sticky top-0 mx-auto grid h-svh max-w-[1380px] grid-rows-[auto_auto] content-center gap-6 overflow-hidden px-5 py-5 sm:px-8 lg:grid-cols-[0.42fr_0.58fr] lg:grid-rows-1 lg:items-center lg:gap-14 lg:py-12">
+    <div class="relative z-10 min-w-0">
+      <p class="font-mono text-[10px] uppercase tracking-[0.22em] text-[#d6a85f] sm:text-[11px]">
+        {en ? 'See it for yourself' : 'Veja como funciona'}
+      </p>
+      <h2
+        id="walkthrough-heading"
+        class="mt-3 max-w-[11ch] font-['Outfit',sans-serif] text-[clamp(2.25rem,5vw,5rem)] font-medium leading-[1.02] tracking-[-0.055em] lg:mt-6"
+      >
+        {heading}
+      </h2>
+      <p class="mt-3 max-w-[42ch] text-sm leading-relaxed text-[#a9a6a0] sm:text-base lg:mt-6">
+        {intro}
+      </p>
+
+      <div class="relative mt-5 h-[10.5rem] sm:h-[11rem] lg:mt-14 lg:h-[14rem]" aria-live="off">
+        {steps.map((step, i) => (
+          <div
+            data-walkthrough-copy
+            data-active={i === 0 ? 'true' : 'false'}
+            aria-hidden={i === 0 ? 'false' : 'true'}
+            class="absolute inset-0 flex flex-col justify-center opacity-0 translate-y-3 transition-[opacity,transform] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] data-[active=true]:translate-y-0 data-[active=true]:opacity-100 motion-reduce:transition-none"
+          >
+            <p class="font-mono text-[11px] tracking-[0.17em] text-[#d6a85f]">
+              0{i + 1} / 0{steps.length}
+            </p>
+            <h3 class="mt-3 font-['Outfit',sans-serif] text-[clamp(1.6rem,3vw,2.8rem)] font-medium leading-[1.07] tracking-[-0.045em]">
+              {step.title}
+            </h3>
+            <p class="mt-3 max-w-[39ch] text-sm leading-relaxed text-[#b9b5ae] sm:text-base">
+              {step.text}
+            </p>
+          </div>
+        ))}
+      </div>
+
+      <nav
+        class="mt-4 flex items-center gap-2 lg:mt-7"
+        aria-label={en ? 'Choose a step' : 'Escolha um passo'}
+      >
+        {steps.map((step, i) => (
+          <button
+            type="button"
+            data-walkthrough-trigger={i}
+            aria-label={`${en ? 'Step' : 'Passo'} ${i + 1}: ${step.title}`}
+            aria-current={i === 0 ? 'step' : undefined}
+            class="group flex min-h-11 flex-1 items-center gap-2 py-2 text-left font-mono text-xs text-[#817d76] transition-colors hover:text-[#f5f2ec] focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#d6a85f] aria-[current=step]:text-[#f5f2ec]"
+          >
+            <span class="h-0.5 flex-1 bg-[#39352f] transition-colors duration-500 group-hover:bg-[#9b7949] group-aria-[current=step]:bg-[#d6a85f] motion-reduce:transition-none"></span>
+            <span>0{i + 1}</span>
+          </button>
+        ))}
+      </nav>
+    </div>
+
+    <div class="relative min-h-0 h-[min(35svh,340px)] overflow-hidden rounded-[1.25rem] border border-[#393630] bg-[#10100f] shadow-[0_30px_90px_-45px_rgba(0,0,0,0.95)] sm:h-[min(40svh,400px)] lg:h-[min(52svh,480px)] lg:rounded-[1.75rem]">
+      {steps.map((step, i) => (
+        <picture
+          data-walkthrough-visual
+          data-active={i === 0 ? 'true' : 'false'}
+          aria-hidden={i === 0 ? 'false' : 'true'}
+          class="absolute inset-0 block h-full w-full opacity-0 scale-[1.025] transition-[opacity,transform] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] data-[active=true]:scale-100 data-[active=true]:opacity-100 motion-reduce:transition-none"
+        >
+          <source media="(max-width: 639px)" srcset={step.mobile} />
+          <img
+            src={step.image}
+            width="1280"
+            height="760"
+            loading="lazy"
+            alt={step.alt}
+            class="h-full w-full object-cover object-top sm:object-contain"
+          />
+        </picture>
+      ))}
+      <div
+        class="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[#080808]/80 to-transparent sm:hidden"
+        aria-hidden="true"
+      ></div>
+      <span class="absolute bottom-3 left-4 rounded-full border border-white/15 bg-black/75 px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.12em] text-[#f5f2ec] backdrop-blur-sm sm:bottom-5 sm:left-5">
+        {en ? 'Actual Vira screen' : 'Tela real do Vira'}
+      </span>
+    </div>
+  </div>
+</section>
+
+<script>
+  const section = document.querySelector<HTMLElement>('[data-walkthrough]');
+
+  if (section) {
+    const copies = Array.from(section.querySelectorAll<HTMLElement>('[data-walkthrough-copy]'));
+    const visuals = Array.from(section.querySelectorAll<HTMLElement>('[data-walkthrough-visual]'));
+    const triggers = Array.from(
+      section.querySelectorAll<HTMLButtonElement>('[data-walkthrough-trigger]'),
+    );
+    let active = -1;
+    let frame = 0;
+
+    const select = (index: number) => {
+      if (index === active) return;
+      active = index;
+      copies.forEach((copy, i) => {
+        copy.dataset.active = String(i === index);
+        copy.setAttribute('aria-hidden', String(i !== index));
+      });
+      visuals.forEach((visual, i) => {
+        visual.dataset.active = String(i === index);
+        visual.setAttribute('aria-hidden', String(i !== index));
+      });
+      triggers.forEach((trigger, i) => {
+        if (i === index) trigger.setAttribute('aria-current', 'step');
+        else trigger.removeAttribute('aria-current');
+      });
+    };
+
+    const update = () => {
+      frame = 0;
+      const range = Math.max(1, section.offsetHeight - window.innerHeight);
+      const progress = Math.min(1, Math.max(0, -section.getBoundingClientRect().top / range));
+      select(Math.min(copies.length - 1, Math.floor(progress * copies.length)));
+    };
+
+    const schedule = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+
+    triggers.forEach((trigger, i) => {
+      trigger.addEventListener('click', () => {
+        const range = Math.max(1, section.offsetHeight - window.innerHeight);
+        const start = window.scrollY + section.getBoundingClientRect().top;
+        window.scrollTo({
+          top: start + ((i + 0.5) / triggers.length) * range,
+          behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
+        });
+      });
+    });
+
+    addEventListener('scroll', schedule, { passive: true });
+    addEventListener('resize', schedule, { passive: true });
+    update();
+  }
+</script>
