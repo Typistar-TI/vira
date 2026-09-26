@@ -60,15 +60,15 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CONFIG_ENCRYPTION_KEY: ${{ secrets.CONFIG_ENCRYPTION_KEY }}
           GOOGLE_CLIENT_ID: ${{ vars.GOOGLE_CLIENT_ID }}
-          ADMIN_GOOGLE_EMAIL: ${{ secrets.ADMIN_GOOGLE_EMAIL }}
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           AUTH_EMAIL_FROM: ${{ vars.AUTH_EMAIL_FROM }}
         run: |
           if [ -n "$GOOGLE_CLIENT_ID" ]; then
             printf '%s' "$GOOGLE_CLIENT_ID" | npm run config:remote -- GOOGLE_CLIENT_ID
           fi
-          if [ -n "$ADMIN_GOOGLE_EMAIL" ]; then
-            printf '%s' "$ADMIN_GOOGLE_EMAIL" | npm run admin:remote
+          if [ -n "$ADMIN_EMAIL" ]; then
+            printf '%s' "$ADMIN_EMAIL" | npm run admin:remote
           fi
           if [ -n "$RESEND_API_KEY" ]; then
             printf '%s' "$RESEND_API_KEY" | npm run config:remote -- RESEND_API_KEY

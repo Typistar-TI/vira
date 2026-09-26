@@ -86,9 +86,9 @@ Os fluxos que usam autenticação, pagamentos e domínios próprios dependem da 
 
 Crie um cliente OAuth do tipo **Aplicativo da Web** no Google Cloud Console. Adicione `https://vira.ia.br` às origens JavaScript autorizadas e `https://vira.ia.br/api/auth/google` aos URIs de redirecionamento autorizados. Configure a tela de consentimento para usuários externos e publique o aplicativo quando estiver pronto para receber clientes. Se também usar `www.vira.ia.br`, adicione a origem e o URI equivalentes.
 
-Grave o Client ID público no D1 com `npm run config:remote -- GOOGLE_CLIENT_ID`, enviando o valor pela entrada padrão. Para autorizar a primeira conta administrativa, use `npm run admin:remote` e envie o e-mail Google pela entrada padrão. O script escreve o e-mail apenas no banco, sem incluí-lo no histórico do Git. A conta administrativa precisa entrar pelo botão Google ao menos uma vez para vincular seu identificador estável à autorização.
+Grave o Client ID público no D1 com `npm run config:remote -- GOOGLE_CLIENT_ID`, enviando o valor pela entrada padrão. O Google é opcional quando o acesso por e-mail está configurado. Para autorizar a primeira conta administrativa, use `npm run admin:remote` e envie o e-mail escolhido pela entrada padrão. O script escreve o e-mail apenas no banco, sem incluí-lo no histórico do Git. Se o administrador usar Google, o primeiro login vincula seu identificador estável à autorização.
 
-No deploy pelo GitHub Actions, a variável de repositório `GOOGLE_CLIENT_ID` e o segredo `ADMIN_GOOGLE_EMAIL` são gravados no D1 após as migrações, quando definidos. Assim, novos deploys preservam essa configuração sem colocar os valores no código.
+No deploy pelo GitHub Actions, a variável de repositório `GOOGLE_CLIENT_ID` e o segredo `ADMIN_EMAIL` são gravados no D1 após as migrações, quando definidos. O e-mail administrativo pode entrar por link, mesmo sem configurar Google. Novos deploys preservam a configuração sem colocar os valores no código.
 
 ## Configurar acesso por e-mail
 
