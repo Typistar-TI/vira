@@ -52,15 +52,14 @@ As integrações externas são chamadas pelas rotas de API; suas credenciais nã
 
 ## Organização do projeto
 
-| Caminho                      | Responsabilidade                                                     |
-| ---------------------------- | -------------------------------------------------------------------- |
-| `frontend/src/pages/`        | Páginas Astro e entradas curtas das rotas da API.                    |
-| `frontend/src/components/`   | Componentes de apresentação e renderização das páginas.              |
-| `backend/api/`               | Implementação das rotas da API.                                      |
-| `backend/`                   | Autenticação, cobrança, domínios, dados, contas e entrada do Worker. |
-| `shared/`                    | Tipos e validação do conteúdo das páginas.                           |
-| `frontend/src/middleware.ts` | Roteamento por hostname.                                             |
-| `migrations/`                | Evolução do esquema do D1.                                           |
+| Caminho                      | Responsabilidade                                                                            |
+| ---------------------------- | ------------------------------------------------------------------------------------------- |
+| `frontend/src/pages/`        | Páginas Astro e entradas curtas das rotas da API.                                           |
+| `frontend/src/components/`   | Componentes de apresentação e renderização das páginas.                                     |
+| `backend/api/`               | Implementação das rotas da API.                                                             |
+| `backend/`                   | Autenticação, cobrança, domínios, dados, contas, validação das páginas e entrada do Worker. |
+| `frontend/src/middleware.ts` | Roteamento por hostname.                                                                    |
+| `migrations/`                | Evolução do esquema do D1.                                                                  |
 
 ## Desenvolvimento local
 

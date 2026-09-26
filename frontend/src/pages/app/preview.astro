@@ -3,7 +3,7 @@ import Base from '@frontend/layouts/Base.astro';
 import SitePage from '@frontend/components/SitePage.astro';
 import { getSessionAdmin, getSessionUser } from '@backend/auth';
 import { getSiteForUser } from '@backend/db';
-import { parseSite } from '@shared/site';
+import { parseSite } from '@backend/site';
 const user = await getSessionUser(Astro.request);
 if (!user) return Astro.redirect((await getSessionAdmin(Astro.request)) ? '/admin' : '/login');
 const site = await getSiteForUser(user.id);

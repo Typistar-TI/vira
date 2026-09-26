@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { hasAccess } from '@shared/site';
+import { hasAccess } from '@backend/site';
 import { resolveTenant } from '@backend/custom-domains/tenant';
 
 export const GET: APIRoute = async ({ request }) => {

@@ -4,7 +4,7 @@ import { publicPrices } from '@backend/billing';
 import { rootDomain } from '@backend/config';
 import { getSessionAdmin, getSessionUser } from '@backend/auth';
 import { getSiteForUser } from '@backend/db';
-import { hasAccess, parseSite } from '@shared/site';
+import { hasAccess, parseSite } from '@backend/site';
 const user = await getSessionUser(Astro.request);
 if (!user) return Astro.redirect((await getSessionAdmin(Astro.request)) ? '/admin' : '/login');
 const site = await getSiteForUser(user.id);

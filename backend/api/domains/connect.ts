@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
 import { rootDomain } from '@backend/config';
-import { hasAccess } from '@shared/site';
+import { hasAccess } from '@backend/site';
 import { getSiteForUser } from '@backend/db';
 import { createHostname, deleteHostname, normalizeDomain } from '@backend/custom-domains';
 import { isResponse, json, readJson, requireUser } from '@backend/http';

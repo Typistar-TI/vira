@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
-import { hasAccess, parseSite } from '@shared/site';
+import { hasAccess, parseSite } from '@backend/site';
 import { resolveTenant } from '@backend/custom-domains/tenant';
 
 export const GET: APIRoute = async ({ request }) => {

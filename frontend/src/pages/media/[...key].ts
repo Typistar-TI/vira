@@ -1,7 +1,7 @@
 import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
 import { getSessionUser } from '@backend/auth';
-import { hasAccess } from '@shared/site';
+import { hasAccess } from '@backend/site';
 
 export const GET: APIRoute = async ({ params, request }) => {
   const key = params.key || '';

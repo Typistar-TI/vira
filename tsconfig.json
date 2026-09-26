@@ -4,10 +4,9 @@
     "baseUrl": ".",
     "paths": {
       "@frontend/*": ["frontend/src/*"],
-      "@backend/*": ["backend/*"],
-      "@shared/*": ["shared/*"]
+      "@backend/*": ["backend/*"]
     }
   },
-  "include": [".astro/types.d.ts", "frontend/src/**/*", "backend/**/*", "shared/**/*"],
+  "include": [".astro/types.d.ts", "frontend/src/**/*", "backend/**/*"],
   "exclude": ["dist", "worker-configuration.d.ts"]
 }

@@ -2,7 +2,7 @@
 import { env } from 'cloudflare:workers';
 import Base from '@frontend/layouts/Base.astro';
 import SitePage from '@frontend/components/SitePage.astro';
-import { hasAccess, parseSite } from '@shared/site';
+import { hasAccess, parseSite } from '@backend/site';
 import { resolveTenant } from '@backend/custom-domains/tenant';
 const tenant = await resolveTenant(Astro.url.hostname);
 if (!tenant) return new Response('Página não encontrada', { status: 404 });

@@ -1,5 +1,5 @@
 import { env } from 'cloudflare:workers';
-import { defaultSite } from '@shared/site';
+import { defaultSite } from '@backend/site';
 
 export interface UserRow {
   id: string;
