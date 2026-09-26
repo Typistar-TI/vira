@@ -6,19 +6,19 @@ import { rootDomain } from '@/server/config';
 
 const user = await getSessionUser(Astro.request);
 if (!user) return Astro.redirect('/login?next=admin');
-const allowed = await env.DB.prepare('SELECT phone FROM admin_phones WHERE phone = ?').bind(user.phone).first();
+const allowed = user.google_sub ? await env.DB.prepare('SELECT email FROM admin_google_accounts WHERE google_sub = ?').bind(user.google_sub).first() : null;
 if (!allowed) return new Response('Acesso restrito', { status: 403 });
 const search = (Astro.url.searchParams.get('q') || '').trim().slice(0, 80);
 
 const [settingsResult, pricesResult, customersResult, domainsResult, auditResult, countsResult, domain] = await Promise.all([
   env.DB.prepare('SELECT key, value, encrypted FROM app_settings ORDER BY key').all<{ key: string; value: string; encrypted: number }>(),
   env.DB.prepare('SELECT plan, currency, amount_minor, stripe_price_id, active FROM plan_prices ORDER BY currency, plan').all<{ plan: string; currency: string; amount_minor: number | null; stripe_price_id: string | null; active: number }>(),
-  env.DB.prepare(`SELECT u.phone, u.plan, u.created_at, u.trial_ends_at, u.access_until, u.stripe_subscription_id, s.slug, s.published_at,
+  env.DB.prepare(`SELECT u.email, u.plan, u.created_at, u.trial_ends_at, u.access_until, u.stripe_subscription_id, s.slug, s.published_at,
     d.hostname, d.status AS domain_status FROM users u JOIN sites s ON s.user_id = u.id
-    LEFT JOIN domains d ON d.site_id = s.id WHERE u.phone LIKE ? OR s.slug LIKE ? ORDER BY u.created_at DESC LIMIT 50`)
-    .bind(`%${search}%`, `%${search}%`).all<{ phone: string; plan: string; created_at: number; trial_ends_at: number; access_until: number | null; stripe_subscription_id: string | null; slug: string; published_at: number | null; hostname: string | null; domain_status: string | null }>(),
-  env.DB.prepare(`SELECT d.hostname, d.status, d.ssl_status, d.created_at, u.phone, s.slug FROM domains d
-    JOIN sites s ON s.id = d.site_id JOIN users u ON u.id = s.user_id ORDER BY d.created_at DESC LIMIT 100`).all<{ hostname: string; status: string; ssl_status: string; created_at: number; phone: string; slug: string }>(),
+    LEFT JOIN domains d ON d.site_id = s.id WHERE u.email LIKE ? OR s.slug LIKE ? ORDER BY u.created_at DESC LIMIT 50`)
+    .bind(`%${search}%`, `%${search}%`).all<{ email: string | null; plan: string; created_at: number; trial_ends_at: number; access_until: number | null; stripe_subscription_id: string | null; slug: string; published_at: number | null; hostname: string | null; domain_status: string | null }>(),
+  env.DB.prepare(`SELECT d.hostname, d.status, d.ssl_status, d.created_at, u.email, s.slug FROM domains d
+    JOIN sites s ON s.id = d.site_id JOIN users u ON u.id = s.user_id ORDER BY d.created_at DESC LIMIT 100`).all<{ hostname: string; status: string; ssl_status: string; created_at: number; email: string | null; slug: string }>(),
   env.DB.prepare('SELECT action, target, created_at FROM admin_audit ORDER BY created_at DESC LIMIT 10').all<{ action: string; target: string; created_at: number }>(),
   env.DB.prepare('SELECT (SELECT count(*) FROM users) AS users, (SELECT count(*) FROM sites WHERE published_at IS NOT NULL) AS published, (SELECT count(*) FROM domains) AS domains').first<{ users: number; published: number; domains: number }>(),
   rootDomain(),
@@ -32,21 +32,20 @@ const audit = auditResult.results;
 const counts = countsResult ?? { users: 0, published: 0, domains: 0 };
 const byKey = Object.fromEntries(settings.map(row => [row.key, Boolean(row.value)]));
 const required = [
-  { label: 'Acesso por celular', ready: Boolean(byKey.TWILIO_API_KEY && byKey.TWILIO_API_SECRET && byKey.TWILIO_VERIFY_SERVICE_SID && byKey.TURNSTILE_SECRET && byKey.PUBLIC_TURNSTILE_SITE_KEY) },
+  { label: 'Entrar com Google', ready: Boolean(byKey.GOOGLE_CLIENT_ID) },
   { label: 'Cobrança', ready: Boolean(byKey.STRIPE_SECRET_KEY && byKey.STRIPE_WEBHOOK_SECRET) },
   { label: 'Privacidade', ready: Boolean(byKey.PRIVACY_CONTROLLER_NAME && byKey.PRIVACY_CONTACT_EMAIL) },
   { label: 'Domínios próprios', ready: Boolean(byKey.CLOUDFLARE_API_TOKEN) },
   { label: 'Métricas', ready: Boolean(byKey.CLOUDFLARE_ANALYTICS_TOKEN) },
 ];
 const groups = [
-  { title: 'Identidade e acesso', keys: ['PUBLIC_TURNSTILE_SITE_KEY', 'TURNSTILE_SECRET', 'TWILIO_API_KEY', 'TWILIO_API_SECRET', 'TWILIO_VERIFY_SERVICE_SID'] },
+  { title: 'Identidade e acesso', keys: ['GOOGLE_CLIENT_ID'] },
   { title: 'Cobrança', keys: ['STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET'] },
   { title: 'Domínios e métricas', keys: ['CLOUDFLARE_API_TOKEN', 'CLOUDFLARE_ANALYTICS_TOKEN'] },
   { title: 'Privacidade', keys: ['PRIVACY_CONTROLLER_NAME', 'PRIVACY_CONTACT_EMAIL'] },
 ];
 const labels: Record<string, string> = {
-  PUBLIC_TURNSTILE_SITE_KEY: 'Chave pública Turnstile', TURNSTILE_SECRET: 'Chave secreta Turnstile',
-  TWILIO_API_KEY: 'Chave de API Twilio', TWILIO_API_SECRET: 'Segredo da API Twilio', TWILIO_VERIFY_SERVICE_SID: 'Serviço Twilio Verify',
+  GOOGLE_CLIENT_ID: 'Client ID do Google',
   STRIPE_SECRET_KEY: 'Chave secreta Stripe', STRIPE_WEBHOOK_SECRET: 'Segredo do webhook Stripe',
   CLOUDFLARE_API_TOKEN: 'Token Cloudflare para domínios', CLOUDFLARE_ANALYTICS_TOKEN: 'Token Cloudflare para métricas',
   PRIVACY_CONTROLLER_NAME: 'Responsável pelo Vira', PRIVACY_CONTACT_EMAIL: 'E-mail de privacidade',
@@ -58,7 +57,7 @@ const date = (time: number | null) => time ? new Date(time * 1000).toLocaleDateS
   <div class="vira-shell admin-shell">
     <header class="vira-nav admin-nav"><a class="vira-logo" href="/">vira<span>.</span></a><div class="admin-nav-links"><span>Administração</span><a href="/app">Painel do cliente</a><button id="admin-logout" type="button">Sair</button></div></header>
     <main class="admin-main">
-      <div class="admin-intro"><div><span class="eyebrow">Operação do Vira</span><h1>Seu negócio, em ordem.</h1><p>Configure o lançamento, acompanhe clientes e mantenha os planos atualizados.</p></div><div class="admin-owner">Acesso autorizado<br /><strong>{user.phone}</strong></div></div>
+      <div class="admin-intro"><div><span class="eyebrow">Operação do Vira</span><h1>Seu negócio, em ordem.</h1><p>Configure o lançamento, acompanhe clientes e mantenha os planos atualizados.</p></div><div class="admin-owner">Acesso autorizado<br /><strong>{user.email}</strong></div></div>
       <nav class="admin-tabs" aria-label="Seções do painel"><a href="#visao">Visão geral</a><a href="#precos">Preços</a><a href="#configuracoes">Configurações</a><a href="#clientes">Clientes</a><a href="#dominios">Domínios</a><a href="#atividade">Atividade</a></nav>
       <section id="visao" class="admin-section">
         <div class="admin-section-title"><span class="eyebrow">Visão geral</span><h2>Estado da operação</h2></div>
@@ -79,8 +78,8 @@ const date = (time: number | null) => time ? new Date(time * 1000).toLocaleDateS
         <div class="admin-section-title"><span class="eyebrow">Serviços</span><h2>Configurações</h2><p>Os segredos ficam criptografados no banco. Depois de salvos, apenas o estado “configurado” aparece aqui.</p></div>
         <div class="admin-setting-groups">{groups.map(group => <div class="admin-card"><h3>{group.title}</h3>{group.keys.map(key => { const row = settings.find(item => item.key === key); if (!row) return null; return <form class="admin-setting-form" data-key={key} data-secret={Boolean(row.encrypted)}><label for={`setting-${key}`}>{labels[key]} <span class={row.value ? 'admin-configured' : 'admin-missing'}>{row.value ? 'Configurado' : 'Pendente'}</span></label><div class="admin-setting-input"><input id={`setting-${key}`} name="value" type={row.encrypted ? 'password' : key === 'PRIVACY_CONTACT_EMAIL' ? 'email' : 'text'} value={row.encrypted ? '' : row.value} placeholder={row.encrypted && row.value ? 'Novo valor para substituir' : ''} autocomplete="off" /><button type="submit">Salvar</button></div><p class="admin-form-status" role="status" hidden></p></form>})}</div>)}</div>
       </section>
-      <section id="clientes" class="admin-section"><div class="admin-section-title"><span class="eyebrow">Contas</span><h2>Clientes e assinaturas</h2><p>Busque por celular ou endereço da página. Os planos mudam apenas pelos eventos de cobrança da Stripe.</p></div><form class="admin-search" action="/admin#clientes" method="get"><input name="q" type="search" value={search} placeholder="Celular ou endereço da página" maxlength="80" /><button type="submit">Buscar</button></form><div class="admin-card admin-table-wrap"><table><thead><tr><th>Celular</th><th>Plano</th><th>Acesso até</th><th>Cadastro</th><th>Página</th><th>Assinatura</th></tr></thead><tbody>{customers.map(row => <tr><td>{row.phone}</td><td>{row.plan}</td><td>{date(row.access_until ?? (row.plan === 'trial' ? row.trial_ends_at : null))}</td><td>{date(row.created_at)}</td><td><a href={`https://${row.slug}.${domain}/`} target="_blank" rel="noopener noreferrer">{row.slug}</a><small>{row.published_at ? 'Publicada' : 'Rascunho'}</small></td><td><code>{row.stripe_subscription_id ?? '—'}</code></td></tr>)}</tbody></table>{customers.length === 0 && <p class="admin-empty">{search ? 'Nenhuma conta corresponde à busca.' : 'Nenhum cliente ainda. As contas aparecerão aqui após o primeiro cadastro.'}</p>}</div></section>
-      <section id="dominios" class="admin-section"><div class="admin-section-title"><span class="eyebrow">Publicação</span><h2>Domínios dos clientes</h2><p>Acompanhe a ativação do hostname e do certificado TLS.</p></div><div class="admin-card admin-table-wrap"><table><thead><tr><th>Domínio</th><th>Cliente</th><th>Hostname</th><th>TLS</th><th>Adicionado</th></tr></thead><tbody>{domains.map(row => <tr><td>{row.hostname}</td><td>{row.phone}</td><td>{row.status}</td><td>{row.ssl_status}</td><td>{date(row.created_at)}</td></tr>)}</tbody></table>{domains.length === 0 && <p class="admin-empty">Nenhum domínio de cliente conectado ainda.</p>}</div></section>
+      <section id="clientes" class="admin-section"><div class="admin-section-title"><span class="eyebrow">Contas</span><h2>Clientes e assinaturas</h2><p>Busque por e-mail ou endereço da página. Os planos mudam apenas pelos eventos de cobrança da Stripe.</p></div><form class="admin-search" action="/admin#clientes" method="get"><input name="q" type="search" value={search} placeholder="E-mail ou endereço da página" maxlength="80" /><button type="submit">Buscar</button></form><div class="admin-card admin-table-wrap"><table><thead><tr><th>E-mail</th><th>Plano</th><th>Acesso até</th><th>Cadastro</th><th>Página</th><th>Assinatura</th></tr></thead><tbody>{customers.map(row => <tr><td>{row.email ?? 'Conta antiga'}</td><td>{row.plan}</td><td>{date(row.access_until ?? (row.plan === 'trial' ? row.trial_ends_at : null))}</td><td>{date(row.created_at)}</td><td><a href={`https://${row.slug}.${domain}/`} target="_blank" rel="noopener noreferrer">{row.slug}</a><small>{row.published_at ? 'Publicada' : 'Rascunho'}</small></td><td><code>{row.stripe_subscription_id ?? '—'}</code></td></tr>)}</tbody></table>{customers.length === 0 && <p class="admin-empty">{search ? 'Nenhuma conta corresponde à busca.' : 'Nenhum cliente ainda. As contas aparecerão aqui após o primeiro cadastro.'}</p>}</div></section>
+      <section id="dominios" class="admin-section"><div class="admin-section-title"><span class="eyebrow">Publicação</span><h2>Domínios dos clientes</h2><p>Acompanhe a ativação do hostname e do certificado TLS.</p></div><div class="admin-card admin-table-wrap"><table><thead><tr><th>Domínio</th><th>Cliente</th><th>Hostname</th><th>TLS</th><th>Adicionado</th></tr></thead><tbody>{domains.map(row => <tr><td>{row.hostname}</td><td>{row.email ?? 'Conta antiga'}</td><td>{row.status}</td><td>{row.ssl_status}</td><td>{date(row.created_at)}</td></tr>)}</tbody></table>{domains.length === 0 && <p class="admin-empty">Nenhum domínio de cliente conectado ainda.</p>}</div></section>
       <section id="atividade" class="admin-section"><div class="admin-section-title"><span class="eyebrow">Segurança</span><h2>Atividade administrativa</h2></div><div class="admin-card admin-activity">{audit.length ? audit.map(item => <div><span>{date(item.created_at)}</span><strong>{item.action === 'update_price' ? 'Preço alterado' : item.action === 'clear_setting' ? 'Configuração limpa' : 'Configuração alterada'}</strong><code>{item.target}</code></div>) : <p class="admin-empty">Nenhuma alteração registrada ainda.</p>}</div></section>
     </main>
   </div>

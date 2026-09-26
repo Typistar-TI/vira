@@ -1,62 +1,11 @@
 import { env } from 'cloudflare:workers';
-import { parsePhoneNumberFromString } from 'libphonenumber-js/max';
-import { consumeLimit, getOrCreateUser, getUser, type UserRow } from './db';
-import { requiredSetting } from './config';
+import { getUser, type UserRow } from './db';
 
 const sessionName = '__Host-vira_session';
-
-export function normalizePhone(input: string): string | null {
-  const phone = parsePhoneNumberFromString(input);
-  return phone?.isValid() && (phone.country === 'BR' || phone.country === 'US') ? phone.number : null;
-}
 
 export async function sha256(value: string): Promise<string> {
   const bytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value));
   return [...new Uint8Array(bytes)].map((b) => b.toString(16).padStart(2, '0')).join('');
-}
-
-export async function verifyTurnstile(token: string, ip: string): Promise<boolean> {
-  if (!token) return false;
-  const body = new FormData();
-  body.set('secret', await requiredSetting('TURNSTILE_SECRET'));
-  body.set('response', token);
-  body.set('remoteip', ip);
-  const response = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', { method: 'POST', body });
-  const result = await response.json() as { success: boolean };
-  return result.success === true;
-}
-
-async function twilioRequest(endpoint: string, fields: Record<string, string>) {
-  const body = new URLSearchParams(fields);
-  const [apiKey, apiSecret, serviceSid] = await Promise.all([
-    requiredSetting('TWILIO_API_KEY'), requiredSetting('TWILIO_API_SECRET'), requiredSetting('TWILIO_VERIFY_SERVICE_SID'),
-  ]);
-  const auth = btoa(`${apiKey}:${apiSecret}`);
-  const response = await fetch(`https://verify.twilio.com/v2/Services/${serviceSid}/${endpoint}`, {
-    method: 'POST', headers: { Authorization: `Basic ${auth}`, 'Content-Type': 'application/x-www-form-urlencoded' }, body,
-  });
-  const result = await response.json() as { status?: string; message?: string };
-  if (!response.ok) throw new Error(result.message || 'Falha ao enviar o código');
-  return result;
-}
-
-export async function sendCode(phone: string, channel: 'sms' | 'whatsapp', ip: string, captcha: string) {
-  if (!await verifyTurnstile(captcha, ip)) throw new Error('Confirme a verificação de segurança');
-  const phoneKey = await sha256(phone);
-  if (!await consumeLimit(`otp-phone:${phoneKey}`, 3, 600) || !await consumeLimit(`otp-ip:${ip}`, 10, 3600)) {
-    throw new Error('Muitas tentativas. Aguarde antes de pedir outro código.');
-  }
-  await twilioRequest('Verifications', { To: phone, Channel: channel });
-}
-
-export async function checkCode(phone: string, code: string, ip: string) {
-  const phoneKey = await sha256(phone);
-  if (!await consumeLimit(`check-phone:${phoneKey}`, 10, 600) || !await consumeLimit(`check-ip:${ip}`, 20, 600)) {
-    throw new Error('Muitas tentativas. Aguarde alguns minutos.');
-  }
-  const result = await twilioRequest('VerificationCheck', { To: phone, Code: code });
-  if (result.status !== 'approved') throw new Error('Código incorreto ou expirado');
-  return getOrCreateUser(phone);
 }
 
 export async function createSession(userId: string): Promise<string> {

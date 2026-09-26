@@ -61,7 +61,7 @@ export function isResponse(value: UserRow | Response): value is Response {
 export async function requireAdmin(request: Request): Promise<UserRow | Response> {
   const user = await requireUser(request);
   if (isResponse(user)) return user;
-  const row = await env.DB.prepare('SELECT phone FROM admin_phones WHERE phone = ?').bind(user.phone).first();
+  const row = user.google_sub ? await env.DB.prepare('SELECT email FROM admin_google_accounts WHERE google_sub = ?').bind(user.google_sub).first() : null;
   return row ? user : json({ error: 'Acesso restrito' }, 403);
 }
 

@@ -11,7 +11,7 @@ export const GET: APIRoute = async ({ request }) => {
     .bind(site.id).first() : null;
   const data = {
     exported_at: new Date().toISOString(),
-    account: { id: user.id, phone: user.phone, plan: user.plan, trial_ends_at: user.trial_ends_at, access_until: user.access_until },
+    account: { id: user.id, email: user.email, legacy_phone: user.google_sub ? null : user.phone, plan: user.plan, trial_ends_at: user.trial_ends_at, access_until: user.access_until },
     site: site ? { slug: site.slug, draft: JSON.parse(site.draft_json), published: site.published_json ? JSON.parse(site.published_json) : null, published_at: site.published_at } : null,
     domain,
   };

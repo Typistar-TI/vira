@@ -4,8 +4,8 @@ import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-const plain = new Set(['ROOT_DOMAIN', 'PUBLIC_TURNSTILE_SITE_KEY', 'CLOUDFLARE_ZONE_ID', 'CLOUDFLARE_ACCOUNT_ID', 'PRIVACY_CONTROLLER_NAME', 'PRIVACY_CONTACT_EMAIL']);
-const secrets = new Set(['TWILIO_API_KEY', 'TWILIO_API_SECRET', 'TWILIO_VERIFY_SERVICE_SID', 'TURNSTILE_SECRET', 'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET', 'CLOUDFLARE_API_TOKEN', 'CLOUDFLARE_ANALYTICS_TOKEN']);
+const plain = new Set(['ROOT_DOMAIN', 'GOOGLE_CLIENT_ID', 'CLOUDFLARE_ZONE_ID', 'CLOUDFLARE_ACCOUNT_ID', 'PRIVACY_CONTROLLER_NAME', 'PRIVACY_CONTACT_EMAIL']);
+const secrets = new Set(['STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET', 'CLOUDFLARE_API_TOKEN', 'CLOUDFLARE_ANALYTICS_TOKEN']);
 const [location, key] = process.argv.slice(2);
 if (!['--local', '--remote'].includes(location) || !plain.has(key) && !secrets.has(key)) {
   throw new Error('Uso: node scripts/config.mjs --local|--remote NOME < valor');
@@ -15,6 +15,7 @@ for await (const chunk of process.stdin) value += chunk;
 value = value.trim();
 if (!value) throw new Error('Envie um valor pela entrada padrão');
 if (key === 'ROOT_DOMAIN' && !/^[a-z0-9]+(?:[.-][a-z0-9]+)+$/.test(value)) throw new Error('Domínio inválido');
+if (key === 'GOOGLE_CLIENT_ID' && !/^[0-9]+-[a-z0-9-]+\.apps\.googleusercontent\.com$/.test(value)) throw new Error('Client ID do Google inválido');
 if (key === 'PRIVACY_CONTACT_EMAIL' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) throw new Error('E-mail inválido');
 let encrypted = 0;
 if (secrets.has(key)) {

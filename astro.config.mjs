@@ -6,5 +6,5 @@ export default defineConfig({
   output: 'server',
   session: false,
   adapter: cloudflare({ imageService: 'compile' }),
-  vite: { plugins: [tailwindcss()], optimizeDeps: { exclude: ['libphonenumber-js/max'] } },
+  vite: { plugins: [tailwindcss()] },
 });
