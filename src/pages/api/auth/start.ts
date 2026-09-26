@@ -15,8 +15,8 @@ export const POST: APIRoute = async ({ request }) => {
       env.DB.prepare('SELECT phone FROM admin_phones WHERE phone = ?').bind(phone).first(),
     ]);
     if ((!controller || !contact) && !admin) return json({ error: 'Cadastro temporariamente indisponível' }, 503);
-    await sendCode(phone, channel, clientIp(request), String(captcha || ''));
-    return json({ phone, sent: true });
+    const pendingCookie = await sendCode(phone, channel, clientIp(request), String(captcha || ''));
+    return json({ phone, sent: true }, 200, { 'set-cookie': pendingCookie });
   } catch (error) {
     return json({ error: error instanceof Error ? error.message : 'Não foi possível enviar o código' }, 400);
   }

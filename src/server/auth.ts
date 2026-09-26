@@ -2,8 +2,10 @@ import { env } from 'cloudflare:workers';
 import { parsePhoneNumberFromString } from 'libphonenumber-js/max';
 import { consumeLimit, getOrCreateUser, getUser, type UserRow } from './db';
 import { requiredSetting } from './config';
+import { stytchRequest } from './stytch';
 
 const sessionName = '__Host-vira_session';
+const pendingName = '__Host-vira_otp';
 
 export function normalizePhone(input: string): string | null {
   const phone = parsePhoneNumberFromString(input);
@@ -26,38 +28,45 @@ export async function verifyTurnstile(token: string, ip: string): Promise<boolea
   return result.success === true;
 }
 
-async function twilioRequest(endpoint: string, fields: Record<string, string>) {
-  const body = new URLSearchParams(fields);
-  const [apiKey, apiSecret, serviceSid] = await Promise.all([
-    requiredSetting('TWILIO_API_KEY'), requiredSetting('TWILIO_API_SECRET'), requiredSetting('TWILIO_VERIFY_SERVICE_SID'),
-  ]);
-  const auth = btoa(`${apiKey}:${apiSecret}`);
-  const response = await fetch(`https://verify.twilio.com/v2/Services/${serviceSid}/${endpoint}`, {
-    method: 'POST', headers: { Authorization: `Basic ${auth}`, 'Content-Type': 'application/x-www-form-urlencoded' }, body,
-  });
-  const result = await response.json() as { status?: string; message?: string };
-  if (!response.ok) throw new Error(result.message || 'Falha ao enviar o código');
-  return result;
-}
-
 export async function sendCode(phone: string, channel: 'sms' | 'whatsapp', ip: string, captcha: string) {
   if (!await verifyTurnstile(captcha, ip)) throw new Error('Confirme a verificação de segurança');
   const phoneKey = await sha256(phone);
   if (!await consumeLimit(`otp-phone:${phoneKey}`, 3, 600) || !await consumeLimit(`otp-ip:${ip}`, 10, 3600)) {
     throw new Error('Muitas tentativas. Aguarde antes de pedir outro código.');
   }
-  await twilioRequest('Verifications', { To: phone, Channel: channel });
+  const result = await stytchRequest(`otps/${channel}/login_or_create`, {
+    phone_number: phone, expiration_minutes: 5, create_user_as_pending: true,
+    locale: phone.startsWith('+55') ? 'pt-br' : 'en',
+  });
+  if (!result.user_id || !result.phone_id) throw new Error('Resposta incompleta do serviço de códigos');
+  const token = Array.from(crypto.getRandomValues(new Uint8Array(32)), b => b.toString(16).padStart(2, '0')).join('');
+  await env.DB.prepare('INSERT INTO pending_otps (token_hash, phone_hash, stytch_user_id, method_id, expires_at) VALUES (?, ?, ?, ?, ?)')
+    .bind(await sha256(token), phoneKey, result.user_id, result.phone_id, Math.floor(Date.now() / 1000) + 300).run();
+  return `${pendingName}=${token}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=300`;
 }
 
-export async function checkCode(phone: string, code: string, ip: string) {
+export async function checkCode(phone: string, code: string, ip: string, request: Request) {
   const phoneKey = await sha256(phone);
   if (!await consumeLimit(`check-phone:${phoneKey}`, 10, 600) || !await consumeLimit(`check-ip:${ip}`, 20, 600)) {
     throw new Error('Muitas tentativas. Aguarde alguns minutos.');
   }
-  const result = await twilioRequest('VerificationCheck', { To: phone, Code: code });
-  if (result.status !== 'approved') throw new Error('Código incorreto ou expirado');
-  return getOrCreateUser(phone);
+  const token = request.headers.get('cookie')?.split(';').map(x => x.trim()).find(x => x.startsWith(`${pendingName}=`))?.slice(pendingName.length + 1);
+  if (!token || !/^[a-f0-9]{64}$/.test(token)) throw new Error('Peça um novo código neste navegador');
+  const tokenHash = await sha256(token);
+  const pending = await env.DB.prepare('SELECT phone_hash, stytch_user_id, method_id FROM pending_otps WHERE token_hash = ? AND expires_at > ?')
+    .bind(tokenHash, Math.floor(Date.now() / 1000)).first<{ phone_hash: string; stytch_user_id: string; method_id: string }>();
+  if (!pending || pending.phone_hash !== phoneKey) throw new Error('Código expirado. Peça outro código');
+  const result = await stytchRequest('otps/authenticate', { method_id: pending.method_id, code });
+  if (result.user_id !== pending.stytch_user_id) throw new Error('Não foi possível confirmar o celular');
+  const user = await getOrCreateUser(phone);
+  await env.DB.batch([
+    env.DB.prepare('UPDATE users SET stytch_user_id = ? WHERE id = ?').bind(result.user_id, user.id),
+    env.DB.prepare('DELETE FROM pending_otps WHERE token_hash = ?').bind(tokenHash),
+  ]);
+  return user;
 }
+
+export const clearPendingCookie = `${pendingName}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0`;
 
 export async function createSession(userId: string): Promise<string> {
   const token = Array.from(crypto.getRandomValues(new Uint8Array(32)), (b) => b.toString(16).padStart(2, '0')).join('');

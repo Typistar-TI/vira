@@ -2,6 +2,7 @@ import { env } from 'cloudflare:workers';
 import { stripe } from './billing';
 import { getUser } from './db';
 import { deleteHostname } from './domains';
+import { deleteStytchUser } from './stytch';
 
 export async function deleteAccount(userId: string): Promise<void> {
   const user = await getUser(userId);
@@ -34,5 +35,6 @@ export async function deleteAccount(userId: string): Promise<void> {
       cursor = objects.truncated ? objects.cursor : undefined;
     } while (cursor);
   }
+  if (user.stytch_user_id) await deleteStytchUser(user.stytch_user_id);
   await env.DB.prepare('DELETE FROM users WHERE id = ?').bind(userId).run();
 }

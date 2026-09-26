@@ -3,7 +3,7 @@ import { defaultSite } from '@/lib/site';
 
 export interface UserRow {
   id: string; phone: string; trial_ends_at: number; stripe_customer_id: string | null; stripe_subscription_id: string | null;
-  plan: string; access_until: number | null; expired_at: number | null;
+  plan: string; access_until: number | null; expired_at: number | null; stytch_user_id: string | null;
 }
 
 export interface SiteRow {
