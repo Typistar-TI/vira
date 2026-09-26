@@ -4,37 +4,66 @@ import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-const plain = new Set(['ROOT_DOMAIN', 'GOOGLE_CLIENT_ID', 'AUTH_EMAIL_FROM', 'CLOUDFLARE_ZONE_ID', 'CLOUDFLARE_ACCOUNT_ID', 'PRIVACY_CONTROLLER_NAME', 'PRIVACY_CONTACT_EMAIL']);
-const secrets = new Set(['RESEND_API_KEY', 'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET', 'CLOUDFLARE_API_TOKEN', 'CLOUDFLARE_ANALYTICS_TOKEN']);
+const plain = new Set([
+  'ROOT_DOMAIN',
+  'GOOGLE_CLIENT_ID',
+  'AUTH_EMAIL_FROM',
+  'CLOUDFLARE_ZONE_ID',
+  'CLOUDFLARE_ACCOUNT_ID',
+  'PRIVACY_CONTROLLER_NAME',
+  'PRIVACY_CONTACT_EMAIL',
+]);
+const secrets = new Set([
+  'RESEND_API_KEY',
+  'STRIPE_SECRET_KEY',
+  'STRIPE_WEBHOOK_SECRET',
+  'CLOUDFLARE_API_TOKEN',
+  'CLOUDFLARE_ANALYTICS_TOKEN',
+]);
 const [location, key] = process.argv.slice(2);
-if (!['--local', '--remote'].includes(location) || !plain.has(key) && !secrets.has(key)) {
+if (!['--local', '--remote'].includes(location) || (!plain.has(key) && !secrets.has(key))) {
   throw new Error('Uso: node scripts/config.mjs --local|--remote NOME < valor');
 }
 let value = '';
 for await (const chunk of process.stdin) value += chunk;
 value = value.trim();
 if (!value) throw new Error('Envie um valor pela entrada padrão');
-if (key === 'ROOT_DOMAIN' && !/^[a-z0-9]+(?:[.-][a-z0-9]+)+$/.test(value)) throw new Error('Domínio inválido');
-if (key === 'GOOGLE_CLIENT_ID' && !/^[0-9]+-[a-z0-9-]+\.apps\.googleusercontent\.com$/.test(value)) throw new Error('Client ID do Google inválido');
-if (key === 'PRIVACY_CONTACT_EMAIL' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) throw new Error('E-mail inválido');
-if (key === 'AUTH_EMAIL_FROM' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) throw new Error('E-mail remetente inválido');
-if (key === 'RESEND_API_KEY' && !/^re_[A-Za-z0-9_]+$/.test(value)) throw new Error('Chave Resend inválida');
+if (key === 'ROOT_DOMAIN' && !/^[a-z0-9]+(?:[.-][a-z0-9]+)+$/.test(value))
+  throw new Error('Domínio inválido');
+if (key === 'GOOGLE_CLIENT_ID' && !/^[0-9]+-[a-z0-9-]+\.apps\.googleusercontent\.com$/.test(value))
+  throw new Error('Client ID do Google inválido');
+if (key === 'PRIVACY_CONTACT_EMAIL' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
+  throw new Error('E-mail inválido');
+if (key === 'AUTH_EMAIL_FROM' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
+  throw new Error('E-mail remetente inválido');
+if (key === 'RESEND_API_KEY' && !/^re_[A-Za-z0-9_]+$/.test(value))
+  throw new Error('Chave Resend inválida');
 let encrypted = 0;
 if (secrets.has(key)) {
   const raw = Buffer.from(process.env.CONFIG_ENCRYPTION_KEY || '', 'base64');
-  if (raw.length !== 32) throw new Error('Defina CONFIG_ENCRYPTION_KEY como 32 bytes em base64 no ambiente do terminal');
+  if (raw.length !== 32)
+    throw new Error('Defina CONFIG_ENCRYPTION_KEY como 32 bytes em base64 no ambiente do terminal');
   const iv = randomBytes(12);
   const cipher = createCipheriv('aes-256-gcm', raw, iv);
-  value = Buffer.concat([iv, cipher.update(value, 'utf8'), cipher.final(), cipher.getAuthTag()]).toString('base64');
+  value = Buffer.concat([
+    iv,
+    cipher.update(value, 'utf8'),
+    cipher.final(),
+    cipher.getAuthTag(),
+  ]).toString('base64');
   encrypted = 1;
 }
-const escapeSql = text => text.replaceAll("'", "''");
+const escapeSql = (text) => text.replaceAll("'", "''");
 const sql = `UPDATE app_settings SET value = '${escapeSql(value)}', encrypted = ${encrypted}, updated_at = unixepoch() WHERE key = '${key}';\n`;
 const directory = mkdtempSync(join(tmpdir(), 'vira-config-'));
 try {
   const file = join(directory, 'update.sql');
   writeFileSync(file, sql, { mode: 0o600 });
-  const result = spawnSync(join(process.cwd(), 'node_modules/.bin/wrangler'), ['d1', 'execute', 'vira', location, '--file', file], { stdio: 'inherit' });
+  const result = spawnSync(
+    join(process.cwd(), 'node_modules/.bin/wrangler'),
+    ['d1', 'execute', 'vira', location, '--file', file],
+    { stdio: 'inherit' },
+  );
   if (result.status !== 0) process.exitCode = result.status || 1;
 } finally {
   rmSync(directory, { recursive: true, force: true });

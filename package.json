@@ -9,6 +9,8 @@
     "dev": "astro dev",
     "check": "astro check",
     "build": "astro build",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check",
     "db:local": "wrangler d1 migrations apply vira --local",
     "db:remote": "wrangler d1 migrations apply vira --remote",
     "config:local": "node scripts/config.mjs --local",
@@ -37,6 +39,8 @@
     "@astrojs/check": "^0.9.10",
     "@cloudflare/workers-types": "^5.20260926.1",
     "@types/node": "^26.6.3",
+    "prettier": "^3.9.9",
+    "prettier-plugin-astro": "^1.1.0",
     "typescript": "^6.0.3",
     "wrangler": "^4.141.0"
   }

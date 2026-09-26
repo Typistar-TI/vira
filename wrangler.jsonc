@@ -5,12 +5,19 @@
   "compatibility_date": "2026-09-26",
   "compatibility_flags": ["nodejs_compat"],
   "assets": { "directory": "./dist", "binding": "ASSETS" },
-  "d1_databases": [{ "binding": "DB", "database_name": "vira", "database_id": "21eb5547-581e-4cd0-86a5-95d8ea86c582", "migrations_dir": "migrations" }],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "vira",
+      "database_id": "21eb5547-581e-4cd0-86a5-95d8ea86c582",
+      "migrations_dir": "migrations",
+    },
+  ],
   "r2_buckets": [{ "binding": "MEDIA", "bucket_name": "vira-media" }],
   "analytics_engine_datasets": [{ "binding": "METRICS", "dataset": "vira_metrics" }],
   "routes": [
     { "pattern": "vira.ia.br/*", "zone_id": "2bbbd3219eb16941c3e21a14bf2c684a" },
-    { "pattern": "*.vira.ia.br/*", "zone_id": "2bbbd3219eb16941c3e21a14bf2c684a" }
+    { "pattern": "*.vira.ia.br/*", "zone_id": "2bbbd3219eb16941c3e21a14bf2c684a" },
   ],
-  "triggers": { "crons": ["0 3 * * *"] }
+  "triggers": { "crons": ["0 3 * * *"] },
 }

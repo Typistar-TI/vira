@@ -6,7 +6,7 @@ import { getSessionAdmin, getSessionUser } from '@backend/auth';
 import { getSiteForUser } from '@backend/db';
 import { hasAccess, parseSite } from '@shared/site';
 const user = await getSessionUser(Astro.request);
-if (!user) return Astro.redirect(await getSessionAdmin(Astro.request) ? '/admin' : '/login');
+if (!user) return Astro.redirect((await getSessionAdmin(Astro.request)) ? '/admin' : '/login');
 const site = await getSiteForUser(user.id);
 if (!site) return new Response('Página não encontrada', { status: 404 });
 const content = parseSite(JSON.parse(site.draft_json));
@@ -14,140 +14,815 @@ const active = hasAccess(user);
 const en = Astro.url.searchParams.get('lang') === 'en';
 const domain = await rootDomain();
 const priceRows = await publicPrices();
-const priceMap = Object.fromEntries(priceRows.map(row => [`${row.plan}_${row.currency}`, row.amount_minor]));
+const priceMap = Object.fromEntries(
+  priceRows.map((row) => [`${row.plan}_${row.currency}`, row.amount_minor]),
+);
 const priceText = (plan: string) => {
   const amount = priceMap[`${plan}_brl`];
-  return amount ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(amount / 100) : '—';
+  return amount
+    ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(amount / 100)
+    : '—';
 };
-const t = en ? {
-  dashboard:'Your space', signout:'Sign out', trial:'Free trial', active:'Active', expired:'Access expired',
-  yourPage:'Your page', publicLink:'Public address', preview:'Preview', desktop:'Desktop', mobile:'Mobile',
-  content:'Content', layout:'Layout', language:'Page language', title:'Headline', subtitle:'Introduction',
-  hero:'Cover image', upload:'Upload image', buttonText:'Main button text', buttonUrl:'Main button link',
-  about:'About', aboutTitle:'Section heading', aboutBody:'Description', benefits:'Benefits', stats:'Highlight numbers', testimonials:'Testimonials', products:'Catalog', footer:'Footer text',
-  add:'Add', remove:'Remove', label:'Label', value:'Value', description:'Description', name:'Name', quote:'Quote', image:'Image', link:'Link',
-  save:'Save draft', publish:'Publish', plans:'Plan and billing', monthly:'Monthly', yearly:'Yearly', lifetime:'Lifetime', portal:'Manage subscription',
-  domain:'Custom domain', domainHint:'Available after payment. Use an address such as www.example.com.', connect:'Connect domain',
-  address:'Vira subdomain', change:'Change address', metrics:'Last 30 days', views:'Views', clicks:'Button clicks',
-  account:'Account and data', exportData:'Download my data', deleteAccount:'Delete account', confirmEmail:'Type your email to confirm', privacy:'Privacy',
-} : {
-  dashboard:'Seu espaço', signout:'Sair', trial:'Teste grátis', active:'Ativo', expired:'Acesso expirado',
-  yourPage:'Sua página', publicLink:'Endereço público', preview:'Prévia', desktop:'Computador', mobile:'Celular',
-  content:'Conteúdo', layout:'Layout', language:'Idioma da página', title:'Título principal', subtitle:'Apresentação',
-  hero:'Imagem de capa', upload:'Enviar imagem', buttonText:'Texto do botão principal', buttonUrl:'Link do botão principal',
-  about:'Sobre', aboutTitle:'Título da seção', aboutBody:'Descrição', benefits:'Benefícios', stats:'Números em destaque', testimonials:'Depoimentos', products:'Catálogo', footer:'Texto do rodapé',
-  add:'Adicionar', remove:'Remover', label:'Legenda', value:'Valor', description:'Descrição', name:'Nome', quote:'Depoimento', image:'Imagem', link:'Link',
-  save:'Salvar rascunho', publish:'Publicar', plans:'Plano e cobrança', monthly:'Mensal', yearly:'Anual', lifetime:'Vitalício', portal:'Gerenciar assinatura',
-  domain:'Domínio próprio', domainHint:'Disponível após o pagamento. Use um endereço como www.exemplo.com.br.', connect:'Conectar domínio',
-  address:'Subdomínio Vira', change:'Alterar endereço', metrics:'Últimos 30 dias', views:'Visualizações', clicks:'Cliques nos botões',
-  account:'Conta e dados', exportData:'Baixar meus dados', deleteAccount:'Excluir conta', confirmEmail:'Digite seu e-mail para confirmar', privacy:'Privacidade',
-};
+const t = en
+  ? {
+      dashboard: 'Your space',
+      signout: 'Sign out',
+      trial: 'Free trial',
+      active: 'Active',
+      expired: 'Access expired',
+      yourPage: 'Your page',
+      publicLink: 'Public address',
+      preview: 'Preview',
+      desktop: 'Desktop',
+      mobile: 'Mobile',
+      content: 'Content',
+      layout: 'Layout',
+      language: 'Page language',
+      title: 'Headline',
+      subtitle: 'Introduction',
+      hero: 'Cover image',
+      upload: 'Upload image',
+      buttonText: 'Main button text',
+      buttonUrl: 'Main button link',
+      about: 'About',
+      aboutTitle: 'Section heading',
+      aboutBody: 'Description',
+      benefits: 'Benefits',
+      stats: 'Highlight numbers',
+      testimonials: 'Testimonials',
+      products: 'Catalog',
+      footer: 'Footer text',
+      add: 'Add',
+      remove: 'Remove',
+      label: 'Label',
+      value: 'Value',
+      description: 'Description',
+      name: 'Name',
+      quote: 'Quote',
+      image: 'Image',
+      link: 'Link',
+      save: 'Save draft',
+      publish: 'Publish',
+      plans: 'Plan and billing',
+      monthly: 'Monthly',
+      yearly: 'Yearly',
+      lifetime: 'Lifetime',
+      portal: 'Manage subscription',
+      domain: 'Custom domain',
+      domainHint: 'Available after payment. Use an address such as www.example.com.',
+      connect: 'Connect domain',
+      address: 'Vira subdomain',
+      change: 'Change address',
+      metrics: 'Last 30 days',
+      views: 'Views',
+      clicks: 'Button clicks',
+      account: 'Account and data',
+      exportData: 'Download my data',
+      deleteAccount: 'Delete account',
+      confirmEmail: 'Type your email to confirm',
+      privacy: 'Privacy',
+    }
+  : {
+      dashboard: 'Seu espaço',
+      signout: 'Sair',
+      trial: 'Teste grátis',
+      active: 'Ativo',
+      expired: 'Acesso expirado',
+      yourPage: 'Sua página',
+      publicLink: 'Endereço público',
+      preview: 'Prévia',
+      desktop: 'Computador',
+      mobile: 'Celular',
+      content: 'Conteúdo',
+      layout: 'Layout',
+      language: 'Idioma da página',
+      title: 'Título principal',
+      subtitle: 'Apresentação',
+      hero: 'Imagem de capa',
+      upload: 'Enviar imagem',
+      buttonText: 'Texto do botão principal',
+      buttonUrl: 'Link do botão principal',
+      about: 'Sobre',
+      aboutTitle: 'Título da seção',
+      aboutBody: 'Descrição',
+      benefits: 'Benefícios',
+      stats: 'Números em destaque',
+      testimonials: 'Depoimentos',
+      products: 'Catálogo',
+      footer: 'Texto do rodapé',
+      add: 'Adicionar',
+      remove: 'Remover',
+      label: 'Legenda',
+      value: 'Valor',
+      description: 'Descrição',
+      name: 'Nome',
+      quote: 'Depoimento',
+      image: 'Imagem',
+      link: 'Link',
+      save: 'Salvar rascunho',
+      publish: 'Publicar',
+      plans: 'Plano e cobrança',
+      monthly: 'Mensal',
+      yearly: 'Anual',
+      lifetime: 'Vitalício',
+      portal: 'Gerenciar assinatura',
+      domain: 'Domínio próprio',
+      domainHint: 'Disponível após o pagamento. Use um endereço como www.exemplo.com.br.',
+      connect: 'Conectar domínio',
+      address: 'Subdomínio Vira',
+      change: 'Alterar endereço',
+      metrics: 'Últimos 30 dias',
+      views: 'Visualizações',
+      clicks: 'Cliques nos botões',
+      account: 'Conta e dados',
+      exportData: 'Baixar meus dados',
+      deleteAccount: 'Excluir conta',
+      confirmEmail: 'Digite seu e-mail para confirmar',
+      privacy: 'Privacidade',
+    };
 const trialDays = Math.max(0, Math.ceil((user.trial_ends_at * 1000 - Date.now()) / 86400000));
 ---
+
 <Base title={`${t.dashboard} · Vira`} lang={en ? 'en' : 'pt'} noindex>
   <div class="vira-shell min-h-screen">
-    <header class="vira-nav"><a class="vira-logo" href="/">vira<span>.</span></a><div class="flex gap-4 items-center"><a href={en ? '/app' : '/app?lang=en'}>{en ? 'PT' : 'EN'}</a><button id="logout" class="btn btn-ghost btn-sm">{t.signout}</button></div></header>
+    <header class="vira-nav">
+      <a class="vira-logo" href="/">
+        vira<span>.</span>
+      </a>
+      <div class="flex gap-4 items-center">
+        <a href={en ? '/app' : '/app?lang=en'}>{en ? 'PT' : 'EN'}</a>
+        <button id="logout" class="btn btn-ghost btn-sm">
+          {t.signout}
+        </button>
+      </div>
+    </header>
     <main class="app-wrap">
-      <div class="app-head"><div><span class="eyebrow">{t.dashboard}</span><h1 class="text-4xl mt-2">{t.yourPage}</h1><p class="muted">{user.plan === 'trial' ? `${t.trial} · ${trialDays} ${en ? 'days left' : 'dias restantes'}` : active ? t.active : t.expired}</p></div><span class="badge-purple">{user.email ?? 'Conta antiga'}</span></div>
-      {!active && <div class="status error mb-5">{en ? 'Your page is suspended. Choose a plan to publish it again.' : 'Sua página está suspensa. Escolha um plano para publicá-la novamente.'}</div>}
+      <div class="app-head">
+        <div>
+          <span class="eyebrow">{t.dashboard}</span>
+          <h1 class="text-4xl mt-2">{t.yourPage}</h1>
+          <p class="muted">
+            {user.plan === 'trial'
+              ? `${t.trial} · ${trialDays} ${en ? 'days left' : 'dias restantes'}`
+              : active
+                ? t.active
+                : t.expired}
+          </p>
+        </div>
+        <span class="badge-purple">{user.email ?? 'Conta antiga'}</span>
+      </div>
+      {!active && (
+        <div class="status error mb-5">
+          {en
+            ? 'Your page is suspended. Choose a plan to publish it again.'
+            : 'Sua página está suspensa. Escolha um plano para publicá-la novamente.'}
+        </div>
+      )}
       <div class="app-grid">
         <div>
           <section class="app-panel mb-5">
             <h2>{t.address}</h2>
-            <p class="text-sm muted">{t.publicLink}: <a id="public-url" href={`https://${site.slug}.${domain}`} target="_blank" rel="noopener noreferrer">{site.slug}.{domain}</a></p>
-            <form id="slug-form" class="flex gap-2 mt-4"><input class="input input-bordered flex-1" name="slug" value={site.slug} aria-label={t.address} required /><button class="btn btn-outline" type="submit">{t.change}</button></form>
+            <p class="text-sm muted">
+              {t.publicLink}:{' '}
+              <a
+                id="public-url"
+                href={`https://${site.slug}.${domain}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {site.slug}.{domain}
+              </a>
+            </p>
+            <form id="slug-form" class="flex gap-2 mt-4">
+              <input
+                class="input input-bordered flex-1"
+                name="slug"
+                value={site.slug}
+                aria-label={t.address}
+                required
+              />
+              <button class="btn btn-outline" type="submit">
+                {t.change}
+              </button>
+            </form>
           </section>
-          <section class="app-panel mb-5"><h2>{t.metrics}</h2><div class="field-row"><div><strong id="metric-views" class="text-3xl">—</strong><p class="muted">{t.views}</p></div><div><strong id="metric-clicks" class="text-3xl">—</strong><p class="muted">{t.clicks}</p></div></div></section>
+          <section class="app-panel mb-5">
+            <h2>{t.metrics}</h2>
+            <div class="field-row">
+              <div>
+                <strong id="metric-views" class="text-3xl">
+                  —
+                </strong>
+                <p class="muted">{t.views}</p>
+              </div>
+              <div>
+                <strong id="metric-clicks" class="text-3xl">
+                  —
+                </strong>
+                <p class="muted">{t.clicks}</p>
+              </div>
+            </div>
+          </section>
           <form id="editor" class="app-panel mb-5" data-initial={JSON.stringify(content)}>
             <h2>{t.content}</h2>
-            <label for="layout">{t.layout}</label><select class="select select-bordered" name="layout" id="layout"><option value="pulse" selected={content.layout === 'pulse'}>Pulse</option><option value="editorial" selected={content.layout === 'editorial'}>Editorial</option><option value="showcase" selected={content.layout === 'showcase'}>Showcase</option></select>
-            <label for="language">{t.language}</label><select class="select select-bordered" name="language" id="language"><option value="pt" selected={content.language === 'pt'}>Português</option><option value="en" selected={content.language === 'en'}>English</option></select>
-            <label for="title">{t.title}</label><input class="input input-bordered" id="title" name="title" maxlength="100" value={content.title} required />
-            <label for="subtitle">{t.subtitle}</label><textarea class="textarea textarea-bordered" id="subtitle" name="subtitle" maxlength="300">{content.subtitle}</textarea>
-            <label for="hero-file">{t.hero}</label><input class="file-input file-input-bordered w-full" id="hero-file" type="file" accept="image/jpeg,image/png,image/webp" /><input type="hidden" name="heroImage" value={content.heroImage} />
-            <div class="field-row"><div><label for="primaryLabel">{t.buttonText}</label><input class="input input-bordered" id="primaryLabel" name="primaryLabel" maxlength="40" value={content.primaryLabel} /></div><div><label for="primaryUrl">{t.buttonUrl}</label><input class="input input-bordered" id="primaryUrl" name="primaryUrl" type="url" placeholder="https://" value={content.primaryUrl} /></div></div>
-            <h3>{t.about}</h3><label for="aboutTitle">{t.aboutTitle}</label><input class="input input-bordered" id="aboutTitle" name="aboutTitle" value={content.aboutTitle} maxlength="80" /><label for="about">{t.aboutBody}</label><textarea class="textarea textarea-bordered" id="about" name="about" maxlength="1500">{content.about}</textarea>
-            <h3>{t.benefits}</h3><div id="benefits-list">{content.benefits.map(item => <fieldset data-item="benefit" class="border border-base-300 rounded-xl p-3 mb-2"><input class="input input-bordered mb-2" name="item-title" value={item.title} placeholder={t.title} maxlength="80" /><textarea class="textarea textarea-bordered" name="item-description" placeholder={t.description} maxlength="240">{item.description}</textarea><button type="button" class="btn btn-ghost btn-sm mt-2" data-remove>{t.remove}</button></fieldset>)}</div><button class="btn btn-outline btn-sm" type="button" data-add="benefit">+ {t.add}</button>
-            <h3>{t.stats}</h3><div id="stats-list">{content.stats.map(item => <fieldset data-item="stat" class="border border-base-300 rounded-xl p-3 mb-2"><div class="field-row"><input class="input input-bordered" name="item-value" value={item.value} placeholder={t.value} maxlength="20" /><input class="input input-bordered" name="item-label" value={item.label} placeholder={t.label} maxlength="60" /></div><button type="button" class="btn btn-ghost btn-sm mt-2" data-remove>{t.remove}</button></fieldset>)}</div><button class="btn btn-outline btn-sm" type="button" data-add="stat">+ {t.add}</button>
-            <h3>{t.testimonials}</h3><div id="testimonials-list">{content.testimonials.map(item => <fieldset data-item="testimonial" class="border border-base-300 rounded-xl p-3 mb-2"><textarea class="textarea textarea-bordered mb-2" name="item-quote" placeholder={t.quote} maxlength="300">{item.quote}</textarea><input class="input input-bordered" name="item-name" value={item.name} placeholder={t.name} maxlength="80" /><button type="button" class="btn btn-ghost btn-sm mt-2" data-remove>{t.remove}</button></fieldset>)}</div><button class="btn btn-outline btn-sm" type="button" data-add="testimonial">+ {t.add}</button>
-            <h3>{t.products}</h3><div id="products-list">{content.products.map(item => <fieldset data-item="product" class="border border-base-300 rounded-xl p-3 mb-2"><input class="input input-bordered mb-2" name="item-title" value={item.title} placeholder={t.title} maxlength="80" /><textarea class="textarea textarea-bordered mb-2" name="item-description" placeholder={t.description} maxlength="300">{item.description}</textarea><input class="input input-bordered mb-2" name="item-url" type="url" value={item.url} placeholder="https://" /><input class="file-input file-input-bordered w-full" name="item-file" type="file" accept="image/jpeg,image/png,image/webp" /><input type="hidden" name="item-image" value={item.image} /><button type="button" class="btn btn-ghost btn-sm mt-2" data-remove>{t.remove}</button></fieldset>)}</div><button class="btn btn-outline btn-sm" type="button" data-add="product">+ {t.add}</button>
-            <label for="footerText">{t.footer}</label><input class="input input-bordered" id="footerText" name="footerText" maxlength="160" value={content.footerText} />
-            <div class="inline-actions"><button class="vira-button secondary" type="submit">{t.save}</button><button class="vira-button" id="publish" type="button" disabled={!active}>{t.publish}</button></div>
+            <label for="layout">{t.layout}</label>
+            <select class="select select-bordered" name="layout" id="layout">
+              <option value="pulse" selected={content.layout === 'pulse'}>
+                Pulse
+              </option>
+              <option value="editorial" selected={content.layout === 'editorial'}>
+                Editorial
+              </option>
+              <option value="showcase" selected={content.layout === 'showcase'}>
+                Showcase
+              </option>
+            </select>
+            <label for="language">{t.language}</label>
+            <select class="select select-bordered" name="language" id="language">
+              <option value="pt" selected={content.language === 'pt'}>
+                Português
+              </option>
+              <option value="en" selected={content.language === 'en'}>
+                English
+              </option>
+            </select>
+            <label for="title">{t.title}</label>
+            <input
+              class="input input-bordered"
+              id="title"
+              name="title"
+              maxlength="100"
+              value={content.title}
+              required
+            />
+            <label for="subtitle">{t.subtitle}</label>
+            <textarea
+              class="textarea textarea-bordered"
+              id="subtitle"
+              name="subtitle"
+              maxlength="300"
+            >{content.subtitle}</textarea>
+            <label for="hero-file">{t.hero}</label>
+            <input
+              class="file-input file-input-bordered w-full"
+              id="hero-file"
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+            />
+            <input type="hidden" name="heroImage" value={content.heroImage} />
+            <div class="field-row">
+              <div>
+                <label for="primaryLabel">{t.buttonText}</label>
+                <input
+                  class="input input-bordered"
+                  id="primaryLabel"
+                  name="primaryLabel"
+                  maxlength="40"
+                  value={content.primaryLabel}
+                />
+              </div>
+              <div>
+                <label for="primaryUrl">{t.buttonUrl}</label>
+                <input
+                  class="input input-bordered"
+                  id="primaryUrl"
+                  name="primaryUrl"
+                  type="url"
+                  placeholder="https://"
+                  value={content.primaryUrl}
+                />
+              </div>
+            </div>
+            <h3>{t.about}</h3>
+            <label for="aboutTitle">{t.aboutTitle}</label>
+            <input
+              class="input input-bordered"
+              id="aboutTitle"
+              name="aboutTitle"
+              value={content.aboutTitle}
+              maxlength="80"
+            />
+            <label for="about">{t.aboutBody}</label>
+            <textarea
+              class="textarea textarea-bordered"
+              id="about"
+              name="about"
+              maxlength="1500"
+            >{content.about}</textarea>
+            <h3>{t.benefits}</h3>
+            <div id="benefits-list">
+              {content.benefits.map((item) => (
+                <fieldset data-item="benefit" class="border border-base-300 rounded-xl p-3 mb-2">
+                  <input
+                    class="input input-bordered mb-2"
+                    name="item-title"
+                    value={item.title}
+                    placeholder={t.title}
+                    maxlength="80"
+                  />
+                  <textarea
+                    class="textarea textarea-bordered"
+                    name="item-description"
+                    placeholder={t.description}
+                    maxlength="240"
+                  >{item.description}</textarea>
+                  <button type="button" class="btn btn-ghost btn-sm mt-2" data-remove>
+                    {t.remove}
+                  </button>
+                </fieldset>
+              ))}
+            </div>
+            <button class="btn btn-outline btn-sm" type="button" data-add="benefit">
+              + {t.add}
+            </button>
+            <h3>{t.stats}</h3>
+            <div id="stats-list">
+              {content.stats.map((item) => (
+                <fieldset data-item="stat" class="border border-base-300 rounded-xl p-3 mb-2">
+                  <div class="field-row">
+                    <input
+                      class="input input-bordered"
+                      name="item-value"
+                      value={item.value}
+                      placeholder={t.value}
+                      maxlength="20"
+                    />
+                    <input
+                      class="input input-bordered"
+                      name="item-label"
+                      value={item.label}
+                      placeholder={t.label}
+                      maxlength="60"
+                    />
+                  </div>
+                  <button type="button" class="btn btn-ghost btn-sm mt-2" data-remove>
+                    {t.remove}
+                  </button>
+                </fieldset>
+              ))}
+            </div>
+            <button class="btn btn-outline btn-sm" type="button" data-add="stat">
+              + {t.add}
+            </button>
+            <h3>{t.testimonials}</h3>
+            <div id="testimonials-list">
+              {content.testimonials.map((item) => (
+                <fieldset
+                  data-item="testimonial"
+                  class="border border-base-300 rounded-xl p-3 mb-2"
+                >
+                  <textarea
+                    class="textarea textarea-bordered mb-2"
+                    name="item-quote"
+                    placeholder={t.quote}
+                    maxlength="300"
+                  >{item.quote}</textarea>
+                  <input
+                    class="input input-bordered"
+                    name="item-name"
+                    value={item.name}
+                    placeholder={t.name}
+                    maxlength="80"
+                  />
+                  <button type="button" class="btn btn-ghost btn-sm mt-2" data-remove>
+                    {t.remove}
+                  </button>
+                </fieldset>
+              ))}
+            </div>
+            <button class="btn btn-outline btn-sm" type="button" data-add="testimonial">
+              + {t.add}
+            </button>
+            <h3>{t.products}</h3>
+            <div id="products-list">
+              {content.products.map((item) => (
+                <fieldset data-item="product" class="border border-base-300 rounded-xl p-3 mb-2">
+                  <input
+                    class="input input-bordered mb-2"
+                    name="item-title"
+                    value={item.title}
+                    placeholder={t.title}
+                    maxlength="80"
+                  />
+                  <textarea
+                    class="textarea textarea-bordered mb-2"
+                    name="item-description"
+                    placeholder={t.description}
+                    maxlength="300"
+                  >{item.description}</textarea>
+                  <input
+                    class="input input-bordered mb-2"
+                    name="item-url"
+                    type="url"
+                    value={item.url}
+                    placeholder="https://"
+                  />
+                  <input
+                    class="file-input file-input-bordered w-full"
+                    name="item-file"
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp"
+                  />
+                  <input type="hidden" name="item-image" value={item.image} />
+                  <button type="button" class="btn btn-ghost btn-sm mt-2" data-remove>
+                    {t.remove}
+                  </button>
+                </fieldset>
+              ))}
+            </div>
+            <button class="btn btn-outline btn-sm" type="button" data-add="product">
+              + {t.add}
+            </button>
+            <label for="footerText">{t.footer}</label>
+            <input
+              class="input input-bordered"
+              id="footerText"
+              name="footerText"
+              maxlength="160"
+              value={content.footerText}
+            />
+            <div class="inline-actions">
+              <button class="vira-button secondary" type="submit">
+                {t.save}
+              </button>
+              <button class="vira-button" id="publish" type="button" disabled={!active}>
+                {t.publish}
+              </button>
+            </div>
             <p id="editor-status" class="status" role="status" hidden></p>
           </form>
-          <section class="app-panel mb-5"><h2>{t.plans}</h2><p class="muted">{user.plan === 'trial' ? `${trialDays} ${en ? 'days left in your trial' : 'dias restantes de teste'}` : user.plan}</p><div class="inline-actions"><button class="btn btn-outline" data-plan="monthly" data-label={t.monthly}>{t.monthly} · <span data-amount>{priceText('monthly')}</span></button><button class="btn btn-outline" data-plan="yearly" data-label={t.yearly}>{t.yearly} · <span data-amount>{priceText('yearly')}</span></button><button class="btn btn-outline" data-plan="lifetime" data-label={t.lifetime}>{t.lifetime} · <span data-amount>{priceText('lifetime')}</span></button></div><label for="currency">{en ? 'Checkout currency' : 'Moeda da compra'}</label><select class="select select-bordered" id="currency" data-prices={JSON.stringify(priceMap)}><option value="brl">BRL · R$</option><option value="usd">USD · $</option></select>{user.stripe_customer_id && <button class="btn btn-ghost mt-3" id="portal">{t.portal}</button>}</section>
-          <section class="app-panel mb-5"><h2>{t.domain}</h2><p class="muted text-sm">{t.domainHint}</p><form id="domain-form" class="flex gap-2 mt-4"><input class="input input-bordered flex-1" name="hostname" placeholder="www.exemplo.com.br" required /><button class="btn btn-outline" disabled={user.plan === 'trial' || !active}>{t.connect}</button></form><p class="text-sm muted mt-3">CNAME: <code>connect.{domain}</code></p><p id="domain-status" class="status" hidden></p></section>
-          <section class="app-panel mb-5"><h2>{t.account}</h2><div class="inline-actions"><a class="btn btn-outline" href="/api/account/export">{t.exportData}</a><a class="btn btn-ghost" href={en ? '/en/privacy' : '/privacidade'}>{t.privacy}</a></div><form id="delete-account-form" class="mt-5"><label for="delete-email">{user.email ? t.confirmEmail : (en ? 'Type DELETE to confirm' : 'Digite EXCLUIR para confirmar')}</label><input class="input input-bordered w-full" id="delete-email" name="email" type={user.email ? 'email' : 'text'} placeholder={user.email ?? 'EXCLUIR'} required /><button class="btn btn-error mt-3" type="submit">{t.deleteAccount}</button></form></section>
+          <section class="app-panel mb-5">
+            <h2>{t.plans}</h2>
+            <p class="muted">
+              {user.plan === 'trial'
+                ? `${trialDays} ${en ? 'days left in your trial' : 'dias restantes de teste'}`
+                : user.plan}
+            </p>
+            <div class="inline-actions">
+              <button class="btn btn-outline" data-plan="monthly" data-label={t.monthly}>
+                {t.monthly} · <span data-amount>{priceText('monthly')}</span>
+              </button>
+              <button class="btn btn-outline" data-plan="yearly" data-label={t.yearly}>
+                {t.yearly} · <span data-amount>{priceText('yearly')}</span>
+              </button>
+              <button class="btn btn-outline" data-plan="lifetime" data-label={t.lifetime}>
+                {t.lifetime} · <span data-amount>{priceText('lifetime')}</span>
+              </button>
+            </div>
+            <label for="currency">{en ? 'Checkout currency' : 'Moeda da compra'}</label>
+            <select
+              class="select select-bordered"
+              id="currency"
+              data-prices={JSON.stringify(priceMap)}
+            >
+              <option value="brl">BRL · R$</option>
+              <option value="usd">USD · $</option>
+            </select>
+            {user.stripe_customer_id && (
+              <button class="btn btn-ghost mt-3" id="portal">
+                {t.portal}
+              </button>
+            )}
+          </section>
+          <section class="app-panel mb-5">
+            <h2>{t.domain}</h2>
+            <p class="muted text-sm">{t.domainHint}</p>
+            <form id="domain-form" class="flex gap-2 mt-4">
+              <input
+                class="input input-bordered flex-1"
+                name="hostname"
+                placeholder="www.exemplo.com.br"
+                required
+              />
+              <button class="btn btn-outline" disabled={user.plan === 'trial' || !active}>
+                {t.connect}
+              </button>
+            </form>
+            <p class="text-sm muted mt-3">
+              CNAME: <code>connect.{domain}</code>
+            </p>
+            <p id="domain-status" class="status" hidden></p>
+          </section>
+          <section class="app-panel mb-5">
+            <h2>{t.account}</h2>
+            <div class="inline-actions">
+              <a class="btn btn-outline" href="/api/account/export">
+                {t.exportData}
+              </a>
+              <a class="btn btn-ghost" href={en ? '/en/privacy' : '/privacidade'}>
+                {t.privacy}
+              </a>
+            </div>
+            <form id="delete-account-form" class="mt-5">
+              <label for="delete-email">
+                {user.email
+                  ? t.confirmEmail
+                  : en
+                    ? 'Type DELETE to confirm'
+                    : 'Digite EXCLUIR para confirmar'}
+              </label>
+              <input
+                class="input input-bordered w-full"
+                id="delete-email"
+                name="email"
+                type={user.email ? 'email' : 'text'}
+                placeholder={user.email ?? 'EXCLUIR'}
+                required
+              />
+              <button class="btn btn-error mt-3" type="submit">
+                {t.deleteAccount}
+              </button>
+            </form>
+          </section>
         </div>
-        <div class="app-preview"><div class="flex justify-between items-center px-3 py-2"><strong>{t.preview}</strong><div class="flex gap-2"><button class="btn btn-xs" id="desktop-preview" type="button">{t.desktop}</button><button class="btn btn-xs" id="mobile-preview" type="button">{t.mobile}</button></div></div><iframe id="preview-frame" src="/app/preview" title={t.preview}></iframe><p class="px-3 pt-2 text-xs muted">{en ? 'The preview uses the same layout as the published page.' : 'A prévia usa o mesmo layout da página publicada.'}</p></div>
+        <div class="app-preview">
+          <div class="flex justify-between items-center px-3 py-2">
+            <strong>{t.preview}</strong>
+            <div class="flex gap-2">
+              <button class="btn btn-xs" id="desktop-preview" type="button">
+                {t.desktop}
+              </button>
+              <button class="btn btn-xs" id="mobile-preview" type="button">
+                {t.mobile}
+              </button>
+            </div>
+          </div>
+          <iframe id="preview-frame" src="/app/preview" title={t.preview}></iframe>
+          <p class="px-3 pt-2 text-xs muted">
+            {en
+              ? 'The preview uses the same layout as the published page.'
+              : 'A prévia usa o mesmo layout da página publicada.'}
+          </p>
+        </div>
       </div>
     </main>
   </div>
   <script>
     import { QueryClient } from '@tanstack/query-core';
-    const queryClient = new QueryClient({ defaultOptions:{ queries:{ staleTime:60_000 } } });
+    const queryClient = new QueryClient({ defaultOptions: { queries: { staleTime: 60_000 } } });
     const form = document.querySelector<HTMLFormElement>('#editor')!;
     const status = document.querySelector<HTMLElement>('#editor-status')!;
-    const input = (scope: ParentNode, name: string) => (scope.querySelector<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(`[name="${name}"]`)?.value || '').trim();
+    const input = (scope: ParentNode, name: string) =>
+      (
+        scope.querySelector<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(
+          `[name="${name}"]`,
+        )?.value || ''
+      ).trim();
     const list = (name: string) => [...form.querySelectorAll<HTMLElement>(`[data-item="${name}"]`)];
-    function show(text: string, error = false) { status.hidden=false; status.textContent=text; status.classList.toggle('error',error); status.classList.toggle('success',!error); }
+    function show(text: string, error = false) {
+      status.hidden = false;
+      status.textContent = text;
+      status.classList.toggle('error', error);
+      status.classList.toggle('success', !error);
+    }
     async function upload(file: File) {
-      const body = new FormData(); body.set('file',file);
-      const response = await fetch('/api/media/upload',{ method:'POST',body });
-      const data = await response.json(); if (!response.ok) throw new Error(data.error); return data.url as string;
+      const body = new FormData();
+      body.set('file', file);
+      const response = await fetch('/api/media/upload', { method: 'POST', body });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error);
+      return data.url as string;
     }
     async function collect() {
       const heroFile = form.querySelector<HTMLInputElement>('#hero-file')?.files?.[0];
-      let heroImage = input(form,'heroImage'); if (heroFile) { heroImage = await upload(heroFile); form.querySelector<HTMLInputElement>('[name="heroImage"]')!.value = heroImage; form.querySelector<HTMLInputElement>('#hero-file')!.value = ''; }
+      let heroImage = input(form, 'heroImage');
+      if (heroFile) {
+        heroImage = await upload(heroFile);
+        form.querySelector<HTMLInputElement>('[name="heroImage"]')!.value = heroImage;
+        form.querySelector<HTMLInputElement>('#hero-file')!.value = '';
+      }
       const products = [];
       for (const row of list('product')) {
-        let image = input(row,'item-image'); const file = row.querySelector<HTMLInputElement>('[name="item-file"]')?.files?.[0]; if (file) { image = await upload(file); row.querySelector<HTMLInputElement>('[name="item-image"]')!.value = image; row.querySelector<HTMLInputElement>('[name="item-file"]')!.value = ''; }
-        products.push({ title:input(row,'item-title'),description:input(row,'item-description'),image,url:input(row,'item-url') });
+        let image = input(row, 'item-image');
+        const file = row.querySelector<HTMLInputElement>('[name="item-file"]')?.files?.[0];
+        if (file) {
+          image = await upload(file);
+          row.querySelector<HTMLInputElement>('[name="item-image"]')!.value = image;
+          row.querySelector<HTMLInputElement>('[name="item-file"]')!.value = '';
+        }
+        products.push({
+          title: input(row, 'item-title'),
+          description: input(row, 'item-description'),
+          image,
+          url: input(row, 'item-url'),
+        });
       }
       return {
-        layout:input(form,'layout'),language:input(form,'language'),title:input(form,'title'),subtitle:input(form,'subtitle'),heroImage,
-        primaryLabel:input(form,'primaryLabel'),primaryUrl:input(form,'primaryUrl'),aboutTitle:input(form,'aboutTitle'),about:input(form,'about'),footerText:input(form,'footerText'),
-        benefits:list('benefit').map(row => ({ title:input(row,'item-title'),description:input(row,'item-description') })),
-        stats:list('stat').map(row => ({ value:input(row,'item-value'),label:input(row,'item-label') })),
-        testimonials:list('testimonial').map(row => ({ quote:input(row,'item-quote'),name:input(row,'item-name') })), products,
+        layout: input(form, 'layout'),
+        language: input(form, 'language'),
+        title: input(form, 'title'),
+        subtitle: input(form, 'subtitle'),
+        heroImage,
+        primaryLabel: input(form, 'primaryLabel'),
+        primaryUrl: input(form, 'primaryUrl'),
+        aboutTitle: input(form, 'aboutTitle'),
+        about: input(form, 'about'),
+        footerText: input(form, 'footerText'),
+        benefits: list('benefit').map((row) => ({
+          title: input(row, 'item-title'),
+          description: input(row, 'item-description'),
+        })),
+        stats: list('stat').map((row) => ({
+          value: input(row, 'item-value'),
+          label: input(row, 'item-label'),
+        })),
+        testimonials: list('testimonial').map((row) => ({
+          quote: input(row, 'item-quote'),
+          name: input(row, 'item-name'),
+        })),
+        products,
       };
     }
     async function save() {
       const content = await collect();
-      const response = await fetch('/api/site/save',{ method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(content) });
-      const result = await response.json(); if (!response.ok) throw new Error(result.error);
-      const frame = document.querySelector<HTMLIFrameElement>('#preview-frame')!; frame.src=`/app/preview?t=${Date.now()}`;
+      const response = await fetch('/api/site/save', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(content),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error);
+      const frame = document.querySelector<HTMLIFrameElement>('#preview-frame')!;
+      frame.src = `/app/preview?t=${Date.now()}`;
       return result;
     }
-    form.addEventListener('submit',async event => { event.preventDefault(); try { await save(); show(document.documentElement.lang === 'en' ? 'Draft saved.' : 'Rascunho salvo.'); } catch(error) { show(error instanceof Error ? error.message : 'Falha ao salvar',true); } });
-    document.querySelector('#publish')?.addEventListener('click',async () => { try { await save(); const response=await fetch('/api/site/publish',{method:'POST'}); const result=await response.json(); if(!response.ok) throw new Error(result.error); show(document.documentElement.lang==='en'?'Published.':'Publicado.'); } catch(error){ show(error instanceof Error?error.message:'Falha ao publicar',true); } });
-    document.querySelector('#logout')?.addEventListener('click',async()=>{ await fetch('/api/auth/logout',{method:'POST'}); location.href='/'; });
-    document.querySelector('#desktop-preview')?.addEventListener('click',()=>{ document.querySelector<HTMLIFrameElement>('#preview-frame')!.style.maxWidth='100%'; });
-    document.querySelector('#mobile-preview')?.addEventListener('click',()=>{ document.querySelector<HTMLIFrameElement>('#preview-frame')!.style.maxWidth='390px'; });
-    form.addEventListener('click',event=>{
-      const button=(event.target as HTMLElement).closest<HTMLButtonElement>('button'); if(!button) return;
-      if(button.matches('[data-remove]')) button.closest('[data-item]')?.remove();
-      const type=button.dataset.add; if(!type) return;
-      const limits:Record<string,number>={benefit:6,stat:4,testimonial:3,product:12}; if(list(type).length>=limits[type]) return;
-      const markup:Record<string,string>={
-        benefit:'<input class="input input-bordered mb-2" name="item-title" placeholder="Título" maxlength="80"><textarea class="textarea textarea-bordered" name="item-description" placeholder="Descrição" maxlength="240"></textarea>',
-        stat:'<div class="field-row"><input class="input input-bordered" name="item-value" placeholder="Valor" maxlength="20"><input class="input input-bordered" name="item-label" placeholder="Legenda" maxlength="60"></div>',
-        testimonial:'<textarea class="textarea textarea-bordered mb-2" name="item-quote" placeholder="Depoimento" maxlength="300"></textarea><input class="input input-bordered" name="item-name" placeholder="Nome" maxlength="80">',
-        product:'<input class="input input-bordered mb-2" name="item-title" placeholder="Nome" maxlength="80"><textarea class="textarea textarea-bordered mb-2" name="item-description" placeholder="Descrição" maxlength="300"></textarea><input class="input input-bordered mb-2" name="item-url" type="url" placeholder="https://"><input class="file-input file-input-bordered w-full" name="item-file" type="file" accept="image/jpeg,image/png,image/webp"><input type="hidden" name="item-image">',
-      };
-      const row=document.createElement('fieldset'); row.dataset.item=type; row.className='border border-base-300 rounded-xl p-3 mb-2'; row.innerHTML=markup[type]+'<button type="button" class="btn btn-ghost btn-sm mt-2" data-remove>Remover</button>';
-      document.querySelector(`#${type==='benefit'?'benefits':type==='stat'?'stats':type==='testimonial'?'testimonials':'products'}-list`)?.append(row);
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      try {
+        await save();
+        show(document.documentElement.lang === 'en' ? 'Draft saved.' : 'Rascunho salvo.');
+      } catch (error) {
+        show(error instanceof Error ? error.message : 'Falha ao salvar', true);
+      }
     });
-    document.querySelector<HTMLFormElement>('#slug-form')?.addEventListener('submit',async event=>{event.preventDefault();const form=event.currentTarget as HTMLFormElement; const response=await fetch('/api/site/slug',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({slug:input(form,'slug')})});const result=await response.json();if(response.ok){document.querySelector<HTMLAnchorElement>('#public-url')!.href=result.url;document.querySelector<HTMLAnchorElement>('#public-url')!.textContent=new URL(result.url).host;}else show(result.error,true);});
-    document.querySelector<HTMLFormElement>('#domain-form')?.addEventListener('submit',async event=>{event.preventDefault();const form=event.currentTarget as HTMLFormElement;const response=await fetch('/api/domains/connect',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({hostname:input(form,'hostname')})});const result=await response.json();const target=document.querySelector<HTMLElement>('#domain-status')!;target.hidden=false;target.textContent=response.ok?`CNAME: ${result.hostname} → ${result.target}`:result.error;target.classList.toggle('error',!response.ok);});
-    const currencySelect=document.querySelector<HTMLSelectElement>('#currency')!;
-    const priceMap=JSON.parse(currencySelect.dataset.prices||'{}') as Record<string,number>;
-    currencySelect.addEventListener('change',()=>{document.querySelectorAll<HTMLButtonElement>('[data-plan]').forEach(button=>{const amount=priceMap[`${button.dataset.plan}_${currencySelect.value}`];const label=button.querySelector<HTMLElement>('[data-amount]')!;label.textContent=amount?new Intl.NumberFormat(currencySelect.value==='brl'?'pt-BR':'en-US',{style:'currency',currency:currencySelect.value.toUpperCase()}).format(amount/100):'—';});});
-    document.querySelectorAll<HTMLButtonElement>('[data-plan]').forEach(button=>button.addEventListener('click',async()=>{const response=await fetch('/api/billing/checkout',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({plan:button.dataset.plan,currency:document.querySelector<HTMLSelectElement>('#currency')!.value})});const result=await response.json();if(response.ok&&result.url) location.href=result.url;else show(result.error||'Falha ao iniciar compra',true);}));
-    document.querySelector('#portal')?.addEventListener('click',async()=>{const response=await fetch('/api/billing/portal',{method:'POST'});const result=await response.json();if(response.ok&&result.url)location.href=result.url;else show(result.error||'Falha ao abrir cobrança',true);});
-    document.querySelector<HTMLFormElement>('#delete-account-form')?.addEventListener('submit',async event=>{event.preventDefault();const deletionForm=event.currentTarget as HTMLFormElement;const email=input(deletionForm,'email');const warning=document.documentElement.lang==='en'?'Delete your account, page and images? Any subscription will be canceled.':'Excluir sua conta, página e imagens? Sua assinatura será cancelada.';if(!confirm(warning))return;const response=await fetch('/api/account/delete',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({email})});const result=await response.json();if(response.ok)location.href='/';else show(result.error||'Falha ao excluir a conta',true);});
-    const metrics=queryClient.query({queryKey:['metrics'],queryFn:async()=>{const response=await fetch('/api/metrics');return response.json();}});
-    metrics.then(data=>{document.querySelector('#metric-views')!.textContent=String(data.views??0);document.querySelector('#metric-clicks')!.textContent=String(data.clicks??0);}).catch(()=>{});
-    queryClient.query({queryKey:['domain'],queryFn:async()=>{const response=await fetch('/api/domains/status');return response.json();}}).then(data=>{if(!data.domain)return;const node=document.querySelector<HTMLElement>('#domain-status')!;node.hidden=false;node.textContent=`${data.domain.hostname}: ${data.domain.status}/${data.domain.sslStatus}`;}).catch(()=>{});
+    document.querySelector('#publish')?.addEventListener('click', async () => {
+      try {
+        await save();
+        const response = await fetch('/api/site/publish', { method: 'POST' });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error);
+        show(document.documentElement.lang === 'en' ? 'Published.' : 'Publicado.');
+      } catch (error) {
+        show(error instanceof Error ? error.message : 'Falha ao publicar', true);
+      }
+    });
+    document.querySelector('#logout')?.addEventListener('click', async () => {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      location.href = '/';
+    });
+    document.querySelector('#desktop-preview')?.addEventListener('click', () => {
+      document.querySelector<HTMLIFrameElement>('#preview-frame')!.style.maxWidth = '100%';
+    });
+    document.querySelector('#mobile-preview')?.addEventListener('click', () => {
+      document.querySelector<HTMLIFrameElement>('#preview-frame')!.style.maxWidth = '390px';
+    });
+    form.addEventListener('click', (event) => {
+      const button = (event.target as HTMLElement).closest<HTMLButtonElement>('button');
+      if (!button) return;
+      if (button.matches('[data-remove]')) button.closest('[data-item]')?.remove();
+      const type = button.dataset.add;
+      if (!type) return;
+      const limits: Record<string, number> = { benefit: 6, stat: 4, testimonial: 3, product: 12 };
+      if (list(type).length >= limits[type]) return;
+      const markup: Record<string, string> = {
+        benefit:
+          '<input class="input input-bordered mb-2" name="item-title" placeholder="Título" maxlength="80"><textarea class="textarea textarea-bordered" name="item-description" placeholder="Descrição" maxlength="240"></textarea>',
+        stat: '<div class="field-row"><input class="input input-bordered" name="item-value" placeholder="Valor" maxlength="20"><input class="input input-bordered" name="item-label" placeholder="Legenda" maxlength="60"></div>',
+        testimonial:
+          '<textarea class="textarea textarea-bordered mb-2" name="item-quote" placeholder="Depoimento" maxlength="300"></textarea><input class="input input-bordered" name="item-name" placeholder="Nome" maxlength="80">',
+        product:
+          '<input class="input input-bordered mb-2" name="item-title" placeholder="Nome" maxlength="80"><textarea class="textarea textarea-bordered mb-2" name="item-description" placeholder="Descrição" maxlength="300"></textarea><input class="input input-bordered mb-2" name="item-url" type="url" placeholder="https://"><input class="file-input file-input-bordered w-full" name="item-file" type="file" accept="image/jpeg,image/png,image/webp"><input type="hidden" name="item-image">',
+      };
+      const row = document.createElement('fieldset');
+      row.dataset.item = type;
+      row.className = 'border border-base-300 rounded-xl p-3 mb-2';
+      row.innerHTML =
+        markup[type] +
+        '<button type="button" class="btn btn-ghost btn-sm mt-2" data-remove>Remover</button>';
+      document
+        .querySelector(
+          `#${type === 'benefit' ? 'benefits' : type === 'stat' ? 'stats' : type === 'testimonial' ? 'testimonials' : 'products'}-list`,
+        )
+        ?.append(row);
+    });
+    document
+      .querySelector<HTMLFormElement>('#slug-form')
+      ?.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const form = event.currentTarget as HTMLFormElement;
+        const response = await fetch('/api/site/slug', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ slug: input(form, 'slug') }),
+        });
+        const result = await response.json();
+        if (response.ok) {
+          document.querySelector<HTMLAnchorElement>('#public-url')!.href = result.url;
+          document.querySelector<HTMLAnchorElement>('#public-url')!.textContent = new URL(
+            result.url,
+          ).host;
+        } else show(result.error, true);
+      });
+    document
+      .querySelector<HTMLFormElement>('#domain-form')
+      ?.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const form = event.currentTarget as HTMLFormElement;
+        const response = await fetch('/api/domains/connect', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ hostname: input(form, 'hostname') }),
+        });
+        const result = await response.json();
+        const target = document.querySelector<HTMLElement>('#domain-status')!;
+        target.hidden = false;
+        target.textContent = response.ok
+          ? `CNAME: ${result.hostname} → ${result.target}`
+          : result.error;
+        target.classList.toggle('error', !response.ok);
+      });
+    const currencySelect = document.querySelector<HTMLSelectElement>('#currency')!;
+    const priceMap = JSON.parse(currencySelect.dataset.prices || '{}') as Record<string, number>;
+    currencySelect.addEventListener('change', () => {
+      document.querySelectorAll<HTMLButtonElement>('[data-plan]').forEach((button) => {
+        const amount = priceMap[`${button.dataset.plan}_${currencySelect.value}`];
+        const label = button.querySelector<HTMLElement>('[data-amount]')!;
+        label.textContent = amount
+          ? new Intl.NumberFormat(currencySelect.value === 'brl' ? 'pt-BR' : 'en-US', {
+              style: 'currency',
+              currency: currencySelect.value.toUpperCase(),
+            }).format(amount / 100)
+          : '—';
+      });
+    });
+    document.querySelectorAll<HTMLButtonElement>('[data-plan]').forEach((button) =>
+      button.addEventListener('click', async () => {
+        const response = await fetch('/api/billing/checkout', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({
+            plan: button.dataset.plan,
+            currency: document.querySelector<HTMLSelectElement>('#currency')!.value,
+          }),
+        });
+        const result = await response.json();
+        if (response.ok && result.url) location.href = result.url;
+        else show(result.error || 'Falha ao iniciar compra', true);
+      }),
+    );
+    document.querySelector('#portal')?.addEventListener('click', async () => {
+      const response = await fetch('/api/billing/portal', { method: 'POST' });
+      const result = await response.json();
+      if (response.ok && result.url) location.href = result.url;
+      else show(result.error || 'Falha ao abrir cobrança', true);
+    });
+    document
+      .querySelector<HTMLFormElement>('#delete-account-form')
+      ?.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const deletionForm = event.currentTarget as HTMLFormElement;
+        const email = input(deletionForm, 'email');
+        const warning =
+          document.documentElement.lang === 'en'
+            ? 'Delete your account, page and images? Any subscription will be canceled.'
+            : 'Excluir sua conta, página e imagens? Sua assinatura será cancelada.';
+        if (!confirm(warning)) return;
+        const response = await fetch('/api/account/delete', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ email }),
+        });
+        const result = await response.json();
+        if (response.ok) location.href = '/';
+        else show(result.error || 'Falha ao excluir a conta', true);
+      });
+    const metrics = queryClient.query({
+      queryKey: ['metrics'],
+      queryFn: async () => {
+        const response = await fetch('/api/metrics');
+        return response.json();
+      },
+    });
+    metrics
+      .then((data) => {
+        document.querySelector('#metric-views')!.textContent = String(data.views ?? 0);
+        document.querySelector('#metric-clicks')!.textContent = String(data.clicks ?? 0);
+      })
+      .catch(() => {});
+    queryClient
+      .query({
+        queryKey: ['domain'],
+        queryFn: async () => {
+          const response = await fetch('/api/domains/status');
+          return response.json();
+        },
+      })
+      .then((data) => {
+        if (!data.domain) return;
+        const node = document.querySelector<HTMLElement>('#domain-status')!;
+        node.hidden = false;
+        node.textContent = `${data.domain.hostname}: ${data.domain.status}/${data.domain.sslStatus}`;
+      })
+      .catch(() => {});
   </script>
 </Base>

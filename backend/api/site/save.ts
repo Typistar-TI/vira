@@ -12,9 +12,14 @@ export const POST: APIRoute = async ({ request }) => {
   try {
     const content = parseSite(await readJson(request));
     const ownedPrefix = `/media/${site.id}/`;
-    const images = [content.heroImage, ...content.products.map(product => product.image)].filter(Boolean);
-    if (images.some(image => !image.startsWith(ownedPrefix))) return json({ error: 'Uma imagem não pertence à sua página' }, 400);
-    await env.DB.prepare('UPDATE sites SET draft_json = ? WHERE id = ?').bind(JSON.stringify(content), site.id).run();
+    const images = [content.heroImage, ...content.products.map((product) => product.image)].filter(
+      Boolean,
+    );
+    if (images.some((image) => !image.startsWith(ownedPrefix)))
+      return json({ error: 'Uma imagem não pertence à sua página' }, 400);
+    await env.DB.prepare('UPDATE sites SET draft_json = ? WHERE id = ?')
+      .bind(JSON.stringify(content), site.id)
+      .run();
     return json({ ok: true });
   } catch {
     return json({ error: 'Revise os campos da página' }, 400);

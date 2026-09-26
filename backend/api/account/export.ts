@@ -7,17 +7,38 @@ export const GET: APIRoute = async ({ request }) => {
   const user = await requireUser(request);
   if (isResponse(user)) return user;
   const site = await getSiteForUser(user.id);
-  const domain = site ? await env.DB.prepare('SELECT hostname, status, ssl_status, created_at FROM domains WHERE site_id = ?')
-    .bind(site.id).first() : null;
+  const domain = site
+    ? await env.DB.prepare(
+        'SELECT hostname, status, ssl_status, created_at FROM domains WHERE site_id = ?',
+      )
+        .bind(site.id)
+        .first()
+    : null;
   const data = {
     exported_at: new Date().toISOString(),
-    account: { id: user.id, email: user.email, legacy_phone: user.google_sub ? null : user.phone, plan: user.plan, trial_ends_at: user.trial_ends_at, access_until: user.access_until },
-    site: site ? { slug: site.slug, draft: JSON.parse(site.draft_json), published: site.published_json ? JSON.parse(site.published_json) : null, published_at: site.published_at } : null,
+    account: {
+      id: user.id,
+      email: user.email,
+      legacy_phone: user.google_sub ? null : user.phone,
+      plan: user.plan,
+      trial_ends_at: user.trial_ends_at,
+      access_until: user.access_until,
+    },
+    site: site
+      ? {
+          slug: site.slug,
+          draft: JSON.parse(site.draft_json),
+          published: site.published_json ? JSON.parse(site.published_json) : null,
+          published_at: site.published_at,
+        }
+      : null,
     domain,
   };
-  return new Response(JSON.stringify(data, null, 2), { headers: {
-    'content-type': 'application/json; charset=utf-8',
-    'content-disposition': 'attachment; filename="vira-dados.json"',
-    'cache-control': 'no-store',
-  } });
+  return new Response(JSON.stringify(data, null, 2), {
+    headers: {
+      'content-type': 'application/json; charset=utf-8',
+      'content-disposition': 'attachment; filename="vira-dados.json"',
+      'cache-control': 'no-store',
+    },
+  });
 };

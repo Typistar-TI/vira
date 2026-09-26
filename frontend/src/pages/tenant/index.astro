@@ -7,8 +7,43 @@ import { resolveTenant } from '@backend/custom-domains/tenant';
 const tenant = await resolveTenant(Astro.url.hostname);
 if (!tenant) return new Response('Página não encontrada', { status: 404 });
 const active = hasAccess(tenant.user);
-const content = tenant.site.published_json ? parseSite(JSON.parse(tenant.site.published_json)) : null;
+const content = tenant.site.published_json
+  ? parseSite(JSON.parse(tenant.site.published_json))
+  : null;
 if (active && content) env.METRICS.writeDataPoint({ indexes: [tenant.site.id], blobs: ['view'] });
 const canonical = `https://${Astro.url.hostname}/`;
 ---
-{!active ? <Base title="Página temporariamente indisponível · Vira" noindex><main class="min-h-screen grid place-items-center p-8 text-center"><div><h1 class="text-4xl">Página temporariamente indisponível</h1><p>O responsável por esta página pode reativá-la no Vira.</p></div></main></Base> : !content ? <Base title="Página em preparação · Vira" noindex><main class="min-h-screen grid place-items-center p-8 text-center"><div><h1 class="text-4xl">Página em preparação</h1><p>Volte em breve.</p></div></main></Base> : <Base title={content.title} description={content.subtitle} lang={content.language}><link slot="head" rel="canonical" href={canonical} /><meta slot="head" property="og:title" content={content.title} /><meta slot="head" property="og:description" content={content.subtitle} />{content.heroImage && <meta slot="head" property="og:image" content={`https://${Astro.url.hostname}${content.heroImage}`} />}<SitePage content={content} /></Base>}
+
+{!active ? (
+  <Base title="Página temporariamente indisponível · Vira" noindex>
+    <main class="min-h-screen grid place-items-center p-8 text-center">
+      <div>
+        <h1 class="text-4xl">Página temporariamente indisponível</h1>
+        <p>O responsável por esta página pode reativá-la no Vira.</p>
+      </div>
+    </main>
+  </Base>
+) : !content ? (
+  <Base title="Página em preparação · Vira" noindex>
+    <main class="min-h-screen grid place-items-center p-8 text-center">
+      <div>
+        <h1 class="text-4xl">Página em preparação</h1>
+        <p>Volte em breve.</p>
+      </div>
+    </main>
+  </Base>
+) : (
+  <Base title={content.title} description={content.subtitle} lang={content.language}>
+    <link slot="head" rel="canonical" href={canonical} />
+    <meta slot="head" property="og:title" content={content.title} />
+    <meta slot="head" property="og:description" content={content.subtitle} />
+    {content.heroImage && (
+      <meta
+        slot="head"
+        property="og:image"
+        content={`https://${Astro.url.hostname}${content.heroImage}`}
+      />
+    )}
+    <SitePage content={content} />
+  </Base>
+)}

@@ -29,7 +29,10 @@ export async function readBody(request: Request, maxBytes: number): Promise<Uint
   }
   const bytes = new Uint8Array(length);
   let offset = 0;
-  for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
   return bytes;
 }
 
@@ -41,31 +44,54 @@ export async function readText(request: Request, maxBytes = 128 * 1024): Promise
   return new TextDecoder().decode(await readBody(request, maxBytes));
 }
 
-export async function readFormData(request: Request, maxBytes = 6 * 1024 * 1024): Promise<FormData> {
+export async function readFormData(
+  request: Request,
+  maxBytes = 6 * 1024 * 1024,
+): Promise<FormData> {
   const bytes = await readBody(request, maxBytes);
-  return new Request(request.url, { method: 'POST', headers: { 'content-type': request.headers.get('content-type') || '' }, body: bytes.buffer as ArrayBuffer }).formData();
+  return new Request(request.url, {
+    method: 'POST',
+    headers: { 'content-type': request.headers.get('content-type') || '' },
+    body: bytes.buffer as ArrayBuffer,
+  }).formData();
 }
 
 export async function requireUser(request: Request): Promise<UserRow | Response> {
-  if (request.method !== 'GET' && !sameOrigin(request)) return json({ error: 'Origem inválida' }, 403);
+  if (request.method !== 'GET' && !sameOrigin(request))
+    return json({ error: 'Origem inválida' }, 403);
   const user = await getSessionUser(request);
   if (!user) return json({ error: 'Entre na sua conta' }, 401);
   const path = new URL(request.url).pathname;
-  const allowed = await consumeLimit(`api:${user.id}:${request.method}:${path}`, request.method === 'GET' ? 30 : 60, 60);
-  return allowed ? user : json({ error: 'Muitas requisições. Aguarde um minuto.' }, 429, { 'retry-after': '60' });
+  const allowed = await consumeLimit(
+    `api:${user.id}:${request.method}:${path}`,
+    request.method === 'GET' ? 30 : 60,
+    60,
+  );
+  return allowed
+    ? user
+    : json({ error: 'Muitas requisições. Aguarde um minuto.' }, 429, { 'retry-after': '60' });
 }
 
 export function isResponse(value: unknown): value is Response {
   return value instanceof Response;
 }
 
-export async function requireAdmin(request: Request): Promise<{ id: string; email: string } | Response> {
-  if (request.method !== 'GET' && !sameOrigin(request)) return json({ error: 'Origem inválida' }, 403);
+export async function requireAdmin(
+  request: Request,
+): Promise<{ id: string; email: string } | Response> {
+  if (request.method !== 'GET' && !sameOrigin(request))
+    return json({ error: 'Origem inválida' }, 403);
   const admin = await getSessionAdmin(request);
   if (!admin) return json({ error: 'Acesso restrito' }, 403);
   const path = new URL(request.url).pathname;
-  const allowed = await consumeLimit(`admin-api:${admin.id}:${request.method}:${path}`, request.method === 'GET' ? 30 : 60, 60);
-  return allowed ? admin : json({ error: 'Muitas requisições. Aguarde um minuto.' }, 429, { 'retry-after': '60' });
+  const allowed = await consumeLimit(
+    `admin-api:${admin.id}:${request.method}:${path}`,
+    request.method === 'GET' ? 30 : 60,
+    60,
+  );
+  return allowed
+    ? admin
+    : json({ error: 'Muitas requisições. Aguarde um minuto.' }, 429, { 'retry-after': '60' });
 }
 
 export function clientIp(request: Request) {

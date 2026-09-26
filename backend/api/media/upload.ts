@@ -9,13 +9,24 @@ export const POST: APIRoute = async ({ request }) => {
   const site = await getSiteForUser(user.id);
   if (!site) return json({ error: 'Página não encontrada' }, 404);
   let data: FormData;
-  try { data = await readFormData(request); } catch { return json({ error: 'Arquivo muito grande ou inválido' }, 413); }
+  try {
+    data = await readFormData(request);
+  } catch {
+    return json({ error: 'Arquivo muito grande ou inválido' }, 413);
+  }
   const file = data.get('file');
-  if (!(file instanceof File) || file.size > 5 * 1024 * 1024 || !['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+  if (
+    !(file instanceof File) ||
+    file.size > 5 * 1024 * 1024 ||
+    !['image/jpeg', 'image/png', 'image/webp'].includes(file.type)
+  ) {
     return json({ error: 'Envie JPG, PNG ou WebP de até 5 MB' }, 400);
   }
-  const usage = await env.DB.prepare('SELECT COUNT(*) AS count, COALESCE(SUM(bytes), 0) AS bytes FROM media_assets WHERE site_id = ?')
-    .bind(site.id).first<{ count: number; bytes: number }>();
+  const usage = await env.DB.prepare(
+    'SELECT COUNT(*) AS count, COALESCE(SUM(bytes), 0) AS bytes FROM media_assets WHERE site_id = ?',
+  )
+    .bind(site.id)
+    .first<{ count: number; bytes: number }>();
   if ((usage?.count || 0) >= 30 || (usage?.bytes || 0) + file.size > 50 * 1024 * 1024) {
     return json({ error: 'Limite de 30 imagens ou 50 MB atingido nesta página' }, 413);
   }
@@ -23,8 +34,11 @@ export const POST: APIRoute = async ({ request }) => {
   const key = `${site.id}/${crypto.randomUUID()}.${extension}`;
   await env.MEDIA.put(key, await file.arrayBuffer(), { httpMetadata: { contentType: file.type } });
   try {
-    await env.DB.prepare('INSERT INTO media_assets (key, site_id, bytes, created_at) VALUES (?, ?, ?, ?)')
-      .bind(key, site.id, file.size, Math.floor(Date.now() / 1000)).run();
+    await env.DB.prepare(
+      'INSERT INTO media_assets (key, site_id, bytes, created_at) VALUES (?, ?, ?, ?)',
+    )
+      .bind(key, site.id, file.size, Math.floor(Date.now() / 1000))
+      .run();
   } catch (error) {
     await env.MEDIA.delete(key);
     throw error;

@@ -8,8 +8,16 @@ export const POST: APIRoute = async ({ request }) => {
   const user = await requireUser(request);
   if (isResponse(user)) return user;
   let slug: unknown;
-  try { ({ slug } = await readJson(request, 2048)); } catch { return json({ error: 'Requisição inválida' }, 400); }
-  if (typeof slug !== 'string' || !/^[a-z0-9](?:[a-z0-9-]{1,38}[a-z0-9])?$/.test(slug) || ['www', 'app', 'api', 'admin', 'mail'].includes(slug)) {
+  try {
+    ({ slug } = await readJson(request, 2048));
+  } catch {
+    return json({ error: 'Requisição inválida' }, 400);
+  }
+  if (
+    typeof slug !== 'string' ||
+    !/^[a-z0-9](?:[a-z0-9-]{1,38}[a-z0-9])?$/.test(slug) ||
+    ['www', 'app', 'api', 'admin', 'mail'].includes(slug)
+  ) {
     return json({ error: 'Use 3 a 40 letras minúsculas, números ou hífens' }, 400);
   }
   const site = await getSiteForUser(user.id);

@@ -14,18 +14,18 @@ O Vira é uma plataforma para criar e publicar páginas de vendas. O mesmo proje
 
 ## Tecnologias
 
-| Camada | Tecnologia | Função |
-| --- | --- | --- |
-| Interface e servidor | [Astro](https://astro.build/) e TypeScript | Páginas renderizadas no servidor, componentes e rotas de API no mesmo projeto. |
-| Hospedagem | [Cloudflare Workers](https://developers.cloudflare.com/workers/) | Execução da aplicação e das páginas publicadas. |
-| Dados | [Cloudflare D1](https://developers.cloudflare.com/d1/) | Contas, sessões, páginas, domínios, planos e configurações. |
-| Imagens | [Cloudflare R2](https://developers.cloudflare.com/r2/) | Armazenamento dos arquivos enviados pelos clientes. |
-| Métricas | [Cloudflare Analytics Engine](https://developers.cloudflare.com/analytics/analytics-engine/) | Contagem de visualizações e interações nas páginas. |
-| Estilos e componentes | [Tailwind CSS](https://tailwindcss.com/) e [daisyUI](https://daisyui.com/) | Estilos e componentes de interface sem React. |
-| Estado de dados no painel | [TanStack Query Core](https://tanstack.com/query/latest/docs/framework/vanilla/overview) | Cache e atualização de dados carregados pelas APIs. |
-| Acesso | [Google Identity Services](https://developers.google.com/identity/gsi/web/guides/overview) | Entrada com a conta Google, com validação do token no servidor. |
-| Envio de acesso | [Resend](https://resend.com/docs) | Links de acesso por e-mail, válidos por 15 minutos e uma vez. |
-| Pagamentos | [Stripe](https://docs.stripe.com/) | Checkout, assinaturas e portal de cobrança. |
+| Camada                    | Tecnologia                                                                                   | Função                                                                         |
+| ------------------------- | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Interface e servidor      | [Astro](https://astro.build/) e TypeScript                                                   | Páginas renderizadas no servidor, componentes e rotas de API no mesmo projeto. |
+| Hospedagem                | [Cloudflare Workers](https://developers.cloudflare.com/workers/)                             | Execução da aplicação e das páginas publicadas.                                |
+| Dados                     | [Cloudflare D1](https://developers.cloudflare.com/d1/)                                       | Contas, sessões, páginas, domínios, planos e configurações.                    |
+| Imagens                   | [Cloudflare R2](https://developers.cloudflare.com/r2/)                                       | Armazenamento dos arquivos enviados pelos clientes.                            |
+| Métricas                  | [Cloudflare Analytics Engine](https://developers.cloudflare.com/analytics/analytics-engine/) | Contagem de visualizações e interações nas páginas.                            |
+| Estilos e componentes     | [Tailwind CSS](https://tailwindcss.com/) e [daisyUI](https://daisyui.com/)                   | Estilos e componentes de interface sem React.                                  |
+| Estado de dados no painel | [TanStack Query Core](https://tanstack.com/query/latest/docs/framework/vanilla/overview)     | Cache e atualização de dados carregados pelas APIs.                            |
+| Acesso                    | [Google Identity Services](https://developers.google.com/identity/gsi/web/guides/overview)   | Entrada com a conta Google, com validação do token no servidor.                |
+| Envio de acesso           | [Resend](https://resend.com/docs)                                                            | Links de acesso por e-mail, válidos por 15 minutos e uma vez.                  |
+| Pagamentos                | [Stripe](https://docs.stripe.com/)                                                           | Checkout, assinaturas e portal de cobrança.                                    |
 
 O Astro renderiza o conteúdo público no servidor, inclusive metadados e rotas de sitemap. A interface interativa do painel usa TypeScript no navegador. Não há dependência de React.
 
@@ -52,16 +52,16 @@ As integrações externas são chamadas pelas rotas de API; suas credenciais nã
 
 ## Organização do projeto
 
-| Caminho | Responsabilidade |
-| --- | --- |
-| `frontend/src/pages/` | Páginas Astro e entradas curtas das rotas da API. |
-| `frontend/src/components/` | Componentes de apresentação e renderização das páginas. |
-| `backend/api/` | Implementação das rotas da API. |
-| `backend/` | Autenticação, cobrança, domínios, dados, contas e entrada do Worker. |
-| `shared/` | Tipos e validação do conteúdo das páginas. |
-| `frontend/src/middleware.ts` | Roteamento por hostname. |
-| `migrations/` | Evolução do esquema do D1. |
-| `scripts/` | Comandos de apoio ao desenvolvimento e à configuração. |
+| Caminho                      | Responsabilidade                                                     |
+| ---------------------------- | -------------------------------------------------------------------- |
+| `frontend/src/pages/`        | Páginas Astro e entradas curtas das rotas da API.                    |
+| `frontend/src/components/`   | Componentes de apresentação e renderização das páginas.              |
+| `backend/api/`               | Implementação das rotas da API.                                      |
+| `backend/`                   | Autenticação, cobrança, domínios, dados, contas e entrada do Worker. |
+| `shared/`                    | Tipos e validação do conteúdo das páginas.                           |
+| `frontend/src/middleware.ts` | Roteamento por hostname.                                             |
+| `migrations/`                | Evolução do esquema do D1.                                           |
+| `scripts/`                   | Comandos de apoio ao desenvolvimento e à configuração.               |
 
 ## Desenvolvimento local
 
@@ -78,7 +78,10 @@ Use `npx astro dev status`, `npx astro dev logs` e `npx astro dev stop` para aco
 ```sh
 npm run check
 npm run build
+npm run format:check
 ```
+
+Use `npm run format` para aplicar o padrão de formatação antes de enviar alterações.
 
 Os fluxos que usam autenticação, pagamentos e domínios próprios dependem da configuração dos serviços externos no ambiente de execução.
 
