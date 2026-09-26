@@ -9,7 +9,6 @@
     "dev": "astro dev",
     "check": "astro check",
     "build": "astro build",
-    "deploy": "npm run build && wrangler deploy",
     "db:local": "wrangler d1 migrations apply vira --local",
     "db:remote": "wrangler d1 migrations apply vira --remote",
     "config:local": "node scripts/config.mjs --local",

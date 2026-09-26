@@ -4,6 +4,7 @@ import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
   output: 'server',
-  adapter: cloudflare(),
-  vite: { plugins: [tailwindcss()], server: { allowedHosts: ['.vira.ia.br'] }, optimizeDeps: { exclude: ['libphonenumber-js/max'] } },
+  session: false,
+  adapter: cloudflare({ imageService: 'compile' }),
+  vite: { plugins: [tailwindcss()], optimizeDeps: { exclude: ['libphonenumber-js/max'] } },
 });

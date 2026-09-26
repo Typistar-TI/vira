@@ -8,6 +8,5 @@
   "r2_buckets": [{ "binding": "MEDIA", "bucket_name": "vira-media" }],
   "analytics_engine_datasets": [{ "binding": "METRICS", "dataset": "vira_metrics" }],
   "routes": [{ "pattern": "*/*", "zone_id": "2bbbd3219eb16941c3e21a14bf2c684a" }],
-  "triggers": { "crons": ["0 3 * * *"] },
-  "vars": {}
+  "triggers": { "crons": ["0 3 * * *"] }
 }

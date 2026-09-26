@@ -36,3 +36,6 @@ Thumbs.db
 .idea/
 .vscode/
 .fleet/
+
+# Screenshots shared in the repository root
+/image*.png
