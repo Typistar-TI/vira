@@ -419,6 +419,7 @@ const date = (time: number | null) =>
     </main>
   </div>
   <script>
+    import { apiMutation, clearApiCache } from '@frontend/lib/api';
     const show = (form: HTMLFormElement, message: string, error = false) => {
       const node = form.querySelector<HTMLElement>('.admin-form-status')!;
       node.textContent = message;
@@ -433,13 +434,10 @@ const date = (time: number | null) =>
         try {
           const value = form.querySelector<HTMLInputElement>('[name=value]')!.value;
           if (!value.trim()) throw new Error('Informe um valor.');
-          const response = await fetch('/api/admin/settings', {
-            method: 'POST',
+          await apiMutation('/api/admin/settings', {
             headers: { 'content-type': 'application/json' },
             body: JSON.stringify({ key: form.dataset.key, value }),
           });
-          const data = await response.json();
-          if (!response.ok) throw new Error(data.error || 'Falha ao salvar');
           if (form.dataset.secret === 'true')
             form.querySelector<HTMLInputElement>('[name=value]')!.value = '';
           const badge = form.querySelector<HTMLElement>('.admin-configured,.admin-missing')!;
@@ -472,13 +470,10 @@ const date = (time: number | null) =>
               .value.trim(),
             active: form.querySelector<HTMLInputElement>('[name=active]')!.checked,
           };
-          const response = await fetch('/api/admin/prices', {
-            method: 'POST',
+          await apiMutation('/api/admin/prices', {
             headers: { 'content-type': 'application/json' },
             body: JSON.stringify(body),
           });
-          const data = await response.json();
-          if (!response.ok) throw new Error(data.error || 'Falha ao salvar');
           show(form, 'Preço salvo.');
         } catch (error) {
           show(form, error instanceof Error ? error.message : 'Falha ao salvar', true);
@@ -488,7 +483,8 @@ const date = (time: number | null) =>
       }),
     );
     document.querySelector('#admin-logout')?.addEventListener('click', async () => {
-      await fetch('/api/auth/logout', { method: 'POST' });
+      await apiMutation('/api/auth/logout');
+      clearApiCache();
       location.href = '/';
     });
   </script>

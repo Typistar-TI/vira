@@ -114,6 +114,7 @@ const loginUri = new URL('/api/auth/google', Astro.url).href;
   </div>
   {clientId && <script src="https://accounts.google.com/gsi/client" async defer></script>}
   <script>
+    import { apiMutation } from '@frontend/lib/api';
     document
       .querySelector<HTMLFormElement>('#email-login-form')
       ?.addEventListener('submit', async (event) => {
@@ -127,13 +128,10 @@ const loginUri = new URL('/api/auth/google', Astro.url).href;
         status.textContent = document.documentElement.lang === 'en' ? 'Sending...' : 'Enviando...';
         try {
           const email = form.querySelector<HTMLInputElement>('[name=email]')!.value.trim();
-          const response = await fetch('/api/auth/email/start', {
-            method: 'POST',
+          const data = await apiMutation<{ message: string }>('/api/auth/email/start', {
             headers: { 'content-type': 'application/json' },
             body: JSON.stringify({ email }),
           });
-          const data = await response.json();
-          if (!response.ok) throw new Error(data.error || 'Falha ao enviar');
           status.textContent =
             document.documentElement.lang === 'en'
               ? 'If eligible, a sign-in link is on its way. Check your inbox.'

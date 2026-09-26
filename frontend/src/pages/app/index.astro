@@ -506,7 +506,7 @@ const trialDays = Math.max(0, Math.ceil((user.trial_ends_at * 1000 - Date.now())
           <section class="app-panel mb-5">
             <h2>{t.account}</h2>
             <div class="inline-actions">
-              <a class="btn btn-outline" href="/api/account/export">
+              <a id="export-data" class="btn btn-outline" href="/api/account/export">
                 {t.exportData}
               </a>
               <a class="btn btn-ghost" href={en ? '/en/privacy' : '/privacidade'}>
@@ -558,8 +558,7 @@ const trialDays = Math.max(0, Math.ceil((user.trial_ends_at * 1000 - Date.now())
     </main>
   </div>
   <script>
-    import { QueryClient } from '@tanstack/query-core';
-    const queryClient = new QueryClient({ defaultOptions: { queries: { staleTime: 60_000 } } });
+    import { apiFile, apiMutation, apiQuery, clearApiCache } from '@frontend/lib/api';
     const form = document.querySelector<HTMLFormElement>('#editor')!;
     const status = document.querySelector<HTMLElement>('#editor-status')!;
     const input = (scope: ParentNode, name: string) =>
@@ -578,9 +577,7 @@ const trialDays = Math.max(0, Math.ceil((user.trial_ends_at * 1000 - Date.now())
     async function upload(file: File) {
       const body = new FormData();
       body.set('file', file);
-      const response = await fetch('/api/media/upload', { method: 'POST', body });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error);
+      const data = await apiMutation<{ url: string }>('/api/media/upload', { body });
       return data.url as string;
     }
     async function collect() {
@@ -635,13 +632,10 @@ const trialDays = Math.max(0, Math.ceil((user.trial_ends_at * 1000 - Date.now())
     }
     async function save() {
       const content = await collect();
-      const response = await fetch('/api/site/save', {
-        method: 'POST',
+      const result = await apiMutation('/api/site/save', {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify(content),
       });
-      const result = await response.json();
-      if (!response.ok) throw new Error(result.error);
       const frame = document.querySelector<HTMLIFrameElement>('#preview-frame')!;
       frame.src = `/app/preview?t=${Date.now()}`;
       return result;
@@ -658,16 +652,15 @@ const trialDays = Math.max(0, Math.ceil((user.trial_ends_at * 1000 - Date.now())
     document.querySelector('#publish')?.addEventListener('click', async () => {
       try {
         await save();
-        const response = await fetch('/api/site/publish', { method: 'POST' });
-        const result = await response.json();
-        if (!response.ok) throw new Error(result.error);
+        await apiMutation('/api/site/publish');
         show(document.documentElement.lang === 'en' ? 'Published.' : 'Publicado.');
       } catch (error) {
         show(error instanceof Error ? error.message : 'Falha ao publicar', true);
       }
     });
     document.querySelector('#logout')?.addEventListener('click', async () => {
-      await fetch('/api/auth/logout', { method: 'POST' });
+      await apiMutation('/api/auth/logout');
+      clearApiCache();
       location.href = '/';
     });
     document.querySelector('#desktop-preview')?.addEventListener('click', () => {
@@ -710,36 +703,40 @@ const trialDays = Math.max(0, Math.ceil((user.trial_ends_at * 1000 - Date.now())
       ?.addEventListener('submit', async (event) => {
         event.preventDefault();
         const form = event.currentTarget as HTMLFormElement;
-        const response = await fetch('/api/site/slug', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ slug: input(form, 'slug') }),
-        });
-        const result = await response.json();
-        if (response.ok) {
+        try {
+          const result = await apiMutation<{ url: string }>('/api/site/slug', {
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ slug: input(form, 'slug') }),
+          });
           document.querySelector<HTMLAnchorElement>('#public-url')!.href = result.url;
           document.querySelector<HTMLAnchorElement>('#public-url')!.textContent = new URL(
             result.url,
           ).host;
-        } else show(result.error, true);
+        } catch (error) {
+          show(error instanceof Error ? error.message : 'Falha ao alterar endereço', true);
+        }
       });
     document
       .querySelector<HTMLFormElement>('#domain-form')
       ?.addEventListener('submit', async (event) => {
         event.preventDefault();
         const form = event.currentTarget as HTMLFormElement;
-        const response = await fetch('/api/domains/connect', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ hostname: input(form, 'hostname') }),
-        });
-        const result = await response.json();
         const target = document.querySelector<HTMLElement>('#domain-status')!;
         target.hidden = false;
-        target.textContent = response.ok
-          ? `CNAME: ${result.hostname} → ${result.target}`
-          : result.error;
-        target.classList.toggle('error', !response.ok);
+        try {
+          const result = await apiMutation<{ hostname: string; target: string }>(
+            '/api/domains/connect',
+            {
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify({ hostname: input(form, 'hostname') }),
+            },
+          );
+          target.textContent = `CNAME: ${result.hostname} → ${result.target}`;
+          target.classList.remove('error');
+        } catch (error) {
+          target.textContent = error instanceof Error ? error.message : 'Falha ao conectar domínio';
+          target.classList.add('error');
+        }
       });
     const currencySelect = document.querySelector<HTMLSelectElement>('#currency')!;
     const priceMap = JSON.parse(currencySelect.dataset.prices || '{}') as Record<string, number>;
@@ -757,24 +754,27 @@ const trialDays = Math.max(0, Math.ceil((user.trial_ends_at * 1000 - Date.now())
     });
     document.querySelectorAll<HTMLButtonElement>('[data-plan]').forEach((button) =>
       button.addEventListener('click', async () => {
-        const response = await fetch('/api/billing/checkout', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({
-            plan: button.dataset.plan,
-            currency: document.querySelector<HTMLSelectElement>('#currency')!.value,
-          }),
-        });
-        const result = await response.json();
-        if (response.ok && result.url) location.href = result.url;
-        else show(result.error || 'Falha ao iniciar compra', true);
+        try {
+          const result = await apiMutation<{ url: string }>('/api/billing/checkout', {
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({
+              plan: button.dataset.plan,
+              currency: document.querySelector<HTMLSelectElement>('#currency')!.value,
+            }),
+          });
+          location.href = result.url;
+        } catch (error) {
+          show(error instanceof Error ? error.message : 'Falha ao iniciar compra', true);
+        }
       }),
     );
     document.querySelector('#portal')?.addEventListener('click', async () => {
-      const response = await fetch('/api/billing/portal', { method: 'POST' });
-      const result = await response.json();
-      if (response.ok && result.url) location.href = result.url;
-      else show(result.error || 'Falha ao abrir cobrança', true);
+      try {
+        const result = await apiMutation<{ url: string }>('/api/billing/portal');
+        location.href = result.url;
+      } catch (error) {
+        show(error instanceof Error ? error.message : 'Falha ao abrir cobrança', true);
+      }
     });
     document
       .querySelector<HTMLFormElement>('#delete-account-form')
@@ -787,36 +787,27 @@ const trialDays = Math.max(0, Math.ceil((user.trial_ends_at * 1000 - Date.now())
             ? 'Delete your account, page and images? Any subscription will be canceled.'
             : 'Excluir sua conta, página e imagens? Sua assinatura será cancelada.';
         if (!confirm(warning)) return;
-        const response = await fetch('/api/account/delete', {
-          method: 'POST',
-          headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ email }),
-        });
-        const result = await response.json();
-        if (response.ok) location.href = '/';
-        else show(result.error || 'Falha ao excluir a conta', true);
+        try {
+          await apiMutation('/api/account/delete', {
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ email }),
+          });
+          clearApiCache();
+          location.href = '/';
+        } catch (error) {
+          show(error instanceof Error ? error.message : 'Falha ao excluir a conta', true);
+        }
       });
-    const metrics = queryClient.query({
-      queryKey: ['metrics'],
-      queryFn: async () => {
-        const response = await fetch('/api/metrics');
-        return response.json();
-      },
-    });
+    const metrics = apiQuery<{ views: number; clicks: number }>('/api/metrics');
     metrics
       .then((data) => {
         document.querySelector('#metric-views')!.textContent = String(data.views ?? 0);
         document.querySelector('#metric-clicks')!.textContent = String(data.clicks ?? 0);
       })
       .catch(() => {});
-    queryClient
-      .query({
-        queryKey: ['domain'],
-        queryFn: async () => {
-          const response = await fetch('/api/domains/status');
-          return response.json();
-        },
-      })
+    apiQuery<{ domain?: { hostname: string; status: string; sslStatus: string } }>(
+      '/api/domains/status',
+    )
       .then((data) => {
         if (!data.domain) return;
         const node = document.querySelector<HTMLElement>('#domain-status')!;
@@ -824,5 +815,21 @@ const trialDays = Math.max(0, Math.ceil((user.trial_ends_at * 1000 - Date.now())
         node.textContent = `${data.domain.hostname}: ${data.domain.status}/${data.domain.sslStatus}`;
       })
       .catch(() => {});
+    document
+      .querySelector<HTMLAnchorElement>('#export-data')
+      ?.addEventListener('click', async (event) => {
+        event.preventDefault();
+        try {
+          const file = await apiFile('/api/account/export');
+          const url = URL.createObjectURL(file);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = 'vira-dados.json';
+          link.click();
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+        } catch (error) {
+          show(error instanceof Error ? error.message : 'Falha ao baixar dados', true);
+        }
+      });
   </script>
 </Base>

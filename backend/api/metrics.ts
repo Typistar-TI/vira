@@ -1,9 +1,8 @@
-import type { APIRoute } from 'astro';
 import { setting } from '@backend/config';
 import { getSiteForUser } from '@backend/db';
 import { isResponse, json, requireUser } from '@backend/http';
 
-export const GET: APIRoute = async ({ request }) => {
+export const GET = async (request: Request): Promise<Response> => {
   const user = await requireUser(request);
   if (isResponse(user)) return user;
   const site = await getSiteForUser(user.id);

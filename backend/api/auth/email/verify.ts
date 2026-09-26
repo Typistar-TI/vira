@@ -1,4 +1,3 @@
-import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
 import { createAdminSession, createSession, sameOrigin, sha256 } from '@backend/auth';
 import { setting } from '@backend/config';
@@ -9,7 +8,7 @@ function fail() {
   return json({ error: 'Link inválido ou expirado' }, 400, { 'cache-control': 'no-store' });
 }
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST = async (request: Request): Promise<Response> => {
   if (!sameOrigin(request))
     return json({ error: 'Origem inválida' }, 403, { 'cache-control': 'no-store' });
   if (!request.headers.get('content-type')?.toLowerCase().startsWith('application/json'))

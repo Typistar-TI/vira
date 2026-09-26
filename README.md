@@ -14,18 +14,19 @@ O Vira é uma plataforma para criar e publicar páginas de vendas. O mesmo proje
 
 ## Tecnologias
 
-| Camada                    | Tecnologia                                                                                   | Função                                                                         |
-| ------------------------- | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| Interface e servidor      | [Astro](https://astro.build/) e TypeScript                                                   | Páginas renderizadas no servidor, componentes e rotas de API no mesmo projeto. |
-| Hospedagem                | [Cloudflare Workers](https://developers.cloudflare.com/workers/)                             | Execução da aplicação e das páginas publicadas.                                |
-| Dados                     | [Cloudflare D1](https://developers.cloudflare.com/d1/)                                       | Contas, sessões, páginas, domínios, planos e configurações.                    |
-| Imagens                   | [Cloudflare R2](https://developers.cloudflare.com/r2/)                                       | Armazenamento dos arquivos enviados pelos clientes.                            |
-| Métricas                  | [Cloudflare Analytics Engine](https://developers.cloudflare.com/analytics/analytics-engine/) | Contagem de visualizações e interações nas páginas.                            |
-| Estilos e componentes     | [Tailwind CSS](https://tailwindcss.com/) e [daisyUI](https://daisyui.com/)                   | Estilos e componentes de interface sem React.                                  |
-| Estado de dados no painel | [TanStack Query Core](https://tanstack.com/query/latest/docs/framework/vanilla/overview)     | Cache e atualização de dados carregados pelas APIs.                            |
-| Acesso                    | [Google Identity Services](https://developers.google.com/identity/gsi/web/guides/overview)   | Entrada com a conta Google, com validação do token no servidor.                |
-| Envio de acesso           | [Resend](https://resend.com/docs)                                                            | Links de acesso por e-mail, válidos por 15 minutos e uma vez.                  |
-| Pagamentos                | [Stripe](https://docs.stripe.com/)                                                           | Checkout, assinaturas e portal de cobrança.                                    |
+| Camada                | Tecnologia                                                                                   | Função                                                          |
+| --------------------- | -------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| Interface             | [Astro](https://astro.build/) e TypeScript                                                   | Páginas renderizadas no servidor e componentes da interface.    |
+| API                   | [Hono](https://hono.dev/) e TypeScript                                                       | Roteamento e execução das rotas `/api/*` no Worker.             |
+| Hospedagem            | [Cloudflare Workers](https://developers.cloudflare.com/workers/)                             | Execução da aplicação e das páginas publicadas.                 |
+| Dados                 | [Cloudflare D1](https://developers.cloudflare.com/d1/)                                       | Contas, sessões, páginas, domínios, planos e configurações.     |
+| Imagens               | [Cloudflare R2](https://developers.cloudflare.com/r2/)                                       | Armazenamento dos arquivos enviados pelos clientes.             |
+| Métricas              | [Cloudflare Analytics Engine](https://developers.cloudflare.com/analytics/analytics-engine/) | Contagem de visualizações e interações nas páginas.             |
+| Estilos e componentes | [Tailwind CSS](https://tailwindcss.com/) e [daisyUI](https://daisyui.com/)                   | Estilos e componentes de interface sem React.                   |
+| Dados no navegador    | [TanStack Query Core](https://tanstack.com/query/latest/docs/framework/vanilla/overview)     | Consultas, mutações, cache e atualização das chamadas de API.   |
+| Acesso                | [Google Identity Services](https://developers.google.com/identity/gsi/web/guides/overview)   | Entrada com a conta Google, com validação do token no servidor. |
+| Envio de acesso       | [Resend](https://resend.com/docs)                                                            | Links de acesso por e-mail, válidos por 15 minutos e uma vez.   |
+| Pagamentos            | [Stripe](https://docs.stripe.com/)                                                           | Checkout, assinaturas e portal de cobrança.                     |
 
 O Astro renderiza o conteúdo público no servidor, inclusive metadados e rotas de sitemap. A interface interativa do painel usa TypeScript no navegador. Não há dependência de React.
 
@@ -33,18 +34,18 @@ O Astro renderiza o conteúdo público no servidor, inclusive metadados e rotas 
 
 ```mermaid
 flowchart LR
-    A[Visitante ou cliente] --> B[Astro no Cloudflare Worker]
-    B --> C[Site e painel]
-    B --> D[Página pública do cliente]
-    B --> E[Rotas de API]
-    E --> F[(D1)]
-    E --> G[(R2)]
-    E --> H[Google Identity Services e Resend]
-    E --> I[Stripe]
-    D --> J[Analytics Engine]
+    A[Visitante ou cliente] --> B[Cloudflare Worker]
+    B --> C[Astro: site e painéis]
+    B --> D[Hono: API]
+    D --> E[(D1)]
+    D --> F[(R2)]
+    D --> G[Google, Resend e Stripe]
+    C --> H[Analytics Engine]
 ```
 
 O middleware identifica o hostname da requisição e encaminha domínios dos clientes para as rotas públicas. O conteúdo editado fica como rascunho no D1; a publicação cria uma versão separada para os visitantes. A prévia e a página publicada usam o mesmo componente Astro, para manter o resultado visual consistente.
+
+O Worker entrega as requisições `/api/*` ao Hono e as demais ao Astro. As páginas Astro chamam a API pelo módulo `frontend/src/lib/api.ts`, que usa TanStack Query Core sem React. As regras da API ficam em `backend/api/`, sem rotas duplicadas em `frontend/`.
 
 O servidor valida as operações dos painéis e mantém a sessão em cookie `HttpOnly`, `Secure` e `SameSite=Lax`. No login com Google, verifica a assinatura e as declarações do token. No login por e-mail, gera um link aleatório de uso único, armazena apenas seu hash e exige confirmação por POST para evitar que prévias automáticas de e-mail consumam o link. O acesso administrativo exige que o e-mail esteja autorizado em `admin_accounts` no D1. As rotas administrativas verificam a permissão em cada requisição e registram mudanças em `admin_audit`.
 
@@ -54,9 +55,11 @@ As integrações externas são chamadas pelas rotas de API; suas credenciais nã
 
 | Caminho                      | Responsabilidade                                                                            |
 | ---------------------------- | ------------------------------------------------------------------------------------------- |
-| `frontend/src/pages/`        | Páginas Astro e entradas curtas das rotas da API.                                           |
+| `frontend/src/pages/`        | Páginas Astro e rotas públicas renderizadas no servidor.                                    |
 | `frontend/src/components/`   | Componentes de apresentação e renderização das páginas.                                     |
-| `backend/api/`               | Implementação das rotas da API.                                                             |
+| `frontend/src/lib/api.ts`    | Cliente de API com TanStack Query Core para consultas e mutações.                           |
+| `backend/routes.ts`          | Registro das rotas da API no Hono.                                                          |
+| `backend/api/`               | Implementação das operações da API.                                                         |
 | `backend/`                   | Autenticação, cobrança, domínios, dados, contas, validação das páginas e entrada do Worker. |
 | `frontend/src/middleware.ts` | Roteamento por hostname.                                                                    |
 | `frontend/wrangler.jsonc`    | Configuração do Worker e dos serviços Cloudflare.                                           |

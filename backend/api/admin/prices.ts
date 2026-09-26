@@ -1,9 +1,8 @@
-import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
 import { stripe, type Currency, type Plan } from '@backend/billing';
 import { isResponse, json, readJson, requireAdmin } from '@backend/http';
 
-export const GET: APIRoute = async ({ request }) => {
+export const GET = async (request: Request): Promise<Response> => {
   const admin = await requireAdmin(request);
   if (isResponse(admin)) return admin;
   const rows = await env.DB.prepare(
@@ -12,7 +11,7 @@ export const GET: APIRoute = async ({ request }) => {
   return json(rows.results);
 };
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST = async (request: Request): Promise<Response> => {
   const admin = await requireAdmin(request);
   if (isResponse(admin)) return admin;
   try {

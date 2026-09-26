@@ -1,4 +1,3 @@
-import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
 import Stripe from 'stripe';
 import { planForPrice, stripe } from '@backend/billing';
@@ -29,7 +28,7 @@ async function updateSubscription(subscription: Stripe.Subscription) {
     .run();
 }
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST = async (request: Request): Promise<Response> => {
   const signature = request.headers.get('stripe-signature');
   const webhookSecret = await setting('STRIPE_WEBHOOK_SECRET');
   if (!signature || !webhookSecret) return new Response('Missing signature', { status: 400 });

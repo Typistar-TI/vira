@@ -1,4 +1,3 @@
-import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
 import { sameOrigin, sha256 } from '@backend/auth';
 import { setting } from '@backend/config';
@@ -11,7 +10,7 @@ const generic = {
   message: 'Se o endereço puder receber acesso, enviaremos um link em instantes.',
 };
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST = async (request: Request): Promise<Response> => {
   if (!sameOrigin(request)) return json({ error: 'Origem inválida' }, 403);
   let email = '';
   try {

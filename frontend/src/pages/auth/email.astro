@@ -43,6 +43,7 @@ const en = Astro.url.searchParams.get('lang') === 'en';
     </main>
   </div>
   <script>
+    import { apiMutation } from '@frontend/lib/api';
     document
       .querySelector<HTMLButtonElement>('#confirm-login')
       ?.addEventListener('click', async (event) => {
@@ -55,13 +56,10 @@ const en = Astro.url.searchParams.get('lang') === 'en';
           document.documentElement.lang === 'en' ? 'Signing in...' : 'Entrando...';
         try {
           const token = document.querySelector<HTMLInputElement>('#login-token')!.value;
-          const response = await fetch('/api/auth/email/verify', {
-            method: 'POST',
+          const data = await apiMutation<{ redirect: string }>('/api/auth/email/verify', {
             headers: { 'content-type': 'application/json' },
             body: JSON.stringify({ token }),
           });
-          const data = await response.json();
-          if (!response.ok) throw new Error(data.error || 'Link inválido ou expirado');
           window.location.assign(data.redirect);
         } catch {
           status.classList.add('error');

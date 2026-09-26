@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "astro dev --root frontend",
-    "check": "astro check --root frontend",
+    "check": "astro check --root frontend && tsc --noEmit",
     "build": "astro build --root frontend",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
@@ -22,6 +22,7 @@
     "@tanstack/query-core": "^5.104.0",
     "astro": "^7.3.5",
     "daisyui": "^5.7.46",
+    "hono": "^4.13.9",
     "jose": "^6.2.12",
     "stripe": "^22.6.2",
     "tailwindcss": "^4.3.3"

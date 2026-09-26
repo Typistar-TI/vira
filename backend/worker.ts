@@ -1,6 +1,7 @@
 import { handle } from '@astrojs/cloudflare/handler';
 import type { ExecutionContext, ScheduledEvent } from '@cloudflare/workers-types';
 import { deleteAccount } from './account';
+import { api } from './routes';
 
 type WorkerEnv = {
   DB: import('@cloudflare/workers-types').D1Database;
@@ -27,6 +28,7 @@ async function cleanExpired(environment: WorkerEnv) {
     }
   }
   await environment.DB.prepare('DELETE FROM sessions WHERE expires_at <= ?').bind(now).run();
+  await environment.DB.prepare('DELETE FROM admin_sessions WHERE expires_at <= ?').bind(now).run();
   await environment.DB.prepare('DELETE FROM email_login_tokens WHERE expires_at <= ?')
     .bind(now)
     .run();
@@ -51,6 +53,8 @@ async function cleanExpired(environment: WorkerEnv) {
 
 export default {
   fetch(request: Request, environment: WorkerEnv, context: ExecutionContext) {
+    if (new URL(request.url).pathname.startsWith('/api/'))
+      return api.fetch(request, environment, context);
     return handle(request, environment, context);
   },
   async scheduled(_event: ScheduledEvent, environment: WorkerEnv, context: ExecutionContext) {

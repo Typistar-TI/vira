@@ -1,11 +1,10 @@
-import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
 import { rootDomain } from '@backend/config';
 import { getSiteForUser } from '@backend/db';
 import { getHostname } from '@backend/custom-domains';
 import { isResponse, json, requireUser } from '@backend/http';
 
-export const GET: APIRoute = async ({ request }) => {
+export const GET = async (request: Request): Promise<Response> => {
   const user = await requireUser(request);
   if (isResponse(user)) return user;
   const site = await getSiteForUser(user.id);

@@ -1,4 +1,3 @@
-import type { APIRoute } from 'astro';
 import { env } from 'cloudflare:workers';
 import { createRemoteJWKSet, jwtVerify } from 'jose';
 import { createAdminSession, createSession, sha256 } from '@backend/auth';
@@ -18,7 +17,7 @@ function fail(message: string): Response {
   });
 }
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST = async (request: Request): Promise<Response> => {
   const origin = request.headers.get('origin');
   if (origin && origin !== new URL(request.url).origin) return fail('Origem inválida');
   try {
