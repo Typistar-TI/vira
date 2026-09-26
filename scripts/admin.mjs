@@ -11,7 +11,7 @@ email = email.trim().toLowerCase();
 if (email.length > 320 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error('Informe um e-mail válido pela entrada padrão');
 
 const escaped = email.replaceAll("'", "''");
-const sql = `INSERT INTO admin_google_accounts (email) VALUES ('${escaped}') ON CONFLICT(email) DO NOTHING;\n`;
+const sql = `INSERT INTO admin_accounts (email) VALUES ('${escaped}') ON CONFLICT(email) DO NOTHING;\n`;
 const directory = mkdtempSync(join(tmpdir(), 'vira-admin-'));
 try {
   const file = join(directory, 'admin.sql');

@@ -1,0 +1,68 @@
+---
+import Base from '@frontend/layouts/Base.astro';
+import { getSessionUser } from '@backend/auth';
+import { setting } from '@backend/config';
+
+const adminLogin = Astro.url.searchParams.get('next') === 'admin';
+if (await getSessionUser(Astro.request)) return Astro.redirect(adminLogin ? '/admin' : '/app');
+const en = Astro.url.searchParams.get('lang') === 'en';
+const clientId = await setting('GOOGLE_CLIENT_ID');
+const [controller, contact, resendKey, emailFrom] = await Promise.all([
+  setting('PRIVACY_CONTROLLER_NAME'), setting('PRIVACY_CONTACT_EMAIL'), setting('RESEND_API_KEY'), setting('AUTH_EMAIL_FROM'),
+]);
+const legalReady = Boolean(controller && contact);
+const emailReady = Boolean(resendKey && emailFrom);
+const error = Astro.url.searchParams.get('error')?.slice(0, 150);
+const loginUri = new URL('/api/auth/google', Astro.url).href;
+---
+<Base title={en ? 'Sign in · Vira' : 'Entrar · Vira'} lang={en ? 'en' : 'pt'} noindex>
+  <div class="vira-shell min-h-screen">
+    <header class="vira-nav"><a class="vira-logo" href="/">vira<span>.</span></a><a href={en ? '/login' : '/login?lang=en'}>{en ? 'Português' : 'English'}</a></header>
+    <main class="app-panel login-card">
+      <span class="badge-purple">{en ? '7 days free' : '7 dias grátis'}</span>
+      <h1 class="text-4xl mt-4 mb-3">{en ? 'Your page starts here.' : 'Sua página começa aqui.'}</h1>
+      <p class="muted mb-6">{clientId ? (en ? 'Use your email to receive a sign-in link, or continue with Google.' : 'Receba um link no seu e-mail ou continue com Google.') : (en ? 'Enter your email to receive a sign-in link.' : 'Digite seu e-mail para receber um link de acesso.')}</p>
+      <form id="email-login-form" class="mb-6">
+        <label for="login-email">{en ? 'Email' : 'E-mail'}</label>
+        <input class="input input-bordered w-full mt-2 mb-3" id="login-email" name="email" type="email" autocomplete="email" placeholder="voce@exemplo.com" required />
+        <button class="vira-button w-full" type="submit" disabled={!emailReady}>{en ? 'Send sign-in link' : 'Enviar link de acesso'}</button>
+        <p id="email-login-status" class="status mt-3" role="status" hidden></p>
+      </form>
+      {!emailReady && <p class="status error mb-5">{en ? 'Email sign-in is being configured.' : 'A entrada por e-mail está sendo configurada.'}</p>}
+      {clientId && <>
+        <p class="muted mb-4">{en ? 'Or' : 'Ou'}</p>
+        <div id="g_id_onload" data-client_id={clientId} data-login_uri={loginUri} data-ux_mode="redirect" data-auto_prompt="false"></div>
+        <div class="g_id_signin" data-type="standard" data-theme="outline" data-size="large" data-text="continue_with" data-shape="pill" data-logo_alignment="left"></div>
+      </>}
+      {!legalReady && !adminLogin && <p class="status error mt-3">{en ? 'New registrations are temporarily unavailable.' : 'Novos cadastros estão temporariamente indisponíveis.'}</p>}
+      {adminLogin && <p class="text-xs muted mt-3">{en ? 'Administrative access is limited to authorized email addresses.' : 'Acesso administrativo restrito a e-mails autorizados.'}</p>}
+      {error && <p class="status error mt-3" role="alert">{error}</p>}
+      <p class="text-xs muted mt-6"><a href={en ? '/en/privacy' : '/privacidade'}>{en ? 'How we use your data' : 'Como usamos seus dados'}</a></p>
+    </main>
+  </div>
+  {clientId && <script src="https://accounts.google.com/gsi/client" async defer></script>}
+  <script>
+    document.querySelector<HTMLFormElement>('#email-login-form')?.addEventListener('submit', async event => {
+      event.preventDefault();
+      const form = event.currentTarget as HTMLFormElement;
+      const button = form.querySelector<HTMLButtonElement>('button[type=submit]')!;
+      const status = document.querySelector<HTMLElement>('#email-login-status')!;
+      button.disabled = true;
+      status.hidden = false;
+      status.classList.remove('error');
+      status.textContent = document.documentElement.lang === 'en' ? 'Sending...' : 'Enviando...';
+      try {
+        const email = form.querySelector<HTMLInputElement>('[name=email]')!.value.trim();
+        const response = await fetch('/api/auth/email/start', {
+          method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ email }),
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Falha ao enviar');
+        status.textContent = document.documentElement.lang === 'en' ? 'If eligible, a sign-in link is on its way. Check your inbox.' : data.message;
+      } catch (error) {
+        status.classList.add('error');
+        status.textContent = error instanceof Error ? error.message : 'Falha ao enviar';
+      } finally { button.disabled = false; }
+    });
+  </script>
+</Base>

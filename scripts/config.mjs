@@ -4,8 +4,8 @@ import { mkdtempSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-const plain = new Set(['ROOT_DOMAIN', 'GOOGLE_CLIENT_ID', 'CLOUDFLARE_ZONE_ID', 'CLOUDFLARE_ACCOUNT_ID', 'PRIVACY_CONTROLLER_NAME', 'PRIVACY_CONTACT_EMAIL']);
-const secrets = new Set(['STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET', 'CLOUDFLARE_API_TOKEN', 'CLOUDFLARE_ANALYTICS_TOKEN']);
+const plain = new Set(['ROOT_DOMAIN', 'GOOGLE_CLIENT_ID', 'AUTH_EMAIL_FROM', 'CLOUDFLARE_ZONE_ID', 'CLOUDFLARE_ACCOUNT_ID', 'PRIVACY_CONTROLLER_NAME', 'PRIVACY_CONTACT_EMAIL']);
+const secrets = new Set(['RESEND_API_KEY', 'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET', 'CLOUDFLARE_API_TOKEN', 'CLOUDFLARE_ANALYTICS_TOKEN']);
 const [location, key] = process.argv.slice(2);
 if (!['--local', '--remote'].includes(location) || !plain.has(key) && !secrets.has(key)) {
   throw new Error('Uso: node scripts/config.mjs --local|--remote NOME < valor');
@@ -17,6 +17,8 @@ if (!value) throw new Error('Envie um valor pela entrada padrão');
 if (key === 'ROOT_DOMAIN' && !/^[a-z0-9]+(?:[.-][a-z0-9]+)+$/.test(value)) throw new Error('Domínio inválido');
 if (key === 'GOOGLE_CLIENT_ID' && !/^[0-9]+-[a-z0-9-]+\.apps\.googleusercontent\.com$/.test(value)) throw new Error('Client ID do Google inválido');
 if (key === 'PRIVACY_CONTACT_EMAIL' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) throw new Error('E-mail inválido');
+if (key === 'AUTH_EMAIL_FROM' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) throw new Error('E-mail remetente inválido');
+if (key === 'RESEND_API_KEY' && !/^re_[A-Za-z0-9_]+$/.test(value)) throw new Error('Chave Resend inválida');
 let encrypted = 0;
 if (secrets.has(key)) {
   const raw = Buffer.from(process.env.CONFIG_ENCRYPTION_KEY || '', 'base64');

@@ -2,8 +2,12 @@
   "extends": "astro/tsconfigs/strict",
   "compilerOptions": {
     "baseUrl": ".",
-    "paths": { "@/*": ["src/*"] }
+    "paths": {
+      "@frontend/*": ["frontend/src/*"],
+      "@backend/*": ["backend/*"],
+      "@shared/*": ["shared/*"]
+    }
   },
-  "include": [".astro/types.d.ts", "src/**/*"],
+  "include": [".astro/types.d.ts", "frontend/src/**/*", "backend/**/*", "shared/**/*"],
   "exclude": ["dist", "worker-configuration.d.ts"]
 }

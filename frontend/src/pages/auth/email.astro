@@ -1,0 +1,22 @@
+---
+import Base from '@frontend/layouts/Base.astro';
+
+const token = Astro.url.searchParams.get('token') || '';
+const valid = /^[a-f0-9]{64}$/.test(token);
+const en = Astro.url.searchParams.get('lang') === 'en';
+---
+<Base title={en ? 'Confirm sign-in · Vira' : 'Confirmar acesso · Vira'} lang={en ? 'en' : 'pt'} noindex>
+  <div class="vira-shell min-h-screen">
+    <header class="vira-nav"><a class="vira-logo" href="/">vira<span>.</span></a></header>
+    <main class="app-panel login-card">
+      <h1 class="text-4xl mb-3">{en ? 'Confirm your sign-in' : 'Confirme seu acesso'}</h1>
+      {valid ? <>
+        <p class="muted mb-6">{en ? 'Continue to your Vira account. This link works once and expires 15 minutes after it was sent.' : 'Continue para sua conta no Vira. Este link funciona uma vez e expira 15 minutos após o envio.'}</p>
+        <form action="/api/auth/email/verify" method="post">
+          <input type="hidden" name="token" value={token} />
+          <button class="vira-button" type="submit">{en ? 'Sign in' : 'Entrar'}</button>
+        </form>
+      </> : <><p class="status error">{en ? 'This link is invalid.' : 'Este link é inválido.'}</p><a class="vira-button mt-5" href="/login">{en ? 'Request another link' : 'Pedir outro link'}</a></>}
+    </main>
+  </div>
+</Base>

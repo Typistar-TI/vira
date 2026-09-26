@@ -54,18 +54,27 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: npm run db:remote
 
-      - name: Configure Google sign-in
+      - name: Configure sign-in
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CONFIG_ENCRYPTION_KEY: ${{ secrets.CONFIG_ENCRYPTION_KEY }}
           GOOGLE_CLIENT_ID: ${{ vars.GOOGLE_CLIENT_ID }}
           ADMIN_GOOGLE_EMAIL: ${{ secrets.ADMIN_GOOGLE_EMAIL }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          AUTH_EMAIL_FROM: ${{ vars.AUTH_EMAIL_FROM }}
         run: |
           if [ -n "$GOOGLE_CLIENT_ID" ]; then
             printf '%s' "$GOOGLE_CLIENT_ID" | npm run config:remote -- GOOGLE_CLIENT_ID
           fi
           if [ -n "$ADMIN_GOOGLE_EMAIL" ]; then
             printf '%s' "$ADMIN_GOOGLE_EMAIL" | npm run admin:remote
+          fi
+          if [ -n "$RESEND_API_KEY" ]; then
+            printf '%s' "$RESEND_API_KEY" | npm run config:remote -- RESEND_API_KEY
+          fi
+          if [ -n "$AUTH_EMAIL_FROM" ]; then
+            printf '%s' "$AUTH_EMAIL_FROM" | npm run config:remote -- AUTH_EMAIL_FROM
           fi
 
       - name: Deploy Worker
