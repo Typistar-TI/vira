@@ -1,0 +1,12 @@
+{
+  "name": "vira",
+  "main": "./src/worker.ts",
+  "compatibility_date": "2026-09-26",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": { "directory": "./dist", "binding": "ASSETS" },
+  "d1_databases": [{ "binding": "DB", "database_name": "vira", "database_id": "00000000-0000-0000-0000-000000000000", "migrations_dir": "migrations" }],
+  "r2_buckets": [{ "binding": "MEDIA", "bucket_name": "vira-media" }],
+  "analytics_engine_datasets": [{ "binding": "METRICS", "dataset": "vira_metrics" }],
+  "triggers": { "crons": ["0 3 * * *"] },
+  "vars": {}
+}

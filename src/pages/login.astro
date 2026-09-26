@@ -1,0 +1,84 @@
+---
+import { setting } from '@/server/config';
+import Base from '@/layouts/Base.astro';
+import { getSessionUser } from '@/server/auth';
+if (await getSessionUser(Astro.request)) return Astro.redirect('/app');
+const en = Astro.url.searchParams.get('lang') === 'en';
+const turnstileSiteKey = await setting('PUBLIC_TURNSTILE_SITE_KEY');
+const [controller, privacyContact] = await Promise.all([setting('PRIVACY_CONTROLLER_NAME'), setting('PRIVACY_CONTACT_EMAIL')]);
+const legalReady = Boolean(controller && privacyContact);
+---
+<Base title={en ? 'Sign in · Vira' : 'Entrar · Vira'} lang={en ? 'en' : 'pt'} noindex>
+  <div class="vira-shell min-h-screen">
+    <header class="vira-nav"><a class="vira-logo" href="/">vira<span>.</span></a><a href={en ? '/login' : '/login?lang=en'}>{en ? 'Português' : 'English'}</a></header>
+    <main class="app-panel login-card">
+      <span class="badge-purple">{en ? '7 days free' : '7 dias grátis'}</span>
+      <h1 class="text-4xl mt-4 mb-3">{en ? 'Your page starts here.' : 'Sua página começa aqui.'}</h1>
+      <p class="muted">{en ? 'Enter your mobile number and choose how to receive your code. No password needed.' : 'Informe seu celular e escolha como receber o código. Sem senha.'}</p>
+      <form id="start-form">
+        <label for="phone">{en ? 'Mobile number' : 'Celular com DDD'}</label>
+        <input class="input input-bordered" id="phone" name="phone" type="tel" autocomplete="tel" placeholder={en ? '+1 415 555 0123' : '+55 11 99999 9999'} required />
+        <label for="channel">{en ? 'Receive code via' : 'Receber código por'}</label>
+        <select class="select select-bordered" id="channel" name="channel"><option value="sms">SMS</option><option value="whatsapp">WhatsApp</option></select>
+        <div class="mt-5" id="turnstile" data-sitekey={turnstileSiteKey}></div>
+        <button class="vira-button mt-6 w-full" type="submit" disabled={!legalReady}>{en ? 'Send code' : 'Enviar código'}</button>
+      </form>
+      {!legalReady && <p class="status error mt-3">{en ? 'Registration is temporarily unavailable.' : 'O cadastro está temporariamente indisponível.'}</p>}
+      <form id="check-form" hidden>
+        <label for="code">{en ? 'Code received' : 'Código recebido'}</label>
+        <input class="input input-bordered" id="code" name="code" inputmode="numeric" autocomplete="one-time-code" required />
+        <button class="vira-button mt-6 w-full" type="submit">{en ? 'Sign in' : 'Entrar'}</button>
+        <button type="button" id="back-button" class="btn btn-ghost mt-2 w-full">{en ? 'Use another number' : 'Usar outro número'}</button>
+      </form>
+      <p id="message" class="status" role="status" hidden></p>
+      <p class="text-xs muted mt-6">{en ? 'Available for mobile numbers from Brazil and the United States.' : 'Disponível para celulares do Brasil e dos Estados Unidos.'}</p>
+      <p class="text-xs muted mt-2"><a href={en ? '/en/privacy' : '/privacidade'}>{en ? 'How we use your data' : 'Como usamos seus dados'}</a></p>
+    </main>
+  </div>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
+  <script>
+    const start = document.querySelector<HTMLFormElement>('#start-form')!;
+    const check = document.querySelector<HTMLFormElement>('#check-form')!;
+    const message = document.querySelector<HTMLElement>('#message')!;
+    const widget = document.querySelector<HTMLElement>('#turnstile')!;
+    let normalizedPhone = '';
+    let widgetId: string | undefined;
+    function show(text: string, error = false) { message.textContent = text; message.hidden = false; message.classList.toggle('error', error); }
+    function renderTurnstile() {
+      const turnstile = (window as any).turnstile;
+      if (turnstile && widget.dataset.sitekey && widgetId === undefined) widgetId = turnstile.render(widget, { sitekey: widget.dataset.sitekey });
+    }
+    window.addEventListener('load', renderTurnstile);
+    start.addEventListener('submit', async (event) => {
+      event.preventDefault(); renderTurnstile();
+      const button = start.querySelector<HTMLButtonElement>('button[type=submit]')!;
+      button.disabled = true;
+      const captcha = (window as any).turnstile?.getResponse(widgetId) || '';
+      const data = Object.fromEntries(new FormData(start));
+      try {
+        const response = await fetch('/api/auth/start', { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({ ...data, captcha }) });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error);
+        normalizedPhone = result.phone;
+        start.hidden = true; check.hidden = false;
+        show(document.documentElement.lang === 'en' ? 'Code sent. Check your phone.' : 'Código enviado. Confira seu celular.');
+      } catch (error) {
+        show(error instanceof Error ? error.message : 'Falha ao enviar o código', true);
+        (window as any).turnstile?.reset(widgetId);
+      } finally { button.disabled = false; }
+    });
+    check.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const button = check.querySelector<HTMLButtonElement>('button[type=submit]')!;
+      button.disabled = true;
+      try {
+        const response = await fetch('/api/auth/check', { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({ phone:normalizedPhone, code:(new FormData(check).get('code') || '').toString() }) });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error);
+        location.href = '/app';
+      } catch (error) { show(error instanceof Error ? error.message : 'Código inválido', true); }
+      finally { button.disabled = false; }
+    });
+    document.querySelector('#back-button')?.addEventListener('click', () => { check.hidden = true; start.hidden = false; message.hidden = true; });
+  </script>
+</Base>

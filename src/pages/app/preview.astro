@@ -1,0 +1,13 @@
+---
+import Base from '@/layouts/Base.astro';
+import SitePage from '@/components/SitePage.astro';
+import { getSessionUser } from '@/server/auth';
+import { getSiteForUser } from '@/server/db';
+import { parseSite } from '@/lib/site';
+const user = await getSessionUser(Astro.request);
+if (!user) return Astro.redirect('/login');
+const site = await getSiteForUser(user.id);
+if (!site) return new Response('Página não encontrada', { status: 404 });
+const content = parseSite(JSON.parse(site.draft_json));
+---
+<Base title={`Prévia — ${content.title}`} lang={content.language} noindex><SitePage content={content} preview /></Base>
