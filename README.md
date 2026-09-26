@@ -1,83 +1,79 @@
 # Vira
 
-SaaS de páginas de vendas feito apenas com Astro e TypeScript. Roda em Cloudflare Workers, com D1 para dados e configuração, R2 para imagens e Analytics Engine para métricas. Interface com Tailwind CSS e daisyUI, sem React.
+O Vira é uma plataforma para criar e publicar páginas de vendas. O mesmo projeto reúne o site de apresentação, a autenticação, o painel de edição e as páginas públicas dos clientes.
 
-## Recursos
+## O que a aplicação oferece
 
-- Site comercial em português e inglês, com preços lidos do D1 e URLs de idioma marcadas com `hreflang`.
-- Login por celular do Brasil ou dos EUA, código via SMS ou WhatsApp no Twilio Verify, Turnstile e limites de tentativas.
-- Teste de sete dias sem cartão, uma página por conta, rascunho, publicação e três layouts que usam o mesmo componente na prévia e no site público.
-- Editor de capa, apresentação, benefícios, números, depoimentos, catálogo e links externos; imagens no R2.
-- Planos mensal, anual e vitalício em BRL e USD, checkout e portal Stripe, webhook e suspensão ao expirar o acesso.
-- Subdomínio `cliente.vira.ia.br` e domínio próprio `www` via Cloudflare for SaaS para planos pagos.
-- Limpeza diária de contas 90 dias após expiração, sessões antigas e imagens não usadas.
-- Sessão em cookie `__Host-` HttpOnly, Secure e SameSite=Lax; sem armazenamento de credenciais no navegador. Exportação e exclusão da conta no painel.
+- Página de apresentação em português e inglês.
+- Acesso por número de celular, com código recebido por SMS ou WhatsApp.
+- Edição, prévia e publicação de uma página de vendas por conta, com três opções de layout.
+- Teste gratuito de sete dias e planos mensal, anual e vitalício.
+- Publicação em subdomínio da plataforma ou em domínio próprio.
+- Upload de imagens, métricas básicas e gerenciamento da conta.
 
-## Configuração no banco
+## Tecnologias
 
-A migração `0004_config_and_prices.sql` cria `app_settings` e `plan_prices` e inicia `ROOT_DOMAIN` com `vira.ia.br`. Os preços começam vazios e inativos. Não há preços inventados no código. O valor exibido no site e no painel vem de `plan_prices.amount_minor`; o checkout confere valor, moeda e periodicidade com o preço real do Stripe. `stripe_price_catalog` preserva o vínculo de assinaturas antigas ao trocar um preço.
+| Camada | Tecnologia | Função |
+| --- | --- | --- |
+| Interface e servidor | [Astro](https://astro.build/) e TypeScript | Páginas renderizadas no servidor, componentes e rotas de API no mesmo projeto. |
+| Hospedagem | [Cloudflare Workers](https://developers.cloudflare.com/workers/) | Execução da aplicação e das páginas publicadas. |
+| Dados | [Cloudflare D1](https://developers.cloudflare.com/d1/) | Contas, sessões, páginas, domínios, planos e configurações. |
+| Imagens | [Cloudflare R2](https://developers.cloudflare.com/r2/) | Armazenamento dos arquivos enviados pelos clientes. |
+| Métricas | [Cloudflare Analytics Engine](https://developers.cloudflare.com/analytics/analytics-engine/) | Contagem de visualizações e interações nas páginas. |
+| Estilos e componentes | [Tailwind CSS](https://tailwindcss.com/) e [daisyUI](https://daisyui.com/) | Estilos e componentes de interface sem React. |
+| Estado de dados no painel | [TanStack Query Core](https://tanstack.com/query/latest/docs/framework/vanilla/overview) | Cache e atualização de dados carregados pelas APIs. |
+| Acesso e proteção | [Twilio Verify](https://www.twilio.com/docs/verify) e [Cloudflare Turnstile](https://developers.cloudflare.com/turnstile/) | Códigos de acesso por celular e proteção dos formulários. |
+| Pagamentos | [Stripe](https://docs.stripe.com/) | Checkout, assinaturas e portal de cobrança. |
 
-As configurações que podem mudar sem novo deploy ficam no D1:
+O Astro renderiza o conteúdo público no servidor, inclusive metadados e rotas de sitemap. A interface interativa do painel usa TypeScript no navegador. Não há dependência de React.
 
-| Configuração | Armazenamento |
+## Arquitetura
+
+```mermaid
+flowchart LR
+    A[Visitante ou cliente] --> B[Astro no Cloudflare Worker]
+    B --> C[Site e painel]
+    B --> D[Página pública do cliente]
+    B --> E[Rotas de API]
+    E --> F[(D1)]
+    E --> G[(R2)]
+    E --> H[Twilio Verify]
+    E --> I[Stripe]
+    D --> J[Analytics Engine]
+```
+
+O middleware identifica o hostname da requisição e encaminha domínios dos clientes para as rotas públicas. O conteúdo editado fica como rascunho no D1; a publicação cria uma versão separada para os visitantes. A prévia e a página publicada usam o mesmo componente Astro, para manter o resultado visual consistente.
+
+O servidor valida as operações do painel e mantém a sessão em cookie `HttpOnly`, `Secure` e `SameSite=Lax`. As integrações externas são chamadas pelas rotas de API; suas credenciais não são enviadas ao navegador. Os preços e as configurações da aplicação são lidos do banco, enquanto os bindings da infraestrutura são definidos na configuração do Worker.
+
+## Organização do projeto
+
+| Caminho | Responsabilidade |
 | --- | --- |
-| `ROOT_DOMAIN`, `PUBLIC_TURNSTILE_SITE_KEY`, `CLOUDFLARE_ZONE_ID`, `CLOUDFLARE_ACCOUNT_ID` | Texto no D1 |
-| `PRIVACY_CONTROLLER_NAME`, `PRIVACY_CONTACT_EMAIL` | Texto no D1; necessários antes do lançamento público |
-| `TWILIO_API_KEY`, `TWILIO_API_SECRET`, `TWILIO_VERIFY_SERVICE_SID`, `TURNSTILE_SECRET` | Criptografado no D1 |
-| `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ANALYTICS_TOKEN` | Criptografado no D1 |
-| Seis combinações de plano e moeda, com valor em centavos e ID `price_...` | Tabela `plan_prices` no D1 |
-
-Só `CONFIG_ENCRYPTION_KEY` fica como segredo do Worker: 32 bytes em base64. Ela protege as credenciais no D1. Guarde a chave fora do projeto; se a perder, precisará cadastrar novamente as credenciais. Os bindings `DB`, `MEDIA`, `METRICS` e os identificadores dos recursos no `wrangler.jsonc` precisam continuar na configuração da Cloudflare porque são necessários antes que o Worker acesse o banco.
-
-Para cadastrar uma configuração, passe o valor pela entrada padrão. O comando não recebe o valor como argumento. Credenciais são criptografadas antes de serem gravadas no D1:
-
-```sh
-printf %s 'vira.ia.br' | npm run config:local -- ROOT_DOMAIN
-printf %s 'CHAVE_PUBLICA' | npm run config:local -- PUBLIC_TURNSTILE_SITE_KEY
-printf %s 'SEGREDO' | npm run config:local -- STRIPE_SECRET_KEY
-```
-
-Para o banco de produção, troque `config:local` por `config:remote`. Para cadastrar um preço de exemplo de R$ 29,90 mensais após criá-lo no Stripe:
-
-```sh
-npm run price:local -- monthly brl 2990 price_ID_DO_STRIPE
-```
-
-Use `price:remote` em produção. Os seis preços devem ser cadastrados individualmente. Valores são unidades mínimas da moeda: centavos para BRL e USD. Preços ausentes aparecem como “Valor no checkout” no site e o checkout correspondente não inicia.
+| `src/pages/` | Páginas do site, painel, páginas públicas e endpoints de API. |
+| `src/components/` | Componentes de apresentação e renderização das páginas. |
+| `src/server/` | Regras de autenticação, cobrança, domínios, dados e contas. |
+| `src/lib/` | Tipos e validação do conteúdo das páginas. |
+| `src/middleware.ts` | Roteamento por hostname. |
+| `src/worker.ts` | Entrada do Worker e tarefas agendadas. |
+| `migrations/` | Evolução do esquema do D1. |
+| `scripts/` | Comandos de apoio ao desenvolvimento e à configuração. |
 
 ## Desenvolvimento local
 
-Requer Node.js 22.12 ou superior:
+Requer Node.js 22.12 ou superior. Após instalar as dependências, aplique as migrações locais e inicie o servidor:
 
 ```sh
 npm install
-cp .dev.vars.example .dev.vars
 npm run db:local
 npx astro dev --background
 ```
 
-Gere a chave mestra uma vez com `openssl rand -base64 32`. Coloque-a em `.dev.vars` como `CONFIG_ENCRYPTION_KEY=...` e exporte o mesmo valor no terminal ao usar `config:local` para credenciais criptografadas. `npx astro dev status`, `npx astro dev logs` e `npx astro dev stop` gerenciam o servidor. O arquivo `.dev.vars` é ignorado pelo Git.
+Use `npx astro dev status`, `npx astro dev logs` e `npx astro dev stop` para acompanhar ou encerrar o servidor. Para verificar o projeto:
 
 ```sh
 npm run check
 npm run build
-npx wrangler deploy --dry-run
 ```
 
-## Cloudflare e domínio
-
-1. Adicione a zona `vira.ia.br` à Cloudflare e aponte os nameservers no Registro.br. Crie o D1 `vira` e o bucket R2 `vira-media`; copie o ID real do D1 para `wrangler.jsonc` e aplique `npm run db:remote`.
-2. Configure DNS proxied para `vira.ia.br`, `*.vira.ia.br` e `connect.vira.ia.br`. Use uma rota Worker que cubra os hostnames da zona e também os custom hostnames do Cloudflare for SaaS. A [documentação de Worker como fallback origin](https://developers.cloudflare.com/cloudflare-for-platforms/cloudflare-for-saas/start/advanced-settings/worker-as-origin/) descreve a rota `*/*` para isso.
-3. Ative Cloudflare for SaaS e configure `connect.vira.ia.br` como fallback origin. O cliente cria somente o CNAME `www` para `connect.vira.ia.br`; o painel cadastra e acompanha o hostname e o SSL. O domínio continua sob controle do cliente. O site no domínio raiz (`exemplo.com`) e registros de e-mail não são alterados pelo Vira; se desejar, o cliente pode redirecionar o domínio raiz para `www` no provedor DNS dele.
-4. Cadastre `CLOUDFLARE_ZONE_ID`, `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_API_TOKEN` e `CLOUDFLARE_ANALYTICS_TOKEN` no D1. Configure um widget Turnstile e cadastre as chaves pública e secreta no D1.
-5. No Twilio Verify, crie um serviço com SMS e WhatsApp e configure o remetente WhatsApp para produção. Cadastre suas três credenciais no D1.
-6. No Stripe, crie os seis preços e cadastre cada valor e ID no D1. Ative o Customer Portal e configure o webhook `https://vira.ia.br/api/billing/webhook` para `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted` e `charge.refunded`. Cadastre as chaves do Stripe no D1.
-7. Defina a mesma `CONFIG_ENCRYPTION_KEY` como segredo do Worker com `npx wrangler secret put CONFIG_ENCRYPTION_KEY`. Depois de preencher os recursos e o banco, publique com `npm run deploy`.
-
-Teste autenticação, cobrança e domínio próprio com credenciais de teste antes de usar chaves de produção. Ainda não há credenciais reais nem deploy neste repositório.
-
-## Privacidade e revisão antes do lançamento
-
-A página `/privacidade` explica os dados tratados, fornecedores, cookie essencial e retenção. Enquanto `PRIVACY_CONTROLLER_NAME` e `PRIVACY_CONTACT_EMAIL` estiverem vazios, ela mostra que é um rascunho, recebe `noindex` e o envio de códigos de cadastro fica indisponível. Cadastre o responsável legal e um e-mail de atendimento antes de lançar o serviço. O painel permite baixar os dados da conta em JSON ou excluí-la. A exclusão remove dados do D1 e R2, cancela uma assinatura ativa, remove o domínio conectado e solicita a exclusão do cliente Stripe; registros que o processador de pagamentos precisa manter podem permanecer sob as regras dele.
-
-Medidas técnicas implementadas: comparação exata de origem nas ações autenticadas, limites de tentativas por telefone e IP no código de acesso, limites por usuário e rota nas APIs, limite de tamanho das requisições, respostas privadas sem cache e cabeçalhos de segurança. As métricas próprias contam eventos por ID da página, sem gravar o IP do visitante no Analytics Engine. A conformidade com a LGPD ainda exige validação do aviso e das bases legais pelo responsável pelo serviço, contratos e transferências internacionais com fornecedores, e um processo de atendimento a pedidos e incidentes. O código não substitui essas decisões operacionais.
+Os fluxos que usam autenticação, pagamentos, proteção contra bots e domínios próprios dependem da configuração dos serviços externos no ambiente de execução.
