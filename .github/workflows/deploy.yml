@@ -54,6 +54,20 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: npm run db:remote
 
+      - name: Configure Google sign-in
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          GOOGLE_CLIENT_ID: ${{ vars.GOOGLE_CLIENT_ID }}
+          ADMIN_GOOGLE_EMAIL: ${{ secrets.ADMIN_GOOGLE_EMAIL }}
+        run: |
+          if [ -n "$GOOGLE_CLIENT_ID" ]; then
+            printf '%s' "$GOOGLE_CLIENT_ID" | npm run config:remote -- GOOGLE_CLIENT_ID
+          fi
+          if [ -n "$ADMIN_GOOGLE_EMAIL" ]; then
+            printf '%s' "$ADMIN_GOOGLE_EMAIL" | npm run admin:remote
+          fi
+
       - name: Deploy Worker
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
