@@ -17,7 +17,6 @@ async function cleanExpired(environment: WorkerEnv) {
     try { await deleteAccount(user.id); } catch { /* próxima execução tenta novamente */ }
   }
   await environment.DB.prepare('DELETE FROM sessions WHERE expires_at <= ?').bind(now).run();
-  await environment.DB.prepare('DELETE FROM pending_otps WHERE expires_at <= ?').bind(now).run();
   await environment.DB.prepare('DELETE FROM rate_limits WHERE reset_at <= ?').bind(now - 86400).run();
   await environment.DB.prepare('DELETE FROM stripe_events WHERE created_at <= ?').bind(now - 180 * 86400).run();
   const unused = await environment.DB.prepare(`SELECT media_assets.key FROM media_assets JOIN sites ON sites.id = media_assets.site_id

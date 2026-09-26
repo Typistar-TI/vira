@@ -23,7 +23,7 @@ O Vira é uma plataforma para criar e publicar páginas de vendas. O mesmo proje
 | Métricas | [Cloudflare Analytics Engine](https://developers.cloudflare.com/analytics/analytics-engine/) | Contagem de visualizações e interações nas páginas. |
 | Estilos e componentes | [Tailwind CSS](https://tailwindcss.com/) e [daisyUI](https://daisyui.com/) | Estilos e componentes de interface sem React. |
 | Estado de dados no painel | [TanStack Query Core](https://tanstack.com/query/latest/docs/framework/vanilla/overview) | Cache e atualização de dados carregados pelas APIs. |
-| Acesso e proteção | [Stytch Consumer Auth](https://stytch.com/docs/consumer-auth/authentication/otps/api) e [Cloudflare Turnstile](https://developers.cloudflare.com/turnstile/) | Códigos de acesso por SMS ou WhatsApp e proteção dos formulários. |
+| Acesso e proteção | [Twilio Verify](https://www.twilio.com/docs/verify) e [Cloudflare Turnstile](https://developers.cloudflare.com/turnstile/) | Códigos de acesso por celular e proteção dos formulários. |
 | Pagamentos | [Stripe](https://docs.stripe.com/) | Checkout, assinaturas e portal de cobrança. |
 
 O Astro renderiza o conteúdo público no servidor, inclusive metadados e rotas de sitemap. A interface interativa do painel usa TypeScript no navegador. Não há dependência de React.
@@ -38,7 +38,7 @@ flowchart LR
     B --> E[Rotas de API]
     E --> F[(D1)]
     E --> G[(R2)]
-    E --> H[Stytch]
+    E --> H[Twilio Verify]
     E --> I[Stripe]
     D --> J[Analytics Engine]
 ```

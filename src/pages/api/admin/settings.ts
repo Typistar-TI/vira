@@ -5,7 +5,7 @@ import { isResponse, json, readJson, requireAdmin } from '@/server/http';
 
 const editable = new Set([
   'PUBLIC_TURNSTILE_SITE_KEY', 'TURNSTILE_SECRET',
-  'STYTCH_PROJECT_ID', 'STYTCH_SECRET',
+  'TWILIO_API_KEY', 'TWILIO_API_SECRET', 'TWILIO_VERIFY_SERVICE_SID',
   'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET',
   'CLOUDFLARE_API_TOKEN', 'CLOUDFLARE_ANALYTICS_TOKEN',
   'PRIVACY_CONTROLLER_NAME', 'PRIVACY_CONTACT_EMAIL',
@@ -32,7 +32,7 @@ export const POST: APIRoute = async ({ request }) => {
     if (row.encrypted && !value && !body.clear) return json({ error: 'Informe um valor ou selecione limpar' }, 400);
     if (key === 'PRIVACY_CONTACT_EMAIL' && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return json({ error: 'E-mail inválido' }, 400);
     if (key === 'PUBLIC_TURNSTILE_SITE_KEY' && value && !/^[\w-]{8,128}$/.test(value)) return json({ error: 'Chave pública inválida' }, 400);
-    if (key === 'STYTCH_PROJECT_ID' && value && !/^project-live-[a-f0-9-]+$/i.test(value)) return json({ error: 'Use o Project ID do ambiente Live da Stytch' }, 400);
+    if (key === 'TWILIO_VERIFY_SERVICE_SID' && value && !/^VA[a-f0-9]{32}$/i.test(value)) return json({ error: 'Service SID inválido' }, 400);
     if (key === 'STRIPE_SECRET_KEY' && value && !/^sk_(test|live)_[A-Za-z0-9]+$/.test(value)) return json({ error: 'Chave Stripe inválida' }, 400);
     if (key === 'STRIPE_WEBHOOK_SECRET' && value && !/^whsec_[A-Za-z0-9]+$/.test(value)) return json({ error: 'Segredo de webhook inválido' }, 400);
     const stored = row.encrypted && value ? await encrypt(value) : value;
