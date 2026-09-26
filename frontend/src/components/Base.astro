@@ -15,7 +15,7 @@ const { title, description = '', lang = 'pt', noindex = false } = Astro.props;
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#050505" />
+    <meta name="theme-color" content="#faf9f6" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -28,7 +28,7 @@ const { title, description = '', lang = 'pt', noindex = false } = Astro.props;
     <link rel="icon" href="/favicon.png" type="image/png" />
     <slot name="head" />
   </head>
-  <body class="bg-black font-['Outfit',sans-serif] text-[#f5f2ec] antialiased selection:bg-[#d6a85f] selection:text-black [&_.btn]:transition-[transform,background-color,border-color,box-shadow,opacity] [&_.btn]:duration-300 [&_.btn]:ease-out [&_.btn:active]:scale-[0.97] [&_a]:transition-colors [&_a]:duration-300 [&_button]:transition-[transform,background-color,border-color,box-shadow,opacity] [&_button]:duration-300 [&_button:active]:scale-[0.97] [&_.input]:border-[#45413a] [&_.input]:bg-[#0b0b0b] [&_.input]:transition-[border-color,box-shadow] [&_.input]:duration-300 [&_.textarea]:border-[#45413a] [&_.textarea]:bg-[#0b0b0b] [&_.textarea]:transition-[border-color,box-shadow] [&_.textarea]:duration-300 [&_.select]:border-[#45413a] [&_.select]:bg-[#0b0b0b] [&_.select]:transition-[border-color,box-shadow] [&_.select]:duration-300 [&_.file-input]:border-[#45413a] [&_.file-input]:bg-[#0b0b0b] motion-reduce:[&_*]:!transition-none">
+  <body class="bg-[#faf9f6] font-['Outfit',sans-serif] text-[#201d18] antialiased selection:bg-[#d6a85f] selection:text-[#201d18] [&_.btn]:transition-[transform,background-color,border-color,box-shadow,opacity] [&_.btn]:duration-300 [&_.btn]:ease-out [&_.btn:active]:scale-[0.97] [&_a]:transition-colors [&_a]:duration-300 [&_button]:transition-[transform,background-color,border-color,box-shadow,opacity] [&_button]:duration-300 [&_button:active]:scale-[0.97] [&_.input]:border [&_.input]:border-[#d7d0c6] [&_.input]:bg-white [&_.input]:transition-[border-color,box-shadow] [&_.input]:duration-300 [&_.textarea]:border [&_.textarea]:border-[#d7d0c6] [&_.textarea]:bg-white [&_.textarea]:transition-[border-color,box-shadow] [&_.textarea]:duration-300 [&_.select]:border [&_.select]:border-[#d7d0c6] [&_.select]:bg-white [&_.select]:transition-[border-color,box-shadow] [&_.select]:duration-300 [&_.file-input]:border [&_.file-input]:border-[#d7d0c6] [&_.file-input]:bg-white motion-reduce:[&_*]:!transition-none">
     <slot />
     <Motion />
   </body>

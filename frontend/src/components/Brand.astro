@@ -6,7 +6,11 @@ interface Props {
 const { href = '/', compact = false } = Astro.props;
 ---
 
-<a href={href} class="inline-flex items-center gap-1.5 no-underline" aria-label="Vira">
+<a
+  href={href}
+  class="inline-flex items-center gap-1.5 rounded-full bg-[#1b1916] px-2.5 py-1 no-underline shadow-sm"
+  aria-label="Vira"
+>
   <img
     src="/vira-mark.png"
     width="40"
