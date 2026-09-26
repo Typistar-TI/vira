@@ -3,17 +3,18 @@ import { env } from 'cloudflare:workers';
 import { createSession, sameOrigin, sha256 } from '@backend/auth';
 import { setting } from '@backend/config';
 import { getOrCreateEmailUser } from '@backend/db';
-import { readFormData } from '@backend/http';
+import { json, readJson } from '@backend/http';
 
 function fail() {
-  return new Response(null, { status: 303, headers: { location: '/login?error=Link%20inv%C3%A1lido%20ou%20expirado', 'cache-control': 'no-store' } });
+  return json({ error: 'Link inválido ou expirado' }, 400, { 'cache-control': 'no-store' });
 }
 
 export const POST: APIRoute = async ({ request }) => {
-  if (!sameOrigin(request)) return fail();
+  if (!sameOrigin(request)) return json({ error: 'Origem inválida' }, 403, { 'cache-control': 'no-store' });
+  if (!request.headers.get('content-type')?.toLowerCase().startsWith('application/json')) return fail();
   try {
-    const form = await readFormData(request, 2048);
-    const token = String(form.get('token') || '');
+    const body = await readJson(request, 2048);
+    const token = String(body.token || '');
     if (!/^[a-f0-9]{64}$/.test(token)) return fail();
     const now = Math.floor(Date.now() / 1000);
     const row = await env.DB.prepare('DELETE FROM email_login_tokens WHERE token_hash = ? AND expires_at > ? RETURNING email')
@@ -26,8 +27,8 @@ export const POST: APIRoute = async ({ request }) => {
     ]);
     if (!existing && !admin && (!controller || !contact)) return fail();
     const user = await getOrCreateEmailUser(row.email);
-    return new Response(null, { status: 303, headers: {
-      location: admin ? '/admin' : '/app', 'set-cookie': await createSession(user.id), 'cache-control': 'no-store',
-    } });
+    return json({ redirect: admin ? '/admin' : '/app' }, 200, {
+      'set-cookie': await createSession(user.id), 'cache-control': 'no-store',
+    });
   } catch { return fail(); }
 };
