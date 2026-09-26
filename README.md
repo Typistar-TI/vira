@@ -10,6 +10,7 @@ O Vira é uma plataforma para criar e publicar páginas de vendas. O mesmo proje
 - Teste gratuito de sete dias e planos mensal, anual e vitalício.
 - Publicação em subdomínio da plataforma ou em domínio próprio.
 - Upload de imagens, métricas básicas e gerenciamento da conta.
+- Painel administrativo separado para acompanhar clientes, domínios e assinaturas e configurar preços e integrações.
 
 ## Tecnologias
 
@@ -44,7 +45,9 @@ flowchart LR
 
 O middleware identifica o hostname da requisição e encaminha domínios dos clientes para as rotas públicas. O conteúdo editado fica como rascunho no D1; a publicação cria uma versão separada para os visitantes. A prévia e a página publicada usam o mesmo componente Astro, para manter o resultado visual consistente.
 
-O servidor valida as operações do painel e mantém a sessão em cookie `HttpOnly`, `Secure` e `SameSite=Lax`. As integrações externas são chamadas pelas rotas de API; suas credenciais não são enviadas ao navegador. Os preços e as configurações da aplicação são lidos do banco, enquanto os bindings da infraestrutura são definidos na configuração do Worker.
+O servidor valida as operações dos painéis e mantém a sessão em cookie `HttpOnly`, `Secure` e `SameSite=Lax`. O acesso administrativo exige que o celular esteja na lista `admin_phones` do D1, além da verificação por código. As rotas administrativas verificam a permissão em cada requisição e registram mudanças em `admin_audit`.
+
+As integrações externas são chamadas pelas rotas de API; suas credenciais não são enviadas ao navegador. Segredos cadastrados no painel são criptografados antes de serem armazenados no D1 e não são devolvidos pelas APIs. Preços ativos são validados na Stripe antes de serem publicados. Os bindings da infraestrutura permanecem na configuração do Worker.
 
 ## Organização do projeto
 

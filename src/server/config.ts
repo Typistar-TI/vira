@@ -16,6 +16,18 @@ async function decrypt(value: string): Promise<string> {
   return new TextDecoder().decode(clear);
 }
 
+export async function encrypt(value: string): Promise<string> {
+  if (!env.CONFIG_ENCRYPTION_KEY) throw new Error('Chave de configuração não definida');
+  const raw = decodeBase64(env.CONFIG_ENCRYPTION_KEY);
+  if (raw.length !== 32) throw new Error('Chave de configuração inválida');
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const key = await crypto.subtle.importKey('raw', raw.buffer as ArrayBuffer, 'AES-GCM', false, ['encrypt']);
+  const cipher = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, new TextEncoder().encode(value)));
+  const bytes = new Uint8Array(iv.length + cipher.length);
+  bytes.set(iv); bytes.set(cipher, iv.length);
+  return btoa(String.fromCharCode(...bytes));
+}
+
 export async function setting(name: string): Promise<string> {
   const row = await env.DB.prepare('SELECT value, encrypted FROM app_settings WHERE key = ?')
     .bind(name).first<Setting>();

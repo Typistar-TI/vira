@@ -2,7 +2,8 @@
 import { setting } from '@/server/config';
 import Base from '@/layouts/Base.astro';
 import { getSessionUser } from '@/server/auth';
-if (await getSessionUser(Astro.request)) return Astro.redirect('/app');
+const adminLogin = Astro.url.searchParams.get('next') === 'admin';
+if (await getSessionUser(Astro.request)) return Astro.redirect(adminLogin ? '/admin' : '/app');
 const en = Astro.url.searchParams.get('lang') === 'en';
 const turnstileSiteKey = await setting('PUBLIC_TURNSTILE_SITE_KEY');
 const [controller, privacyContact] = await Promise.all([setting('PRIVACY_CONTROLLER_NAME'), setting('PRIVACY_CONTACT_EMAIL')]);
@@ -21,9 +22,10 @@ const legalReady = Boolean(controller && privacyContact);
         <label for="channel">{en ? 'Receive code via' : 'Receber código por'}</label>
         <select class="select select-bordered" id="channel" name="channel"><option value="sms">SMS</option><option value="whatsapp">WhatsApp</option></select>
         <div class="mt-5" id="turnstile" data-sitekey={turnstileSiteKey}></div>
-        <button class="vira-button mt-6 w-full" type="submit" disabled={!legalReady}>{en ? 'Send code' : 'Enviar código'}</button>
+        <button class="vira-button mt-6 w-full" type="submit" disabled={!legalReady && !adminLogin}>{en ? 'Send code' : 'Enviar código'}</button>
       </form>
-      {!legalReady && <p class="status error mt-3">{en ? 'Registration is temporarily unavailable.' : 'O cadastro está temporariamente indisponível.'}</p>}
+      {!legalReady && !adminLogin && <p class="status error mt-3">{en ? 'Registration is temporarily unavailable.' : 'O cadastro está temporariamente indisponível.'}</p>}
+      {adminLogin && <p class="text-xs muted mt-3">Acesso administrativo restrito a celulares autorizados.</p>}
       <form id="check-form" hidden>
         <label for="code">{en ? 'Code received' : 'Código recebido'}</label>
         <input class="input input-bordered" id="code" name="code" inputmode="numeric" autocomplete="one-time-code" required />
@@ -75,7 +77,7 @@ const legalReady = Boolean(controller && privacyContact);
         const response = await fetch('/api/auth/check', { method:'POST', headers:{'content-type':'application/json'}, body:JSON.stringify({ phone:normalizedPhone, code:(new FormData(check).get('code') || '').toString() }) });
         const result = await response.json();
         if (!response.ok) throw new Error(result.error);
-        location.href = '/app';
+        location.href = new URLSearchParams(location.search).get('next') === 'admin' ? '/admin' : '/app';
       } catch (error) { show(error instanceof Error ? error.message : 'Código inválido', true); }
       finally { button.disabled = false; }
     });

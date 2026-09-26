@@ -18,6 +18,6 @@ export const onRequest = defineMiddleware(async (context, next) => {
   response.headers.set('x-frame-options', 'SAMEORIGIN');
   response.headers.set('content-security-policy', "frame-ancestors 'self'");
   if (context.url.protocol === 'https:') response.headers.set('strict-transport-security', 'max-age=31536000; includeSubDomains');
-  if (/^\/(app|api|login)(\/|$)/.test(context.url.pathname)) response.headers.set('cache-control', 'no-store');
+  if (/^\/(app|admin|api|login)(\/|$)/.test(context.url.pathname)) response.headers.set('cache-control', 'no-store');
   return response;
 });

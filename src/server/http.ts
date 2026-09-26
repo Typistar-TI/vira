@@ -1,5 +1,6 @@
 import { getSessionUser, sameOrigin } from './auth';
 import { consumeLimit } from './db';
+import { env } from 'cloudflare:workers';
 import type { UserRow } from './db';
 
 export function json(value: unknown, status = 200, headers: HeadersInit = {}) {
@@ -55,6 +56,13 @@ export async function requireUser(request: Request): Promise<UserRow | Response>
 
 export function isResponse(value: UserRow | Response): value is Response {
   return value instanceof Response;
+}
+
+export async function requireAdmin(request: Request): Promise<UserRow | Response> {
+  const user = await requireUser(request);
+  if (isResponse(user)) return user;
+  const row = await env.DB.prepare('SELECT phone FROM admin_phones WHERE phone = ?').bind(user.phone).first();
+  return row ? user : json({ error: 'Acesso restrito' }, 403);
 }
 
 export function clientIp(request: Request) {
