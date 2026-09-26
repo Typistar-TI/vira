@@ -2,6 +2,10 @@ import { defineMiddleware } from 'astro:middleware';
 import { rootDomain } from '@backend/config';
 
 export const onRequest = defineMiddleware(async (context, next) => {
+  if (import.meta.env.DEV && context.url.pathname.startsWith('/api/')) {
+    const { api } = await import('@backend/routes');
+    return api.fetch(context.request);
+  }
   const host = context.url.hostname.toLowerCase();
   const root = (await rootDomain()).toLowerCase();
   let response: Response;
