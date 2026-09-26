@@ -115,13 +115,6 @@ const t = en
       </nav>
       <div class="flex items-center gap-2 sm:gap-4">
         <a
-          href={en ? '/' : '/en'}
-          class="px-2 py-2 text-xs text-[#b8b5ae] transition-colors hover:text-white"
-          aria-label={en ? 'Português' : 'English'}
-        >
-          {en ? 'PT' : 'EN'}
-        </a>
-        <a
           href="/login"
           class="btn btn-sm rounded-full border border-[#3b3934] bg-[#161616] px-5 font-semibold text-[#f5f2ec] shadow-none transition-colors hover:border-[#d6a85f] hover:bg-[#24211c] sm:btn-md"
         >
@@ -141,6 +134,7 @@ const t = en
           height="992"
           alt=""
           fetchpriority="high"
+          data-parallax
           class="pointer-events-none mx-auto -mb-2 w-full max-w-[940px] select-none object-contain md:-mb-12"
         />
         <div class="relative z-10 mx-auto max-w-[900px]" data-reveal>
@@ -150,7 +144,7 @@ const t = en
           </span>
           <h1
             id="hero-title"
-            class="mx-auto mt-7 max-w-[12ch] font-['Instrument_Serif',serif] text-[clamp(4rem,9.2vw,8.8rem)] leading-[0.88] tracking-[-0.035em]"
+            class="mx-auto mt-7 max-w-[12ch] font-['Outfit',sans-serif] text-[clamp(3.2rem,7.5vw,7.5rem)] font-medium leading-[0.98] tracking-[-0.065em]"
           >
             {t.titleA}
             <br />
@@ -196,7 +190,7 @@ const t = en
               <p class="font-mono text-[11px] uppercase tracking-[0.22em] text-[#d6a85f]">
                 {en ? 'From idea to published' : 'Da ideia à publicação'}
               </p>
-              <h2 class="mt-6 font-['Instrument_Serif',serif] text-[clamp(3.4rem,6vw,6rem)] leading-[0.97] tracking-[-0.025em]">
+              <h2 class="mt-6 font-['Outfit',sans-serif] text-[clamp(3rem,5.3vw,5.6rem)] font-medium leading-[1.02] tracking-[-0.055em]">
                 {t.section}
               </h2>
               <p class="mt-6 max-w-[46ch] text-lg leading-relaxed text-[#a9a6a0]">
@@ -215,6 +209,7 @@ const t = en
               height="992"
               loading="lazy"
               alt=""
+              data-reveal
               class="w-full object-contain"
             />
           </div>
@@ -241,7 +236,7 @@ const t = en
         <p class="font-mono text-[11px] uppercase tracking-[0.22em] text-[#d6a85f]">
           {en ? 'Made for your business' : 'Feito para o seu negócio'}
         </p>
-        <h2 class="mx-auto mt-6 max-w-[17ch] font-['Instrument_Serif',serif] text-[clamp(3.1rem,6.2vw,6.5rem)] leading-[0.98] tracking-[-0.025em]">
+        <h2 class="mx-auto mt-6 max-w-[17ch] font-['Outfit',sans-serif] text-[clamp(2.8rem,5.6vw,6rem)] font-medium leading-[1.02] tracking-[-0.055em]">
           {en
             ? 'Your corner of the internet, ready to share.'
             : 'Um lugar seu na internet, pronto para compartilhar.'}
@@ -257,7 +252,7 @@ const t = en
           <p class="font-mono text-[11px] uppercase tracking-[0.22em] text-[#d6a85f]">
             {en ? 'Plans' : 'Planos'}
           </p>
-          <h2 class="mt-5 font-['Instrument_Serif',serif] text-[clamp(3.6rem,7vw,7rem)] leading-none tracking-[-0.03em]">
+          <h2 class="mt-5 font-['Outfit',sans-serif] text-[clamp(3.3rem,6.2vw,6.4rem)] font-medium leading-none tracking-[-0.06em]">
             {t.plans}
           </h2>
           <p class="mt-5 text-[#a9a6a0]">{t.plansText}</p>
@@ -289,7 +284,7 @@ const t = en
               <p class="mt-4 min-h-16 max-w-[34ch] leading-relaxed text-[#a9a6a0]">
                 {[t.monthlyDesc, t.yearlyDesc, t.lifetimeDesc][i]}
               </p>
-              <p class="mt-10 border-b border-[#34312b] pb-7 font-['Instrument_Serif',serif] text-[clamp(2.2rem,4vw,3.4rem)] leading-none">
+              <p class="mt-10 border-b border-[#34312b] pb-7 font-['Outfit',sans-serif] text-[clamp(2.2rem,4vw,3.4rem)] font-medium leading-none tracking-[-0.05em]">
                 {displayPrice((['monthly', 'yearly', 'lifetime'] as const)[i]) || t.priceLater}
               </p>
               <ul class="my-8 space-y-3 text-sm text-[#c5c1b9]">
@@ -329,9 +324,6 @@ const t = en
           <a class="hover:text-white" href={en ? '/en/privacy' : '/privacidade'}>
             {en ? 'Privacy' : 'Privacidade'}
           </a>
-          <a class="hover:text-white" href={en ? '/' : '/en'}>
-            {en ? 'Português' : 'English'}
-          </a>
         </div>
       </div>
       <div class="mx-auto flex max-w-[1280px] justify-between border-t border-[#25231f] px-5 py-5 font-mono text-[10px] uppercase tracking-[0.14em] text-[#78736d] sm:px-8">
@@ -340,25 +332,4 @@ const t = en
       </div>
     </footer>
   </div>
-  <script>
-    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      const observer = new IntersectionObserver(
-        (entries) => {
-          for (const entry of entries) {
-            if (!entry.isIntersecting) continue;
-            entry.target.animate(
-              [
-                { opacity: 0, transform: 'translateY(28px)' },
-                { opacity: 1, transform: 'translateY(0)' },
-              ],
-              { duration: 700, easing: 'cubic-bezier(.2,.7,.2,1)' },
-            );
-            observer.unobserve(entry.target);
-          }
-        },
-        { threshold: 0.12 },
-      );
-      document.querySelectorAll('[data-reveal]').forEach((node) => observer.observe(node));
-    }
-  </script>
 </Base>

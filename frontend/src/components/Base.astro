@@ -1,5 +1,6 @@
 ---
 import '@frontend/styles/global.css';
+import Motion from '@frontend/components/Motion.astro';
 interface Props {
   title: string;
   description?: string;
@@ -10,7 +11,7 @@ const { title, description = '', lang = 'pt', noindex = false } = Astro.props;
 ---
 
 <!doctype html>
-<html lang={lang}>
+<html lang={lang} class="scroll-smooth motion-reduce:scroll-auto">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -18,7 +19,7 @@ const { title, description = '', lang = 'pt', noindex = false } = Astro.props;
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=Outfit:wght@400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
     {noindex && <meta name="robots" content="noindex,nofollow" />}
@@ -27,7 +28,8 @@ const { title, description = '', lang = 'pt', noindex = false } = Astro.props;
     <link rel="icon" href="/favicon.png" type="image/png" />
     <slot name="head" />
   </head>
-  <body class="bg-black font-['DM_Sans',sans-serif] text-[#f5f2ec] antialiased selection:bg-[#d6a85f] selection:text-black [&_.input]:border-[#45413a] [&_.input]:bg-[#0b0b0b] [&_.textarea]:border-[#45413a] [&_.textarea]:bg-[#0b0b0b] [&_.select]:border-[#45413a] [&_.select]:bg-[#0b0b0b] [&_.file-input]:border-[#45413a] [&_.file-input]:bg-[#0b0b0b]">
+  <body class="bg-black font-['Outfit',sans-serif] text-[#f5f2ec] antialiased selection:bg-[#d6a85f] selection:text-black [&_.btn]:transition-[transform,background-color,border-color,box-shadow,opacity] [&_.btn]:duration-300 [&_.btn]:ease-out [&_.btn:active]:scale-[0.97] [&_a]:transition-colors [&_a]:duration-300 [&_button]:transition-[transform,background-color,border-color,box-shadow,opacity] [&_button]:duration-300 [&_button:active]:scale-[0.97] [&_.input]:border-[#45413a] [&_.input]:bg-[#0b0b0b] [&_.input]:transition-[border-color,box-shadow] [&_.input]:duration-300 [&_.textarea]:border-[#45413a] [&_.textarea]:bg-[#0b0b0b] [&_.textarea]:transition-[border-color,box-shadow] [&_.textarea]:duration-300 [&_.select]:border-[#45413a] [&_.select]:bg-[#0b0b0b] [&_.select]:transition-[border-color,box-shadow] [&_.select]:duration-300 [&_.file-input]:border-[#45413a] [&_.file-input]:bg-[#0b0b0b] motion-reduce:[&_*]:!transition-none">
     <slot />
+    <Motion />
   </body>
 </html>

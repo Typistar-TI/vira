@@ -1,0 +1,42 @@
+<script>
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  if (!reducedMotion.matches) {
+    const reveal = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          const element = entry.target as HTMLElement;
+          element.animate(
+            [
+              { opacity: 0, transform: 'translateY(18px)' },
+              { opacity: 1, transform: 'translateY(0)' },
+            ],
+            { duration: 720, easing: 'cubic-bezier(.22,1,.36,1)' },
+          );
+          reveal.unobserve(element);
+        }
+      },
+      { threshold: 0.08, rootMargin: '0px 0px -24px 0px' },
+    );
+    document.querySelectorAll<HTMLElement>('[data-reveal], .card').forEach((element) => {
+      reveal.observe(element);
+    });
+
+    const art = document.querySelector<HTMLElement>('[data-parallax]');
+    if (art) {
+      let frame = 0;
+      const update = () => {
+        frame = 0;
+        art.style.translate = `0 ${Math.min(window.scrollY * 0.075, 72)}px`;
+      };
+      window.addEventListener(
+        'scroll',
+        () => {
+          if (!frame) frame = window.requestAnimationFrame(update);
+        },
+        { passive: true },
+      );
+    }
+  }
+</script>

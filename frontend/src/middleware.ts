@@ -1,5 +1,6 @@
 import { defineMiddleware } from 'astro:middleware';
 import { getRootDomain } from '@frontend/api/config/root-domain';
+import { preferredLanguage } from '@frontend/i18n/preferred-language';
 
 export const onRequest = defineMiddleware(async (context, next) => {
   if (import.meta.env.DEV && context.url.pathname.startsWith('/api/')) {
@@ -19,9 +20,23 @@ export const onRequest = defineMiddleware(async (context, next) => {
       host === 'localhost' ||
       host === '127.0.0.1' ||
       host.endsWith('.workers.dev');
-    response = platform
-      ? await next()
-      : await context.rewrite(new URL(`/tenant${context.url.pathname}`, context.url));
+    const englishPath =
+      context.url.pathname === '/'
+        ? '/en/'
+        : context.url.pathname === '/privacidade'
+          ? '/en/privacy'
+          : null;
+    if (platform && englishPath && preferredLanguage(context.request) === 'en') {
+      response = context.redirect(englishPath, 302);
+      response.headers.set('vary', 'Accept-Language');
+    } else {
+      response = platform
+        ? await next()
+        : await context.rewrite(new URL(`/tenant${context.url.pathname}`, context.url));
+    }
+    if (platform && (context.url.pathname === '/' || context.url.pathname === '/privacidade')) {
+      response.headers.set('vary', 'Accept-Language');
+    }
   }
   response.headers.set('x-content-type-options', 'nosniff');
   response.headers.set('referrer-policy', 'no-referrer');
