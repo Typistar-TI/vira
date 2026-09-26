@@ -13,12 +13,6 @@
     "format:check": "prettier . --check",
     "db:local": "wrangler d1 migrations apply vira --local",
     "db:remote": "wrangler d1 migrations apply vira --remote",
-    "config:local": "node scripts/config.mjs --local",
-    "config:remote": "node scripts/config.mjs --remote",
-    "admin:local": "node scripts/admin.mjs --local",
-    "admin:remote": "node scripts/admin.mjs --remote",
-    "price:local": "node scripts/price.mjs --local",
-    "price:remote": "node scripts/price.mjs --remote",
     "preview": "astro preview",
     "astro": "astro"
   },
