@@ -10,7 +10,7 @@ O Vira é uma plataforma para criar e publicar páginas de vendas. O mesmo proje
 - Teste gratuito de sete dias e planos mensal, anual e vitalício.
 - Publicação em subdomínio da plataforma ou em domínio próprio.
 - Upload de imagens, métricas básicas e gerenciamento da conta.
-- Painel administrativo separado para acompanhar clientes, domínios e assinaturas e configurar preços e integrações.
+- Painel administrativo separado para acompanhar clientes, domínios e assinaturas e configurar preços, integrações e e-mails automáticos.
 
 ## Tecnologias
 
@@ -25,7 +25,7 @@ O Vira é uma plataforma para criar e publicar páginas de vendas. O mesmo proje
 | Estilos e componentes | [Tailwind CSS](https://tailwindcss.com/) e [daisyUI](https://daisyui.com/)                   | Estilos e componentes de interface sem React.                   |
 | Dados no navegador    | [TanStack Query Core](https://tanstack.com/query/latest/docs/framework/vanilla/overview)     | Consultas, mutações, cache e atualização das chamadas de API.   |
 | Acesso                | [Google Identity Services](https://developers.google.com/identity/gsi/web/guides/overview)   | Entrada com a conta Google, com validação do token no servidor. |
-| Envio de acesso       | [Resend](https://resend.com/docs)                                                            | Links de acesso por e-mail, válidos por 15 minutos e uma vez.   |
+| E-mails               | [Resend](https://resend.com/docs)                                                            | Links de acesso e avisos de site, assinatura e término.         |
 | Pagamentos            | [Stripe](https://docs.stripe.com/)                                                           | Checkout, assinaturas e portal de cobrança.                     |
 
 O Astro renderiza o conteúdo público no servidor, inclusive metadados e rotas de sitemap. A interface interativa do painel usa TypeScript no navegador. Não há dependência de React.
@@ -43,13 +43,15 @@ flowchart LR
     C --> H[Analytics Engine]
 ```
 
-O middleware identifica o hostname da requisição e encaminha domínios dos clientes para as rotas públicas. O conteúdo editado fica como rascunho no D1; a publicação cria uma versão separada para os visitantes. A prévia e a página publicada usam o mesmo componente Astro, para manter o resultado visual consistente.
+O middleware identifica o hostname da requisição e encaminha domínios dos clientes para as rotas públicas. O cadastro cria e publica imediatamente uma página inicial neutra no subdomínio do cliente. Ela fica fora dos mecanismos de busca até o cliente publicar sua primeira edição. Depois disso, o conteúdo editado fica como rascunho no D1; a publicação atualiza uma versão separada para os visitantes. A prévia e a página publicada usam o mesmo componente Astro, para manter o resultado visual consistente.
 
 O Worker entrega as requisições `/api/*` ao Hono e as demais ao Astro. As páginas e os componentes Astro acessam o backend apenas por módulos em `frontend/src/api/`, organizados por funcionalidade e chamada. No navegador, esses módulos usam TanStack Query Core para consultas, mutações e cache. Durante a renderização no servidor, os módulos chamam as funções necessárias no mesmo Worker. O backend Hono organiza rotas, regras e consultas por funcionalidade em `backend/features/`.
 
 O servidor valida as operações dos painéis e mantém a sessão em cookie `HttpOnly`, `Secure` e `SameSite=Lax`. No login com Google, verifica a assinatura e as declarações do token. No login por e-mail, gera um link aleatório de uso único, armazena apenas seu hash e exige confirmação por POST para evitar que prévias automáticas de e-mail consumam o link. O acesso administrativo exige que o e-mail esteja autorizado em `admin_accounts` no D1. As rotas administrativas verificam a permissão em cada requisição e registram mudanças em `admin_audit`.
 
 As integrações externas são chamadas pelas rotas de API; suas credenciais não são enviadas ao navegador. Segredos cadastrados no painel são criptografados antes de serem armazenados no D1 e não são devolvidos pelas APIs. Preços ativos são validados na Stripe antes de serem publicados. Os bindings da infraestrutura permanecem na configuração do Worker.
+
+Cada cadastro cria e publica a página inicial e inicia o teste de sete dias na mesma operação do D1. O painel administrativo permite editar assunto e HTML e ativar ou desativar os quatro tipos de e-mail. Os avisos de site criado e assinatura confirmada entram em uma fila no D1 e são enviados pelo Worker, com novas tentativas e chave de idempotência na Resend. A fila e os lembretes são processados a cada quinze minutos. O aviso de término só é agendado para o fim do teste ou para uma assinatura com cancelamento programado; assinaturas com renovação automática não recebem esse aviso.
 
 ## Organização do projeto
 
@@ -98,4 +100,4 @@ Cadastre o Client ID público no painel administrativo, em **Configurações**. 
 
 ## Configurar acesso por e-mail
 
-Crie uma conta na Resend, cadastre o domínio de envio e conclua a verificação dos registros DNS mostrados no painel. Crie uma chave de API com permissão apenas para envio. No painel administrativo, em **Configurações**, cadastre a chave `RESEND_API_KEY` e um remetente do domínio verificado em `AUTH_EMAIL_FROM`. O painel criptografa a chave antes de gravá-la no D1. O formulário de e-mail fica disponível quando os dois valores estiverem configurados. O deploy preserva essas configurações.
+Crie uma conta na Resend, cadastre o domínio de envio e conclua a verificação dos registros DNS mostrados no painel. Crie uma chave de API com permissão apenas para envio. No painel administrativo, em **Configurações**, cadastre a chave `RESEND_API_KEY` e um remetente do domínio verificado em `AUTH_EMAIL_FROM`. O painel criptografa a chave antes de gravá-la no D1. O formulário de e-mail fica disponível quando os dois valores estiverem configurados e o modelo de acesso estiver ativo. Em **E-mails**, personalize os modelos e confira o histórico de envios. O deploy preserva essas configurações.

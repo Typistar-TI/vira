@@ -43,7 +43,9 @@ export async function deleteAccount(userId: string): Promise<void> {
       cursor = objects.truncated ? objects.cursor : undefined;
     } while (cursor);
   }
-  if (user.email)
+  if (user.email) {
     await env.DB.prepare('DELETE FROM email_login_tokens WHERE email = ?').bind(user.email).run();
+    await env.DB.prepare('DELETE FROM email_outbox WHERE recipient = ?').bind(user.email).run();
+  }
   await env.DB.prepare('DELETE FROM users WHERE id = ?').bind(userId).run();
 }

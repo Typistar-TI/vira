@@ -35,12 +35,16 @@ const hasHero = !!content.heroImage;
       {content.title.split(' ').slice(0, 2).join(' ')}
     </a>
     <nav>
-      <a class="hidden md:inline" href="#sobre">
-        {en ? 'About' : 'Sobre'}
-      </a>
-      <a class="hidden md:inline" href="#catalogo">
-        {en ? 'Explore' : 'Conheça'}
-      </a>
+      {(content.about || content.benefits.length > 0) && (
+        <a class="hidden md:inline" href="#sobre">
+          {en ? 'About' : 'Sobre'}
+        </a>
+      )}
+      {content.products.length > 0 && (
+        <a class="hidden md:inline" href="#catalogo">
+          {en ? 'Explore' : 'Conheça'}
+        </a>
+      )}
       {content.primaryUrl && (
         <a
           class="btn btn-outline rounded-full border-[var(--line)] px-4 text-[var(--fg)]"

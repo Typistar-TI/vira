@@ -1,5 +1,11 @@
 import { env } from 'cloudflare:workers';
-import { defaultSite } from '@backend/features/sites/model';
+import { initialSite } from '@backend/features/sites/model';
+import {
+  dashboardUrl,
+  endDate,
+  queueEmailStatement,
+  siteUrl,
+} from '@backend/features/emails/service';
 
 export interface UserRow {
   id: string;
@@ -18,7 +24,7 @@ export async function getUser(id: string) {
   return env.DB.prepare('SELECT * FROM users WHERE id = ?').bind(id).first<UserRow>();
 }
 
-export async function getOrCreateGoogleUser(sub: string, email: string) {
+export async function getOrCreateGoogleUser(sub: string, email: string, language: 'pt' | 'en') {
   let user = await env.DB.prepare('SELECT * FROM users WHERE google_sub = ?')
     .bind(sub)
     .first<UserRow>();
@@ -34,7 +40,7 @@ export async function getOrCreateGoogleUser(sub: string, email: string) {
     return { ...user, google_sub: sub };
   }
   try {
-    return await createUser(email, sub);
+    return await createUser(email, sub, language);
   } catch (error) {
     const concurrent = await env.DB.prepare('SELECT * FROM users WHERE email = ? OR google_sub = ?')
       .bind(email, sub)
@@ -48,13 +54,13 @@ export async function getOrCreateGoogleUser(sub: string, email: string) {
   }
 }
 
-export async function getOrCreateEmailUser(email: string) {
+export async function getOrCreateEmailUser(email: string, language: 'pt' | 'en') {
   const user = await env.DB.prepare('SELECT * FROM users WHERE email = ?')
     .bind(email)
     .first<UserRow>();
   if (user) return user;
   try {
-    return await createUser(email, null);
+    return await createUser(email, null, language);
   } catch (error) {
     const concurrent = await env.DB.prepare('SELECT * FROM users WHERE email = ?')
       .bind(email)
@@ -64,17 +70,25 @@ export async function getOrCreateEmailUser(email: string) {
   }
 }
 
-async function createUser(email: string, sub: string | null) {
+async function createUser(email: string, sub: string | null, language: 'pt' | 'en') {
   const id = crypto.randomUUID();
   const now = Math.floor(Date.now() / 1000);
-  const slug = `site-${id.slice(0, 8)}`;
+  const slug = `site-${id.slice(0, 12)}`;
+  const content = JSON.stringify(initialSite(language));
+  const [pageUrl, panelUrl] = await Promise.all([siteUrl(slug), dashboardUrl()]);
   await env.DB.batch([
     env.DB.prepare(
       'INSERT INTO users (id, phone, google_sub, email, created_at, trial_ends_at) VALUES (?, ?, ?, ?, ?, ?)',
     ).bind(id, `auth-${id}`, sub, email, now, now + 7 * 86400),
     env.DB.prepare(
-      'INSERT INTO sites (id, user_id, slug, draft_json, created_at) VALUES (?, ?, ?, ?, ?)',
-    ).bind(crypto.randomUUID(), id, slug, JSON.stringify(defaultSite), now),
+      'INSERT INTO sites (id, user_id, slug, draft_json, published_json, published_at, auto_published, created_at) VALUES (?, ?, ?, ?, ?, ?, 1, ?)',
+    ).bind(crypto.randomUUID(), id, slug, content, content, now, now),
+    queueEmailStatement('site_created', `site-created:${id}`, email, {
+      email,
+      dashboard_url: panelUrl,
+      site_url: pageUrl,
+      end_date: endDate(now + 7 * 86400),
+    }),
   ]);
   const user = await getUser(id);
   if (!user) throw new Error('Falha ao criar a conta');

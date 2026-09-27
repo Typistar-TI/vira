@@ -2,6 +2,7 @@ import { env } from 'cloudflare:workers';
 import Stripe from 'stripe';
 import { planForPrice, stripe } from '@backend/features/billing/service';
 import { setting } from '@backend/platform/config';
+import { dashboardUrl, endDate, queueEmail, siteUrl } from '@backend/features/emails/service';
 import { readText } from '@backend/platform/http';
 
 async function updateSubscription(subscription: Stripe.Subscription) {
@@ -13,9 +14,13 @@ async function updateSubscription(subscription: Stripe.Subscription) {
     : null;
   const active = subscription.status === 'active' || subscription.status === 'trialing';
   const periodEnd = item?.current_period_end ?? 0;
+  const endingAt =
+    active && (subscription.cancel_at_period_end || subscription.cancel_at)
+      ? subscription.cancel_at || periodEnd
+      : null;
   if (plan !== 'monthly' && plan !== 'yearly') return;
   await env.DB.prepare(
-    `UPDATE users SET stripe_subscription_id = ?, plan = ?, access_until = ?, expired_at = ?
+    `UPDATE users SET stripe_subscription_id = ?, plan = ?, access_until = ?, expired_at = ?, subscription_ending_at = ?
     WHERE stripe_customer_id = ? AND plan != 'lifetime'`,
   )
     .bind(
@@ -23,9 +28,43 @@ async function updateSubscription(subscription: Stripe.Subscription) {
       active ? plan : 'expired',
       active ? periodEnd : 0,
       active ? null : Math.floor(Date.now() / 1000),
+      endingAt,
       customerId,
     )
     .run();
+  if (active) {
+    const owner = await env.DB.prepare(
+      'SELECT u.id, u.email, s.slug FROM users u JOIN sites s ON s.user_id = u.id WHERE u.stripe_customer_id = ? AND u.plan != ?',
+    )
+      .bind(customerId, 'lifetime')
+      .first<{ id: string; email: string | null; slug: string }>();
+    if (owner?.email) {
+      const [pageUrl, panelUrl] = await Promise.all([siteUrl(owner.slug), dashboardUrl()]);
+      await queueEmail(
+        'subscription_created',
+        `subscription-created:${subscription.id}`,
+        owner.email,
+        {
+          email: owner.email,
+          plan: plan === 'monthly' ? 'mensal / monthly' : 'anual / yearly',
+          site_url: pageUrl,
+          dashboard_url: panelUrl,
+        },
+      );
+      if (
+        endingAt &&
+        endingAt > Math.floor(Date.now() / 1000) &&
+        endingAt <= Math.floor(Date.now() / 1000) + 7 * 86400
+      )
+        await queueEmail('subscription_ending', `ending:${owner.id}:${endingAt}`, owner.email, {
+          email: owner.email,
+          plan: plan === 'monthly' ? 'mensal / monthly' : 'anual / yearly',
+          site_url: pageUrl,
+          dashboard_url: panelUrl,
+          end_date: endDate(endingAt),
+        });
+    }
+  }
 }
 
 export const POST = async (request: Request): Promise<Response> => {
@@ -77,10 +116,27 @@ export const POST = async (request: Request): Promise<Response> => {
           if (oldSubscription?.stripe_subscription_id)
             await (await stripe()).subscriptions.cancel(oldSubscription.stripe_subscription_id);
           await env.DB.prepare(
-            "UPDATE users SET plan = 'lifetime', access_until = NULL, expired_at = NULL, lifetime_payment_intent = ?, stripe_subscription_id = NULL WHERE id = ?",
+            "UPDATE users SET plan = 'lifetime', access_until = NULL, expired_at = NULL, subscription_ending_at = NULL, lifetime_payment_intent = ?, stripe_subscription_id = NULL WHERE id = ?",
           )
             .bind(paymentIntent || null, userId)
             .run();
+          const owner = await env.DB.prepare(
+            'SELECT u.email, s.slug FROM users u JOIN sites s ON s.user_id = u.id WHERE u.id = ?',
+          )
+            .bind(userId)
+            .first<{ email: string | null; slug: string }>();
+          if (owner?.email)
+            await queueEmail(
+              'subscription_created',
+              `lifetime-created:${paymentIntent || session.id}`,
+              owner.email,
+              {
+                email: owner.email,
+                plan: 'vitalício / lifetime',
+                site_url: await siteUrl(owner.slug),
+                dashboard_url: await dashboardUrl(),
+              },
+            );
         } else if (session.mode === 'subscription' && session.subscription) {
           const id =
             typeof session.subscription === 'string'

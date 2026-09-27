@@ -3,6 +3,7 @@ import { createRemoteJWKSet, jwtVerify } from 'jose';
 import { createAdminSession, createSession, sha256 } from '@backend/features/auth/service';
 import { requiredSetting, setting } from '@backend/platform/config';
 import { consumeLimit, getOrCreateGoogleUser } from '@backend/features/auth/repository';
+import { languageFromRequest } from '@backend/features/auth/language';
 import { clientIp, readFormData } from '@backend/platform/http';
 
 const googleKeys = createRemoteJWKSet(new URL('https://www.googleapis.com/oauth2/v3/certs'));
@@ -84,7 +85,7 @@ export const POST = async (request: Request): Promise<Response> => {
           'cache-control': 'no-store',
         },
       });
-    const user = await getOrCreateGoogleUser(sub, email);
+    const user = await getOrCreateGoogleUser(sub, email, languageFromRequest(request));
     return new Response(null, {
       status: 303,
       headers: {

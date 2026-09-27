@@ -7,6 +7,7 @@ export interface SiteRow {
   draft_json: string;
   published_json: string | null;
   published_at: number | null;
+  auto_published: number;
 }
 
 export async function getSiteForUser(userId: string) {

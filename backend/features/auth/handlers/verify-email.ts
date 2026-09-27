@@ -7,6 +7,7 @@ import {
 } from '@backend/features/auth/service';
 import { setting } from '@backend/platform/config';
 import { getOrCreateEmailUser } from '@backend/features/auth/repository';
+import { languageFromRequest } from '@backend/features/auth/language';
 import { json, readJson } from '@backend/platform/http';
 
 function fail() {
@@ -41,7 +42,7 @@ export const POST = async (request: Request): Promise<Response> => {
         'set-cookie': await createAdminSession(row.email),
         'cache-control': 'no-store',
       });
-    const user = await getOrCreateEmailUser(row.email);
+    const user = await getOrCreateEmailUser(row.email, languageFromRequest(request));
     return json({ redirect: '/app' }, 200, {
       'set-cookie': await createSession(user.id),
       'cache-control': 'no-store',

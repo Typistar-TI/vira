@@ -8,6 +8,8 @@ export async function getAdminDashboard(search: string) {
     customersResult,
     domainsResult,
     auditResult,
+    emailTemplatesResult,
+    emailOutboxResult,
     counts,
     domain,
   ] = await Promise.all([
@@ -58,6 +60,25 @@ export async function getAdminDashboard(search: string) {
       'SELECT action, target, created_at FROM admin_audit ORDER BY created_at DESC LIMIT 10',
     ).all<{ action: string; target: string; created_at: number }>(),
     env.DB.prepare(
+      'SELECT key, enabled, subject, html, updated_at FROM email_templates ORDER BY key',
+    ).all<{
+      key: 'login' | 'site_created' | 'subscription_created' | 'subscription_ending';
+      enabled: number;
+      subject: string;
+      html: string;
+      updated_at: number;
+    }>(),
+    env.DB.prepare(
+      'SELECT template_key, recipient, status, created_at, sent_at, last_error FROM email_outbox ORDER BY created_at DESC LIMIT 20',
+    ).all<{
+      template_key: string;
+      recipient: string;
+      status: string;
+      created_at: number;
+      sent_at: number | null;
+      last_error: string | null;
+    }>(),
+    env.DB.prepare(
       'SELECT (SELECT count(*) FROM users) AS users, (SELECT count(*) FROM sites WHERE published_at IS NOT NULL) AS published, (SELECT count(*) FROM domains) AS domains',
     ).first<{ users: number; published: number; domains: number }>(),
     rootDomain(),
@@ -68,6 +89,8 @@ export async function getAdminDashboard(search: string) {
     customers: customersResult.results,
     domains: domainsResult.results,
     audit: auditResult.results,
+    emailTemplates: emailTemplatesResult.results,
+    emailOutbox: emailOutboxResult.results,
     counts: counts ?? { users: 0, published: 0, domains: 0 },
     domain,
   };

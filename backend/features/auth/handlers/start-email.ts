@@ -2,7 +2,7 @@ import { env } from 'cloudflare:workers';
 import { sameOrigin, sha256 } from '@backend/features/auth/service';
 import { setting } from '@backend/platform/config';
 import { consumeLimit } from '@backend/features/auth/repository';
-import { sendLoginLink } from '@backend/features/auth/email';
+import { sendLoginEmail, templateFor } from '@backend/features/emails/service';
 import { clientIp, json, readJson } from '@backend/platform/http';
 
 const generic = {
@@ -33,15 +33,17 @@ export const POST = async (request: Request): Promise<Response> => {
   ) {
     return json(generic);
   }
-  const [key, from, controller, contact, existing, admin] = await Promise.all([
+  const [key, from, template, controller, contact, existing, admin] = await Promise.all([
     setting('RESEND_API_KEY'),
     setting('AUTH_EMAIL_FROM'),
+    templateFor('login'),
     setting('PRIVACY_CONTROLLER_NAME'),
     setting('PRIVACY_CONTACT_EMAIL'),
     env.DB.prepare('SELECT id FROM users WHERE email = ?').bind(email).first(),
     env.DB.prepare('SELECT email FROM admin_accounts WHERE email = ?').bind(email).first(),
   ]);
-  if (!key || !from) return json({ error: 'Entrada por e-mail está sendo configurada' }, 503);
+  if (!key || !from || !template.enabled)
+    return json({ error: 'Entrada por e-mail está indisponível' }, 503);
   if (!existing && !admin && (!controller || !contact)) return json(generic);
 
   const token = Array.from(crypto.getRandomValues(new Uint8Array(32)), (b) =>
@@ -55,7 +57,7 @@ export const POST = async (request: Request): Promise<Response> => {
     ).bind(tokenHash, email, Math.floor(Date.now() / 1000) + 900),
   ]);
   try {
-    await sendLoginLink(email, token);
+    await sendLoginEmail(email, token, tokenHash);
     return json(generic);
   } catch {
     await env.DB.prepare('DELETE FROM email_login_tokens WHERE token_hash = ?')

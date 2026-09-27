@@ -13,6 +13,15 @@ export const GET = async (request: Request): Promise<Response> => {
         .bind(site.id)
         .first()
     : null;
+  const communications = user.email
+    ? (
+        await env.DB.prepare(
+          'SELECT template_key, subject, status, created_at, sent_at FROM email_outbox WHERE recipient = ? ORDER BY created_at DESC',
+        )
+          .bind(user.email)
+          .all()
+      ).results
+    : [];
   const data = {
     exported_at: new Date().toISOString(),
     account: {
@@ -32,6 +41,7 @@ export const GET = async (request: Request): Promise<Response> => {
         }
       : null,
     domain,
+    communications,
   };
   return new Response(JSON.stringify(data, null, 2), {
     headers: {

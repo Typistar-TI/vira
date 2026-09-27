@@ -35,6 +35,11 @@ export async function cleanExpired(environment: WorkerEnv) {
   await environment.DB.prepare('DELETE FROM stripe_events WHERE created_at <= ?')
     .bind(now - 180 * 86400)
     .run();
+  await environment.DB.prepare(
+    "DELETE FROM email_outbox WHERE status IN ('sent', 'suppressed', 'failed') AND created_at <= ?",
+  )
+    .bind(now - 30 * 86400)
+    .run();
   const unused = await environment.DB.prepare(
     `SELECT media_assets.key FROM media_assets JOIN sites ON sites.id = media_assets.site_id
     WHERE media_assets.created_at < ? AND instr(sites.draft_json, '/media/' || media_assets.key) = 0

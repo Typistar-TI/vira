@@ -34,22 +34,30 @@ export type SiteContent = z.infer<typeof siteSchema>;
 export const defaultSite: SiteContent = {
   layout: 'pulse',
   language: 'pt',
-  title: 'Sua ideia merece ser vista.',
-  subtitle: 'Apresente seu trabalho em uma página clara, bonita e pronta para receber clientes.',
+  title: 'Este espaço está no ar.',
+  subtitle: 'Uma nova página está sendo preparada. Volte em breve para conhecer as novidades.',
   heroImage: '',
-  primaryLabel: 'Fale comigo',
+  primaryLabel: '',
   primaryUrl: '',
-  aboutTitle: 'O que fazemos',
-  about: 'Conte aqui o que torna seu trabalho especial.',
-  benefits: [
-    { title: 'Atendimento próximo', description: 'Explique o primeiro motivo para escolher você.' },
-    { title: 'Feito com cuidado', description: 'Mostre o resultado que seu cliente pode esperar.' },
-  ],
-  stats: [{ value: '100+', label: 'clientes atendidos' }],
+  aboutTitle: '',
+  about: '',
+  benefits: [],
+  stats: [],
   testimonials: [],
   products: [],
   footerText: '',
 };
+
+export function initialSite(language: 'pt' | 'en'): SiteContent {
+  return language === 'en'
+    ? {
+        ...defaultSite,
+        language,
+        title: 'This space is live.',
+        subtitle: 'A new page is being prepared. Come back soon to see what is next.',
+      }
+    : defaultSite;
+}
 
 export function parseSite(value: unknown): SiteContent {
   return siteSchema.parse(value);

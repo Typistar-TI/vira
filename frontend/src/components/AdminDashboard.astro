@@ -6,7 +6,7 @@ import { adminDashboard } from '@frontend/api/admin/dashboard';
 const { admin, url } = Astro.props;
 const search = (url.searchParams.get('q') || '').trim().slice(0, 80);
 
-const { settings, prices, customers, domains, audit, counts, domain } =
+const { settings, prices, customers, domains, audit, emailTemplates, emailOutbox, counts, domain } =
   await adminDashboard(search);
 const byKey = Object.fromEntries(settings.map((row) => [row.key, Boolean(row.value)]));
 const required = [
@@ -43,6 +43,33 @@ const planName: Record<string, string> = {
 };
 const date = (time: number | null) =>
   time ? new Date(time * 1000).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : '—';
+const emailLabels: Record<string, string> = {
+  login: 'Link de acesso',
+  site_created: 'Site criado',
+  subscription_created: 'Assinatura confirmada',
+  subscription_ending: 'Término próximo',
+};
+const emailDescriptions: Record<string, string> = {
+  login:
+    'Enviado quando o cliente pede um link para entrar. Sem ele, o acesso por e-mail fica indisponível.',
+  site_created: 'Enviado uma vez, assim que a conta é criada e o site inicial entra no ar.',
+  subscription_created: 'Enviado após a Stripe confirmar o plano mensal, anual ou vitalício.',
+  subscription_ending:
+    'Enviado cerca de 1 a 2 dias antes do fim do teste ou até 7 dias antes de uma assinatura com cancelamento agendado.',
+};
+const emailVariables: Record<string, string[]> = {
+  login: ['login_url', 'email'],
+  site_created: ['dashboard_url', 'site_url', 'end_date', 'email'],
+  subscription_created: ['dashboard_url', 'site_url', 'plan', 'email'],
+  subscription_ending: ['dashboard_url', 'site_url', 'plan', 'end_date', 'email'],
+};
+const deliveryStatus: Record<string, string> = {
+  pending: 'Aguardando',
+  sending: 'Enviando',
+  sent: 'Enviado',
+  failed: 'Falhou',
+  suppressed: 'Desativado',
+};
 ---
 
 <Base title="Administração · Vira" noindex appearance="light">
@@ -84,6 +111,12 @@ const date = (time: number | null) =>
             href="#configuracoes"
           >
             ↗ &nbsp;Configurações
+          </a>
+          <a
+            class="rounded-lg px-3 py-2.5 text-sm text-[#625a51] transition-colors hover:bg-[#fff9ef] hover:text-[#9b6823]"
+            href="#emails"
+          >
+            ↗ &nbsp;E-mails
           </a>
           <a
             class="rounded-lg px-3 py-2.5 text-sm text-[#625a51] transition-colors hover:bg-[#fff9ef] hover:text-[#9b6823]"
@@ -319,6 +352,146 @@ const date = (time: number | null) =>
           </div>
         </section>
         <section
+          id="emails"
+          class="mb-20 scroll-mt-8 border-t border-[#d8ae73] pt-9 first:border-t-0 first:pt-0"
+        >
+          <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#17130d] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#625a51]">
+            <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#9b6823]">
+              Comunicação
+            </span>
+            <h2>E-mails automáticos</h2>
+            <p>
+              Edite o assunto e o HTML de cada mensagem. As variáveis entre chaves recebem os dados
+              reais antes do envio. Desative um modelo para suspender novos envios desse tipo.
+            </p>
+          </div>
+          <div class="grid gap-5">
+            {emailTemplates.map((row) => (
+              <form
+                class="rounded-xl border border-[#d8ae73] bg-white p-5 sm:p-7"
+                data-api-email-template-form
+                data-key={row.key}
+              >
+                <div class="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <h3 class="font-[Outfit] text-2xl text-[#17130d]">{emailLabels[row.key]}</h3>
+                    <p class="mt-1 max-w-[70ch] text-sm leading-relaxed text-[#625a51]">
+                      {emailDescriptions[row.key]}
+                    </p>
+                  </div>
+                  <label class="flex items-center gap-2 text-sm font-semibold text-[#17130d]">
+                    <input
+                      class="checkbox checkbox-primary"
+                      name="enabled"
+                      type="checkbox"
+                      checked={Boolean(row.enabled)}
+                    />
+                    Ativo
+                  </label>
+                </div>
+                <p class="mt-5 text-xs text-[#625a51]">
+                  Variáveis: {emailVariables[row.key].map((name) => `{{${name}}}`).join(' · ')}
+                </p>
+                <label
+                  class="mt-5 block text-sm font-semibold text-[#17130d]"
+                  for={`email-subject-${row.key}`}
+                >
+                  Assunto
+                </label>
+                <input
+                  id={`email-subject-${row.key}`}
+                  class="input input-bordered mt-2 w-full"
+                  name="subject"
+                  type="text"
+                  maxlength="180"
+                  value={row.subject}
+                  required
+                />
+                <label
+                  class="mt-5 block text-sm font-semibold text-[#17130d]"
+                  for={`email-html-${row.key}`}
+                >
+                  HTML do e-mail
+                </label>
+                <textarea
+                  id={`email-html-${row.key}`}
+                  class="textarea textarea-bordered mt-2 min-h-52 w-full font-mono text-xs leading-relaxed"
+                  name="html"
+                  maxlength="32000"
+                  spellcheck="false"
+                  required
+                >{row.html}</textarea>
+                <div class="mt-4 flex flex-wrap items-center gap-3">
+                  <button
+                    class="btn btn-primary rounded-xl border-0 font-bold shadow-none"
+                    type="submit"
+                  >
+                    Salvar modelo
+                  </button>
+                  <button
+                    class="btn btn-outline rounded-xl"
+                    type="button"
+                    data-email-preview-button
+                  >
+                    Ver prévia
+                  </button>
+                  <p
+                    class="text-sm text-success [hidden]:hidden"
+                    data-api-status
+                    role="status"
+                    hidden
+                  ></p>
+                </div>
+                <div
+                  class="mt-5 hidden rounded-xl border border-[#d8ae73] bg-[#fffdf9] p-3"
+                  data-email-preview-container
+                >
+                  <p class="mb-2 font-mono text-[11px] uppercase tracking-wider text-[#9b6823]">
+                    Prévia isolada
+                  </p>
+                  <iframe
+                    title={`Prévia: ${emailLabels[row.key]}`}
+                    class="h-80 w-full rounded-lg bg-white"
+                    sandbox=""
+                    data-email-preview
+                  ></iframe>
+                </div>
+              </form>
+            ))}
+          </div>
+          <div class="mt-8 rounded-xl border border-[#d8ae73] bg-white p-5 sm:p-7">
+            <h3 class="font-[Outfit] text-xl text-[#17130d]">Últimos envios</h3>
+            <p class="mt-1 text-sm text-[#625a51]">Histórico mantido por 30 dias.</p>
+            <div class="mt-4 overflow-x-auto">
+              <table class="table w-full">
+                <thead>
+                  <tr>
+                    <th>Mensagem</th>
+                    <th>Destinatário</th>
+                    <th>Estado</th>
+                    <th>Criado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {emailOutbox.map((item) => (
+                    <tr>
+                      <td>{emailLabels[item.template_key] ?? item.template_key}</td>
+                      <td>{item.recipient}</td>
+                      <td title={item.last_error ?? ''}>
+                        {deliveryStatus[item.status] ?? item.status}
+                      </td>
+                      <td>{date(item.created_at)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {emailOutbox.length === 0 && (
+                <p class="py-3 text-sm text-[#625a51]">Nenhum envio registrado.</p>
+              )}
+            </div>
+          </div>
+        </section>
+        <section
           id="clientes"
           class="mb-20 scroll-mt-8 border-t border-[#d8ae73] pt-9 first:border-t-0 first:pt-0"
         >
@@ -453,9 +626,11 @@ const date = (time: number | null) =>
                   <strong>
                     {item.action === 'update_price'
                       ? 'Preço alterado'
-                      : item.action === 'clear_setting'
-                        ? 'Configuração limpa'
-                        : 'Configuração alterada'}
+                      : item.action === 'update_email_template'
+                        ? 'Modelo de e-mail alterado'
+                        : item.action === 'clear_setting'
+                          ? 'Configuração limpa'
+                          : 'Configuração alterada'}
                   </strong>
                   <code>{item.target}</code>
                 </div>
@@ -471,6 +646,7 @@ const date = (time: number | null) =>
   <script>
     import { updateSetting } from '@frontend/api/admin/update-setting';
     import { updatePrice } from '@frontend/api/admin/update-price';
+    import { updateEmailTemplate } from '@frontend/api/admin/update-email-template';
     import { logout } from '@frontend/api/auth/logout';
     const show = (form: HTMLFormElement, message: string, error = false) => {
       const node = form.querySelector<HTMLElement>('[data-api-status]')!;
@@ -529,6 +705,46 @@ const date = (time: number | null) =>
         }
       }),
     );
+    document.querySelectorAll<HTMLFormElement>('[data-api-email-template-form]').forEach((form) => {
+      form
+        .querySelector<HTMLButtonElement>('[data-email-preview-button]')
+        ?.addEventListener('click', () => {
+          const html = form.querySelector<HTMLTextAreaElement>('[name=html]')!.value;
+          const samples: Record<string, string> = {
+            login_url: 'https://vira.ia.br/auth/email?token=exemplo',
+            dashboard_url: 'https://vira.ia.br/app',
+            site_url: 'https://meu-site.vira.ia.br',
+            end_date: '27 de setembro de 2026',
+            plan: 'mensal',
+            email: 'cliente@exemplo.com',
+          };
+          const preview = html.replace(
+            /{{\s*([a-z_]+)\s*}}/g,
+            (_, name: string) => samples[name] ?? '',
+          );
+          const container = form.querySelector<HTMLElement>('[data-email-preview-container]')!;
+          form.querySelector<HTMLIFrameElement>('[data-email-preview]')!.srcdoc = preview;
+          container.classList.remove('hidden');
+        });
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const button = form.querySelector<HTMLButtonElement>('button[type=submit]')!;
+        button.disabled = true;
+        try {
+          await updateEmailTemplate({
+            key: form.dataset.key || '',
+            enabled: form.querySelector<HTMLInputElement>('[name=enabled]')!.checked,
+            subject: form.querySelector<HTMLInputElement>('[name=subject]')!.value,
+            html: form.querySelector<HTMLTextAreaElement>('[name=html]')!.value,
+          });
+          show(form, 'Modelo salvo.');
+        } catch (error) {
+          show(form, error instanceof Error ? error.message : 'Falha ao salvar', true);
+        } finally {
+          button.disabled = false;
+        }
+      });
+    });
     document.querySelector('#admin-logout')?.addEventListener('click', async () => {
       await logout();
       location.href = '/';

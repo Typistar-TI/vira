@@ -32,7 +32,12 @@ const canonical = `https://${url.hostname}/`;
     </main>
   </Base>
 ) : (
-  <Base title={content.title} description={content.subtitle} lang={content.language}>
+  <Base
+    title={content.title}
+    description={content.subtitle}
+    lang={content.language}
+    noindex={Boolean(tenant.site.auto_published)}
+  >
     <link slot="head" rel="canonical" href={canonical} />
     <meta slot="head" property="og:title" content={content.title} />
     <meta slot="head" property="og:description" content={content.subtitle} />

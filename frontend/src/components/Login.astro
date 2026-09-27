@@ -3,20 +3,22 @@ import Base from '@frontend/components/Base.astro';
 import Brand from '@frontend/components/Brand.astro';
 import { getSetting } from '@frontend/api/config/setting';
 import { googleLoginUrl } from '@frontend/api/auth/google-url';
+import { emailLoginEnabled } from '@frontend/api/config/email-login-enabled';
 import { preferredLanguage } from '@frontend/i18n/preferred-language';
 
 const { url } = Astro.props;
 const adminLogin = url.searchParams.get('next') === 'admin';
 const en = preferredLanguage(Astro.request) === 'en';
 const clientId = await getSetting('GOOGLE_CLIENT_ID');
-const [controller, contact, resendKey, emailFrom] = await Promise.all([
+const [controller, contact, resendKey, emailFrom, emailEnabled] = await Promise.all([
   getSetting('PRIVACY_CONTROLLER_NAME'),
   getSetting('PRIVACY_CONTACT_EMAIL'),
   getSetting('RESEND_API_KEY'),
   getSetting('AUTH_EMAIL_FROM'),
+  emailLoginEnabled(),
 ]);
 const legalReady = Boolean(controller && contact);
-const emailReady = Boolean(resendKey && emailFrom);
+const emailReady = Boolean(resendKey && emailFrom && emailEnabled);
 const error = url.searchParams.get('error')?.slice(0, 150);
 const loginUri = googleLoginUrl(url);
 ---
@@ -39,40 +41,45 @@ const loginUri = googleLoginUrl(url);
         {en ? 'Your page starts here.' : 'Sua página começa aqui.'}
       </h1>
       <p class="text-[#625a51] mb-6">
-        {clientId
+        {!emailReady && clientId
           ? en
-            ? 'Use your email to receive a sign-in link, or continue with Google.'
-            : 'Receba um link no seu e-mail ou continue com Google.'
-          : en
-            ? 'Enter your email to receive a sign-in link.'
-            : 'Digite seu e-mail para receber um link de acesso.'}
+            ? 'Continue with your Google account.'
+            : 'Continue com sua conta Google.'
+          : clientId
+            ? en
+              ? 'Use your email to receive a sign-in link, or continue with Google.'
+              : 'Receba um link no seu e-mail ou continue com Google.'
+            : en
+              ? 'Enter your email to receive a sign-in link.'
+              : 'Digite seu e-mail para receber um link de acesso.'}
       </p>
-      <form id="email-login-form" class="mb-6">
-        <label for="login-email">{en ? 'Email' : 'E-mail'}</label>
-        <input
-          class="input input-bordered w-full mt-2 mb-3"
-          id="login-email"
-          name="email"
-          type="email"
-          autocomplete="email"
-          placeholder="voce@exemplo.com"
-          required
-        />
-        <button
-          class="btn btn-primary rounded-xl border-0 font-bold shadow-none w-full"
-          type="submit"
-          disabled={!emailReady}
-        >
-          {en ? 'Send sign-in link' : 'Enviar link de acesso'}
-        </button>
-        <p
-          id="email-login-status"
-          class="alert alert-info my-3 [hidden]:hidden mt-3"
-          role="status"
-          hidden
-        ></p>
-      </form>
-      {!emailReady && (
+      {emailReady && (
+        <form id="email-login-form" class="mb-6">
+          <label for="login-email">{en ? 'Email' : 'E-mail'}</label>
+          <input
+            class="input input-bordered w-full mt-2 mb-3"
+            id="login-email"
+            name="email"
+            type="email"
+            autocomplete="email"
+            placeholder="voce@exemplo.com"
+            required
+          />
+          <button
+            class="btn btn-primary rounded-xl border-0 font-bold shadow-none w-full"
+            type="submit"
+          >
+            {en ? 'Send sign-in link' : 'Enviar link de acesso'}
+          </button>
+          <p
+            id="email-login-status"
+            class="alert alert-info my-3 [hidden]:hidden mt-3"
+            role="status"
+            hidden
+          ></p>
+        </form>
+      )}
+      {!emailReady && !clientId && (
         <p class="alert alert-error my-3 [hidden]:hidden mb-5">
           {en
             ? 'Email sign-in is being configured.'
@@ -81,7 +88,7 @@ const loginUri = googleLoginUrl(url);
       )}
       {clientId && (
         <>
-          <p class="text-[#625a51] mb-4">{en ? 'Or' : 'Ou'}</p>
+          {emailReady && <p class="text-[#625a51] mb-4">{en ? 'Or' : 'Ou'}</p>}
           <div
             id="g_id_onload"
             data-client_id={clientId}

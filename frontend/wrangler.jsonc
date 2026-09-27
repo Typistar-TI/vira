@@ -19,5 +19,5 @@
     { "pattern": "vira.ia.br/*", "zone_id": "2bbbd3219eb16941c3e21a14bf2c684a" },
     { "pattern": "*.vira.ia.br/*", "zone_id": "2bbbd3219eb16941c3e21a14bf2c684a" },
   ],
-  "triggers": { "crons": ["0 3 * * *"] },
+  "triggers": { "crons": ["*/15 * * * *", "0 3 * * *"] },
 }
