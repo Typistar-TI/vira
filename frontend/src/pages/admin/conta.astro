@@ -6,4 +6,4 @@ const admin = await sessionAdmin(Astro.request);
 if (!admin) return Astro.redirect('/login?next=admin');
 ---
 
-<AdminProfile admin={admin} saved={Astro.url.searchParams.get('saved') === '1'} />
+<AdminProfile admin={admin} />

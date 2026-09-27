@@ -1,6 +1,7 @@
 ---
 import '@frontend/styles/global.css';
 import Motion from '@frontend/components/Motion.astro';
+import Toast from '@frontend/components/Toast.astro';
 interface Props {
   title: string;
   description?: string;
@@ -30,7 +31,7 @@ const motionClasses =
 const darkFields =
   '[&_.input]:border-[#45413a] [&_.input]:bg-[#0b0b0b] [&_.textarea]:border-[#45413a] [&_.textarea]:bg-[#0b0b0b] [&_.select]:border-[#45413a] [&_.select]:bg-[#0b0b0b] [&_.file-input]:border-[#45413a] [&_.file-input]:bg-[#0b0b0b]';
 const lightFields =
-  '[&_.input]:border [&_.input]:border-[#d8ae73] [&_.input]:bg-white [&_.textarea]:border [&_.textarea]:border-[#d8ae73] [&_.textarea]:bg-white [&_.select]:border [&_.select]:border-[#d8ae73] [&_.select]:bg-white [&_.file-input]:border [&_.file-input]:border-[#d8ae73] [&_.file-input]:bg-white [&_.btn]:border [&_.btn]:border-[#b88333] [&_.btn-outline]:text-[#6f4716] [&_.alert]:border [&_.alert]:border-[#d8ae73] [&_.alert]:bg-white [&_.alert-error]:text-[#a13535] [&_.alert-info]:text-[#5b4428]';
+  '[&_.input]:border [&_.input]:border-[#d8ae73] [&_.input]:bg-white [&_.textarea]:border [&_.textarea]:border-[#d8ae73] [&_.textarea]:bg-white [&_.select]:border [&_.select]:border-[#d8ae73] [&_.select]:bg-white [&_.file-input]:border [&_.file-input]:border-[#d8ae73] [&_.file-input]:bg-white [&_.input:focus-within]:!outline-2 [&_.input:focus-within]:!outline-[#b88333] [&_.input:focus-within]:!outline-offset-[-2px] [&_.textarea:focus-within]:!outline-2 [&_.textarea:focus-within]:!outline-[#b88333] [&_.textarea:focus-within]:!outline-offset-[-2px] [&_.select:focus-within]:!outline-2 [&_.select:focus-within]:!outline-[#b88333] [&_.select:focus-within]:!outline-offset-[-2px] [&_.file-input:focus-within]:!outline-2 [&_.file-input:focus-within]:!outline-[#b88333] [&_.file-input:focus-within]:!outline-offset-[-2px] [&_button:focus-visible]:outline-2 [&_button:focus-visible]:outline-offset-2 [&_button:focus-visible]:outline-[#b88333] [&_a:focus-visible]:outline-2 [&_a:focus-visible]:outline-offset-2 [&_a:focus-visible]:outline-[#b88333] [&_.btn]:border [&_.btn]:border-[#b88333] [&_.btn-outline]:text-[#6f4716] [&_.alert]:border [&_.alert]:border-[#d8ae73] [&_.alert]:bg-white [&_.alert-error]:text-[#a13535] [&_.alert-info]:text-[#5b4428]';
 ---
 
 <!doctype html>
@@ -72,6 +73,7 @@ const lightFields =
     ]}
   >
     <slot />
+    <Toast />
     <Motion />
     <script>
       if ('serviceWorker' in navigator) {

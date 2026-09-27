@@ -1,6 +1,8 @@
 ---
 import Base from '@frontend/components/Base.astro';
 import Brand from '@frontend/components/Brand.astro';
+import MobileNavigation from '@frontend/components/MobileNavigation.astro';
+import AccountMenu from '@frontend/components/AccountMenu.astro';
 import { getPublicPrices } from '@frontend/api/billing/public-prices';
 import { getRootDomain } from '@frontend/api/config/root-domain';
 import { userHasAccess } from '@frontend/api/sites/has-access';
@@ -24,8 +26,6 @@ const priceText = (plan: string) => {
 const t = en
   ? {
       dashboard: 'Your space',
-      signout: 'End session',
-      backToSite: 'Back to site',
       trial: 'Free trial',
       active: 'Active',
       expired: 'Access expired',
@@ -94,8 +94,6 @@ const t = en
     }
   : {
       dashboard: 'Seu espaço',
-      signout: 'Encerrar sessão',
-      backToSite: 'Voltar ao site',
       trial: 'Teste grátis',
       active: 'Ativo',
       expired: 'Acesso expirado',
@@ -174,19 +172,16 @@ const trialDays = Math.max(0, Math.ceil((user.trial_ends_at * 1000 - Date.now())
   manifest="/app/manifest.webmanifest"
 >
   <div class="min-h-screen bg-white text-[#17130d]">
-    <header class="border-b border-[#d8ae73] bg-white">
+    <header class="bg-white">
       <div class="mx-auto flex max-w-[1380px] items-center justify-between gap-5 px-5 py-4 sm:px-8">
         <Brand href="/app" tone="light" />
-        <div class="flex items-center gap-1 sm:gap-3">
-          <a href="/" class="btn btn-ghost btn-xs sm:btn-sm" aria-label={t.backToSite}>
-            <span class="sm:hidden">{en ? 'Back' : 'Voltar'}</span>
-            <span class="hidden sm:inline">{t.backToSite}</span>
-          </a>
-          <button id="logout" class="btn btn-ghost btn-xs sm:btn-sm" aria-label={t.signout}>
-            <span class="sm:hidden">{en ? 'Sign out' : 'Sair'}</span>
-            <span class="hidden sm:inline">{t.signout}</span>
-          </button>
-        </div>
+        <AccountMenu
+          email={user.email ?? (en ? 'Legacy account' : 'Conta antiga')}
+          profileHref="/app#account"
+          profileLabel={en ? 'Account and data' : 'Conta e dados'}
+          homeHref="/"
+          lang={en ? 'en' : 'pt'}
+        />
       </div>
     </header>
     <main class="mx-auto max-w-[1380px] px-5 pb-24 pt-9 sm:px-8">
@@ -213,7 +208,7 @@ const trialDays = Math.max(0, Math.ceil((user.trial_ends_at * 1000 - Date.now())
                 ? t.active
                 : t.expired}
           </p>
-          <span class="badge badge-outline mt-7 h-auto max-w-full border-[#d8ae73] px-3 py-3 text-xs text-[#625a51]">
+          <span class="badge badge-outline mt-7 h-auto max-w-full break-all border-[#d8ae73] px-3 py-3 text-xs text-[#625a51]">
             {user.email ?? 'Conta antiga'}
           </span>
         </div>
@@ -225,8 +220,20 @@ const trialDays = Math.max(0, Math.ceil((user.trial_ends_at * 1000 - Date.now())
             : 'Sua página está suspensa. Escolha um plano para publicá-la novamente.'}
         </div>
       )}
+      <div class="mb-6 sm:hidden">
+        <MobileNavigation
+          label={en ? 'Sections' : 'Seções'}
+          lang={en ? 'en' : 'pt'}
+          links={[
+            { href: '#editor', label: t.content, current: true },
+            { href: '#plan-and-billing', label: t.plans },
+            { href: '#domain-form', label: t.domain },
+            { href: '#account', label: t.account },
+          ]}
+        />
+      </div>
       <nav
-        class="mb-8 flex gap-2 overflow-x-auto border-b border-[#d8ae73] pb-3 text-sm whitespace-nowrap"
+        class="mb-8 hidden gap-2 overflow-x-auto border-b border-[#d8ae73] pb-3 text-sm whitespace-nowrap sm:flex"
         aria-label={en ? 'Dashboard sections' : 'Seções do painel'}
       >
         <a
@@ -269,7 +276,7 @@ const trialDays = Math.max(0, Math.ceil((user.trial_ends_at * 1000 - Date.now())
                 {site.slug}.{domain}
               </a>
             </p>
-            <form id="slug-form" class="flex gap-2 mt-4">
+            <form id="slug-form" class="mt-4 flex flex-col gap-2 sm:flex-row">
               <input
                 class="input input-bordered flex-1"
                 name="slug"
@@ -635,12 +642,6 @@ const trialDays = Math.max(0, Math.ceil((user.trial_ends_at * 1000 - Date.now())
                 {t.publish}
               </button>
             </div>
-            <p
-              id="editor-status"
-              class="alert alert-info my-3 [hidden]:hidden"
-              role="status"
-              hidden
-            ></p>
           </form>
           <section class="card rounded-xl border border-[#d8ae73] bg-white p-6 [&_h2]:mb-4 [&_h2]:text-[1.45rem] [&_h2]:text-[#17130d] [&_h3]:mt-7 [&_h3]:mb-3 [&_h3]:text-lg [&_label]:mt-4 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold [&_.input]:w-full [&_.textarea]:w-full [&_.select]:w-full [&_small]:text-[#625a51] mb-5">
             <h2 id="plan-and-billing">{t.plans}</h2>
@@ -678,7 +679,7 @@ const trialDays = Math.max(0, Math.ceil((user.trial_ends_at * 1000 - Date.now())
           <section class="card rounded-xl border border-[#d8ae73] bg-white p-6 [&_h2]:mb-4 [&_h2]:text-[1.45rem] [&_h2]:text-[#17130d] [&_h3]:mt-7 [&_h3]:mb-3 [&_h3]:text-lg [&_label]:mt-4 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold [&_.input]:w-full [&_.textarea]:w-full [&_.select]:w-full [&_small]:text-[#625a51] mb-5">
             <h2>{t.domain}</h2>
             <p class="text-[#625a51] text-sm">{t.domainHint}</p>
-            <form id="domain-form" class="flex gap-2 mt-4">
+            <form id="domain-form" class="mt-4 flex flex-col gap-2 sm:flex-row">
               <input
                 class="input input-bordered flex-1"
                 name="hostname"
@@ -694,7 +695,10 @@ const trialDays = Math.max(0, Math.ceil((user.trial_ends_at * 1000 - Date.now())
             </p>
             <p id="domain-status" class="alert alert-info my-3 [hidden]:hidden" hidden></p>
           </section>
-          <section class="card rounded-xl border border-[#d8ae73] bg-white p-6 [&_h2]:mb-4 [&_h2]:text-[1.45rem] [&_h2]:text-[#17130d] [&_h3]:mt-7 [&_h3]:mb-3 [&_h3]:text-lg [&_label]:mt-4 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold [&_.input]:w-full [&_.textarea]:w-full [&_.select]:w-full [&_small]:text-[#625a51] mb-5">
+          <section
+            id="account"
+            class="card rounded-xl border border-[#d8ae73] bg-white p-6 [&_h2]:mb-4 [&_h2]:text-[1.45rem] [&_h2]:text-[#17130d] [&_h3]:mt-7 [&_h3]:mb-3 [&_h3]:text-lg [&_label]:mt-4 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold [&_.input]:w-full [&_.textarea]:w-full [&_.select]:w-full [&_small]:text-[#625a51] mb-5"
+          >
             <h2>{t.account}</h2>
             <div class="mt-5 flex flex-wrap gap-2.5">
               <a id="export-data" class="btn btn-outline" href="#export">
@@ -760,9 +764,8 @@ const trialDays = Math.max(0, Math.ceil((user.trial_ends_at * 1000 - Date.now())
     import { deleteAccount } from '@frontend/api/accounts/delete';
     import { exportAccount } from '@frontend/api/accounts/export';
     import { getMetrics } from '@frontend/api/analytics/metrics';
-    import { logout } from '@frontend/api/auth/logout';
+    import { reportError } from '@frontend/components/toast';
     const form = document.querySelector<HTMLFormElement>('#editor')!;
-    const status = document.querySelector<HTMLElement>('#editor-status')!;
     const input = (scope: ParentNode, name: string) =>
       (
         scope.querySelector<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(
@@ -770,13 +773,6 @@ const trialDays = Math.max(0, Math.ceil((user.trial_ends_at * 1000 - Date.now())
         )?.value || ''
       ).trim();
     const list = (name: string) => [...form.querySelectorAll<HTMLElement>(`[data-item="${name}"]`)];
-    function show(text: string, error = false) {
-      status.hidden = false;
-      status.textContent = text;
-      status.classList.toggle('alert-error', error);
-      status.classList.toggle('alert-success', !error);
-      status.classList.toggle('alert-info', false);
-    }
     async function upload(file: File) {
       const body = new FormData();
       body.set('file', file);
@@ -902,23 +898,17 @@ const trialDays = Math.max(0, Math.ceil((user.trial_ends_at * 1000 - Date.now())
       event.preventDefault();
       try {
         await save();
-        show(document.documentElement.lang === 'en' ? 'Draft saved.' : 'Rascunho salvo.');
       } catch (error) {
-        show(error instanceof Error ? error.message : 'Falha ao salvar', true);
+        reportError(error, 'Falha ao salvar');
       }
     });
     document.querySelector('#publish')?.addEventListener('click', async () => {
       try {
         await save();
         await publishSite();
-        show(document.documentElement.lang === 'en' ? 'Published.' : 'Publicado.');
       } catch (error) {
-        show(error instanceof Error ? error.message : 'Falha ao publicar', true);
+        reportError(error, 'Falha ao publicar');
       }
-    });
-    document.querySelector('#logout')?.addEventListener('click', async () => {
-      await logout();
-      location.href = '/';
     });
     document.querySelector('#desktop-preview')?.addEventListener('click', () => {
       document
@@ -969,7 +959,7 @@ const trialDays = Math.max(0, Math.ceil((user.trial_ends_at * 1000 - Date.now())
             result.url,
           ).host;
         } catch (error) {
-          show(error instanceof Error ? error.message : 'Falha ao alterar endereço', true);
+          reportError(error, 'Falha ao alterar endereço');
         }
       });
     document
@@ -985,9 +975,7 @@ const trialDays = Math.max(0, Math.ceil((user.trial_ends_at * 1000 - Date.now())
           target.classList.remove('alert-error');
           target.classList.add('alert-success');
         } catch (error) {
-          target.textContent = error instanceof Error ? error.message : 'Falha ao conectar domínio';
-          target.classList.remove('alert-info', 'alert-success');
-          target.classList.add('alert-error');
+          reportError(error, 'Falha ao conectar domínio');
         }
       });
     const currencySelect = document.querySelector<HTMLSelectElement>('#currency')!;
@@ -1013,7 +1001,7 @@ const trialDays = Math.max(0, Math.ceil((user.trial_ends_at * 1000 - Date.now())
           );
           location.href = result.url;
         } catch (error) {
-          show(error instanceof Error ? error.message : 'Falha ao iniciar compra', true);
+          reportError(error, 'Falha ao iniciar compra');
         }
       }),
     );
@@ -1022,7 +1010,7 @@ const trialDays = Math.max(0, Math.ceil((user.trial_ends_at * 1000 - Date.now())
         const result = await billingPortal();
         location.href = result.url;
       } catch (error) {
-        show(error instanceof Error ? error.message : 'Falha ao abrir cobrança', true);
+        reportError(error, 'Falha ao abrir cobrança');
       }
     });
     document
@@ -1040,7 +1028,7 @@ const trialDays = Math.max(0, Math.ceil((user.trial_ends_at * 1000 - Date.now())
           await deleteAccount(email);
           location.href = '/';
         } catch (error) {
-          show(error instanceof Error ? error.message : 'Falha ao excluir a conta', true);
+          reportError(error, 'Falha ao excluir a conta');
         }
       });
     const metrics = getMetrics();
@@ -1071,7 +1059,7 @@ const trialDays = Math.max(0, Math.ceil((user.trial_ends_at * 1000 - Date.now())
           link.click();
           setTimeout(() => URL.revokeObjectURL(url), 1000);
         } catch (error) {
-          show(error instanceof Error ? error.message : 'Falha ao baixar dados', true);
+          reportError(error, 'Falha ao baixar dados');
         }
       });
   </script>

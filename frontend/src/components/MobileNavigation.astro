@@ -1,0 +1,74 @@
+---
+interface Props {
+  label: string;
+  links: { href: string; label: string; current?: boolean }[];
+  iconOnly?: boolean;
+  lang?: 'pt' | 'en';
+}
+
+const { label, links, iconOnly = false, lang = 'pt' } = Astro.props;
+const closeLabel = lang === 'en' ? 'Close menu' : 'Fechar menu';
+---
+
+<div data-mobile-navigation>
+  <button
+    class:list={[
+      'btn btn-ghost border border-[#d8ae73] bg-white text-[#6f4716]',
+      iconOnly ? 'btn-circle btn-sm' : 'btn-sm rounded-full px-4',
+    ]}
+    type="button"
+    data-open-navigation
+    aria-label={lang === 'en' ? `Open ${label.toLowerCase()}` : `Abrir ${label.toLowerCase()}`}
+  >
+    <span aria-hidden={iconOnly ? 'true' : undefined}>{iconOnly ? '☰' : label}</span>
+  </button>
+  <dialog class="modal modal-bottom" data-navigation-dialog aria-label={label}>
+    <div class="modal-box max-h-[78dvh] w-full max-w-none rounded-t-[2rem] border-t border-[#d8ae73] bg-white px-5 pt-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] text-[#17130d]">
+      <div class="mb-5 flex items-center justify-between gap-4">
+        <h2 class="font-[Outfit] text-xl font-medium">{label}</h2>
+        <button
+          class="btn btn-ghost btn-circle btn-sm"
+          type="button"
+          data-close-navigation
+          aria-label={closeLabel}
+        >
+          ×
+        </button>
+      </div>
+      <nav aria-label={label}>
+        <ul class="menu w-full gap-1 p-0 text-base">
+          {links.map((link) => (
+            <li>
+              <a
+                href={link.href}
+                aria-current={link.current ? 'page' : undefined}
+                class:list={[
+                  'min-h-12 rounded-xl px-4',
+                  link.current ? 'bg-[#fff4df] font-semibold text-[#6f4716]' : 'text-[#17130d]',
+                ]}
+              >
+                {link.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </div>
+    <form method="dialog" class="modal-backdrop">
+      <button aria-label={closeLabel}></button>
+    </form>
+  </dialog>
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-mobile-navigation]').forEach((root) => {
+    const dialog = root.querySelector<HTMLDialogElement>('[data-navigation-dialog]')!;
+    root
+      .querySelector('[data-open-navigation]')
+      ?.addEventListener('click', () => dialog.showModal());
+    root.querySelector('[data-close-navigation]')?.addEventListener('click', () => dialog.close());
+    root
+      .querySelectorAll<HTMLAnchorElement>('a')
+      .forEach((link) => link.addEventListener('click', () => dialog.close()));
+  });
+</script>

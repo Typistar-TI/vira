@@ -45,7 +45,7 @@ const palette =
 ---
 
 <div
-  class="min-h-screen bg-[var(--bg)] text-[var(--fg)] font-[Outfit,sans-serif]"
+  class="min-h-screen break-words bg-[var(--bg)] text-[var(--fg)] font-[Outfit,sans-serif]"
   style={`--bg:${content.backgroundColor};--fg:${content.textColor};--accent:${content.accentColor};--surface:${palette.surface};--soft:${palette.soft};--line:${palette.line}`}
 >
   <header class="mx-auto flex max-w-[1180px] items-center justify-between gap-4 px-5 py-6 max-[420px]:p-[18px] [&_a]:text-[var(--fg)] [&_a]:no-underline [&_nav]:flex [&_nav]:items-center [&_nav]:gap-6">
@@ -132,7 +132,7 @@ const palette =
     {(content.about || content.benefits.length > 0) && (
       <section
         id="sobre"
-        class="mx-auto max-w-[1180px] px-6 py-16 md:py-[90px] grid gap-[10%] md:grid-cols-2 [&_p]:text-lg [&_p]:leading-relaxed [&_p]:opacity-80"
+        class="mx-auto grid max-w-[1180px] gap-10 px-6 py-16 md:grid-cols-2 md:gap-[10%] md:py-[90px] [&_p]:text-lg [&_p]:leading-relaxed [&_p]:opacity-80"
       >
         <div>
           <span class="text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--accent)]">
@@ -238,7 +238,7 @@ const palette =
       </section>
     )}
   </main>
-  <footer class="mx-auto flex max-w-[1180px] justify-between border-t border-[var(--line)] px-6 py-8">
+  <footer class="mx-auto flex max-w-[1180px] flex-col items-center justify-between gap-2 border-t border-[var(--line)] px-6 py-8 text-center sm:flex-row sm:text-left">
     <span>{content.footerText || content.title}</span>
     <span>© {new Date().getFullYear()}</span>
   </footer>

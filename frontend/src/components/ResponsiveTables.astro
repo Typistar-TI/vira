@@ -1,0 +1,15 @@
+<script>
+  document.querySelectorAll<HTMLElement>('[data-mobile-stack]').forEach((container) => {
+    container.querySelectorAll<HTMLTableElement>('table').forEach((table) => {
+      const headings = [...table.querySelectorAll('thead th')].map(
+        (heading) => heading.textContent?.trim() || '',
+      );
+      table.querySelectorAll('tbody tr').forEach((row) => {
+        [...row.children].forEach((cell, index) => {
+          if (cell instanceof HTMLTableCellElement && !cell.hasAttribute('colspan'))
+            cell.dataset.label = headings[index] || '';
+        });
+      });
+    });
+  });
+</script>

@@ -1,6 +1,7 @@
 ---
 import Brand from '@frontend/components/Brand.astro';
 import AccountMenu from '@frontend/components/AccountMenu.astro';
+import MobileNavigation from '@frontend/components/MobileNavigation.astro';
 
 interface Props {
   section: string;
@@ -23,7 +24,7 @@ const navigation = [
   <div class="mx-auto flex max-w-[1380px] flex-wrap items-center justify-between gap-3 px-5 py-4 sm:px-8">
     <Brand href="/admin" tone="light" />
     <nav
-      class="order-3 flex w-full items-center gap-1 overflow-x-auto rounded-full border border-[#d8ae73] bg-white/95 px-3 py-2 text-sm text-[#605448] shadow-[0_8px_30px_-22px_rgba(131,85,21,0.35)] [view-transition-name:admin-navigation] xl:order-none xl:w-auto"
+      class="hidden items-center gap-1 overflow-x-auto rounded-full border border-[#d8ae73] bg-white/95 px-3 py-2 text-sm text-[#605448] shadow-[0_8px_30px_-22px_rgba(131,85,21,0.35)] [view-transition-name:admin-navigation] xl:flex"
       aria-label="Navegação administrativa"
     >
       {navigation.map((item) => (
@@ -44,11 +45,23 @@ const navigation = [
         </a>
       ))}
     </nav>
-    <AccountMenu
-      email={admin.email}
-      displayName={admin.displayName}
-      profileHref="/admin/conta"
-      homeHref="/"
-    />
+    <div class="ml-auto flex items-center gap-2 xl:ml-0">
+      <div class="xl:hidden">
+        <MobileNavigation
+          label="Seções"
+          links={navigation.map((item) => ({
+            href: item.href,
+            label: item.label,
+            current: section === item.key,
+          }))}
+        />
+      </div>
+      <AccountMenu
+        email={admin.email}
+        displayName={admin.displayName}
+        profileHref="/admin/conta"
+        homeHref="/"
+      />
+    </div>
   </div>
 </header>

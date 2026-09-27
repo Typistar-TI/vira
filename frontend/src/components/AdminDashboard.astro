@@ -2,6 +2,7 @@
 import Base from '@frontend/components/Base.astro';
 import AdminHeader from '@frontend/components/AdminHeader.astro';
 import AdminTransitions from '@frontend/components/AdminTransitions.astro';
+import ResponsiveTables from '@frontend/components/ResponsiveTables.astro';
 import { adminDashboard } from '@frontend/api/admin/dashboard';
 
 const { url, admin, section = 'visao' } = Astro.props;
@@ -99,7 +100,10 @@ const deliveryStatus: Record<string, string> = {
   <AdminTransitions slot="head" />
   <div class="min-h-screen bg-white text-[#17130d]">
     <AdminHeader section={section} admin={admin} />
-    <main class="mx-auto min-w-0 max-w-[1380px] px-5 pt-8 pb-24 sm:px-8 [&_table]:text-sm [&_thead]:bg-[#fff9ef] [&_th]:font-semibold [&_th]:text-[#6f4716] [&_tbody_tr]:border-[#ead8bd] [&_tbody_tr:hover]:bg-[#fffaf2]">
+    <main
+      data-mobile-stack
+      class="mx-auto min-w-0 max-w-[1380px] px-5 pt-8 pb-24 sm:px-8 [&_code]:break-all [&_table]:text-sm [&_thead]:bg-[#fff9ef] [&_th]:font-semibold [&_th]:text-[#6f4716] [&_tbody_tr]:border-[#ead8bd] [&_tbody_tr:hover]:bg-[#fffaf2] max-sm:[&_table]:block max-sm:[&_table]:min-w-0 max-sm:[&_thead]:hidden max-sm:[&_tbody]:block max-sm:[&_tbody_tr]:block max-sm:[&_tbody_tr]:w-full max-sm:[&_tbody_tr]:border-b max-sm:[&_tbody_tr]:py-3 max-sm:[&_tbody_tr.hidden]:!hidden max-sm:[&_td]:block max-sm:[&_td]:min-w-0 max-sm:[&_td]:w-full max-sm:[&_td]:whitespace-normal max-sm:[&_td]:px-2 max-sm:[&_td]:py-2 max-sm:[&_td]:before:mb-1 max-sm:[&_td]:before:block max-sm:[&_td]:before:text-xs max-sm:[&_td]:before:font-semibold max-sm:[&_td]:before:text-[#8b5b1e] max-sm:[&_td]:before:content-[attr(data-label)] max-sm:[&_td_input]:min-w-0 max-sm:[&_td_input]:w-full max-sm:[&_td_input.checkbox]:!w-6 max-sm:[&_td_input.checkbox]:!min-w-6 max-sm:[&_td_textarea]:w-full"
+    >
       {section === 'visao' && (
         <h1 class="mb-8 font-[Outfit] text-[clamp(2rem,4vw,3rem)] font-medium leading-none tracking-[-0.04em] text-[#17130d]">
           Bem-vindo
@@ -254,12 +258,6 @@ const deliveryStatus: Record<string, string> = {
                           data-currency={row.currency}
                         >
                           {planName[row.plan]}
-                          <p
-                            class="mt-1 text-xs text-[#6f4716] [hidden]:hidden"
-                            data-api-status
-                            role="status"
-                            hidden
-                          ></p>
                         </form>
                       </td>
                       <td>
@@ -297,7 +295,7 @@ const deliveryStatus: Record<string, string> = {
                       </td>
                       <td>
                         <input
-                          class="checkbox checkbox-primary"
+                          class="checkbox checkbox-primary border border-[#b88333]"
                           form={formId}
                           aria-label={`Disponibilizar ${planName[row.plan]} em ${row.currency.toUpperCase()}`}
                           name="active"
@@ -360,12 +358,6 @@ const deliveryStatus: Record<string, string> = {
                             data-api-setting-form
                           >
                             <label for={`setting-${key}`}>{labels[key]}</label>
-                            <p
-                              class="mt-1 text-xs text-[#6f4716] [hidden]:hidden"
-                              data-api-status
-                              role="status"
-                              hidden
-                            ></p>
                           </form>
                         </td>
                         <td>
@@ -483,7 +475,7 @@ const deliveryStatus: Record<string, string> = {
                           </p>
                           <label class="mt-5 flex items-center gap-2 text-sm font-semibold text-[#17130d]">
                             <input
-                              class="checkbox checkbox-primary"
+                              class="checkbox checkbox-primary border border-[#b88333]"
                               name="enabled"
                               type="checkbox"
                               checked={Boolean(row.enabled)}
@@ -530,12 +522,6 @@ const deliveryStatus: Record<string, string> = {
                             <button class="btn btn-outline" type="button" data-email-preview-button>
                               Ver prévia
                             </button>
-                            <p
-                              class="text-sm text-[#6f4716] [hidden]:hidden"
-                              data-api-status
-                              role="status"
-                              hidden
-                            ></p>
                           </div>
                           <div
                             class="mt-5 hidden border border-[#d8ae73] bg-white p-3"
@@ -754,17 +740,12 @@ const deliveryStatus: Record<string, string> = {
       )}
     </main>
   </div>
+  <ResponsiveTables />
   <script>
     import { updateSetting } from '@frontend/api/admin/update-setting';
     import { updatePrice } from '@frontend/api/admin/update-price';
     import { updateEmailTemplate } from '@frontend/api/admin/update-email-template';
-    const show = (form: HTMLFormElement, message: string, error = false) => {
-      const node = form.querySelector<HTMLElement>('[data-api-status]')!;
-      node.textContent = message;
-      node.hidden = false;
-      node.classList.toggle('text-error', error);
-      node.classList.toggle('text-[#6f4716]', !error);
-    };
+    import { reportError } from '@frontend/components/toast';
     document.querySelectorAll<HTMLFormElement>('[data-api-setting-form]').forEach((form) =>
       form.addEventListener('submit', async (event) => {
         event.preventDefault();
@@ -779,9 +760,8 @@ const deliveryStatus: Record<string, string> = {
           const badge = form.closest('tr')!.querySelector<HTMLElement>('[data-api-config-state]')!;
           badge.className = 'badge badge-sm badge-outline border-[#d8ae73] text-[#6f4716]';
           badge.textContent = 'Configurado';
-          show(form, 'Salvo.');
         } catch (error) {
-          show(form, error instanceof Error ? error.message : 'Falha ao salvar', true);
+          reportError(error, 'Falha ao salvar');
         } finally {
           button.disabled = false;
         }
@@ -807,9 +787,8 @@ const deliveryStatus: Record<string, string> = {
             active: (form.elements.namedItem('active') as HTMLInputElement).checked,
           };
           await updatePrice(body);
-          show(form, 'Preço salvo.');
         } catch (error) {
-          show(form, error instanceof Error ? error.message : 'Falha ao salvar', true);
+          reportError(error, 'Falha ao salvar');
         } finally {
           button.disabled = false;
         }
@@ -885,9 +864,8 @@ const deliveryStatus: Record<string, string> = {
             subject.textContent = form.querySelector<HTMLInputElement>('[name=subject]')!.value;
             subject.title = subject.textContent;
           }
-          show(form, 'Modelo salvo.');
         } catch (error) {
-          show(form, error instanceof Error ? error.message : 'Falha ao salvar', true);
+          reportError(error, 'Falha ao salvar');
         } finally {
           button.disabled = false;
         }

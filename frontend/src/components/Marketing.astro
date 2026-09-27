@@ -2,6 +2,7 @@
 import Base from '@frontend/components/Base.astro';
 import Brand from '@frontend/components/Brand.astro';
 import Walkthrough from '@frontend/components/Walkthrough.astro';
+import MobileNavigation from '@frontend/components/MobileNavigation.astro';
 import { getPublicPrices, type Plan } from '@frontend/api/billing/public-prices';
 import { getRootDomain } from '@frontend/api/config/root-domain';
 import { sessionAdmin } from '@frontend/api/auth/session-admin';
@@ -153,13 +154,31 @@ const t = en
           {en ? 'Plans' : 'Planos'}
         </a>
       </nav>
+      <div class="ml-auto md:hidden">
+        <MobileNavigation
+          label={en ? 'Navigation' : 'Navegação'}
+          lang={en ? 'en' : 'pt'}
+          iconOnly
+          links={[
+            { href: '#como-funciona', label: en ? 'How it works' : 'Como funciona' },
+            { href: '#planos', label: en ? 'Plans' : 'Planos' },
+          ]}
+        />
+      </div>
       <div class="flex items-center gap-2 sm:gap-4">
         <a
           href={dashboardHref}
-          class="btn btn-sm rounded-full border border-[#b88333] bg-white px-5 font-semibold text-[#6f4716] shadow-none transition-colors hover:border-[#9b6823] hover:bg-[#fff9ef] sm:btn-md"
+          class="btn btn-sm rounded-full border border-[#b88333] bg-white px-3 font-semibold text-[#6f4716] shadow-none transition-colors hover:border-[#9b6823] hover:bg-[#fff9ef] sm:btn-md sm:px-5"
         >
-          {signedIn ? (en ? 'Open dashboard' : 'Abrir painel') : t.nav}
-          <span aria-hidden="true">↗</span>
+          <span class="sm:hidden">
+            {signedIn ? (en ? 'Dashboard' : 'Painel') : en ? 'Start' : 'Começar'}
+          </span>
+          <span class="hidden sm:inline">
+            {signedIn ? (en ? 'Open dashboard' : 'Abrir painel') : t.nav}
+          </span>
+          <span class="hidden sm:inline" aria-hidden="true">
+            ↗
+          </span>
         </a>
       </div>
     </header>
@@ -306,18 +325,18 @@ const t = en
       </section>
     </main>
     <footer class="border-t border-[#d8ae73] bg-white">
-      <div class="mx-auto flex max-w-[1380px] flex-col gap-10 px-5 py-12 sm:px-8 md:flex-row md:items-end md:justify-between">
-        <div>
+      <div class="mx-auto flex max-w-[1380px] flex-col items-center gap-8 px-5 py-12 text-center sm:px-8 md:flex-row md:items-end md:justify-between md:text-left">
+        <div class="flex flex-col items-center md:items-start">
           <Brand href={signedIn ? dashboardHref : en ? '/en' : '/'} tone="light" />
           <p class="mt-5 max-w-[30ch] text-sm leading-relaxed text-[#625a51]">{t.footer}</p>
         </div>
-        <div class="flex flex-wrap gap-6 text-sm text-[#625a51]">
+        <div class="flex flex-wrap justify-center gap-6 text-sm text-[#625a51] md:justify-start">
           <a class="hover:text-[#9b6823]" href={en ? '/en/privacy' : '/privacidade'}>
             {en ? 'Privacy' : 'Privacidade'}
           </a>
         </div>
       </div>
-      <div class="mx-auto flex max-w-[1380px] justify-between border-t border-[#d8ae73] px-5 py-5 font-mono text-[10px] uppercase tracking-[0.14em] text-[#766e63] sm:px-8">
+      <div class="mx-auto flex max-w-[1380px] flex-col items-center justify-between gap-2 border-t border-[#d8ae73] px-5 py-5 text-center font-mono text-[10px] uppercase tracking-[0.14em] text-[#766e63] sm:px-8 md:flex-row md:text-left">
         <span>© {new Date().getFullYear()} Vira</span>
         <span>vira.ia.br</span>
       </div>

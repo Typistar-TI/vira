@@ -1,0 +1,46 @@
+<div
+  id="vira-toasts"
+  class="toast toast-center toast-bottom pointer-events-none z-[100] w-[90vw] max-w-[34rem] pb-[max(1rem,env(safe-area-inset-bottom))]"
+  aria-live="polite"
+  aria-atomic="false"
+></div>
+
+<script>
+  document.addEventListener('vira:toast', (event) => {
+    const { message, kind } = (event as CustomEvent<{ message: string; kind: string }>).detail;
+    if (!message) return;
+    const container = document.querySelector<HTMLElement>('#vira-toasts');
+    if (!container) return;
+    while (container.children.length >= 3) container.firstElementChild?.remove();
+    const toast = document.createElement('div');
+    toast.className = [
+      'alert',
+      'pointer-events-auto',
+      'w-full',
+      'rounded-2xl',
+      'border',
+      'px-4',
+      'py-3',
+      'text-sm',
+      'shadow-[0_18px_45px_-18px_rgba(32,23,10,0.32)]',
+      kind === 'error'
+        ? 'border-[#b73535] bg-[#fff4f3] text-[#812929]'
+        : kind === 'success'
+          ? 'border-[#b88333] bg-[#fff9ef] text-[#6f4716]'
+          : 'border-[#d8ae73] bg-white text-[#5b4428]',
+    ].join(' ');
+    toast.setAttribute('role', kind === 'error' ? 'alert' : 'status');
+    const text = document.createElement('span');
+    text.className = 'min-w-0 flex-1';
+    text.textContent = message;
+    const close = document.createElement('button');
+    close.type = 'button';
+    close.className = 'btn btn-ghost btn-xs btn-circle shrink-0';
+    close.setAttribute('aria-label', 'Fechar aviso');
+    close.textContent = '×';
+    close.addEventListener('click', () => toast.remove());
+    toast.append(text, close);
+    container.append(toast);
+    window.setTimeout(() => toast.remove(), kind === 'error' ? 7000 : 4500);
+  });
+</script>
