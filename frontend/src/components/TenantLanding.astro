@@ -14,7 +14,7 @@ const canonical = `https://${url.hostname}/`;
 ---
 
 {!active ? (
-  <Base title="Página temporariamente indisponível · Vira" noindex>
+  <Base title="Página temporariamente indisponível · Vira" noindex manifest="/manifest.webmanifest">
     <main class="min-h-screen grid place-items-center p-8 text-center">
       <div>
         <h1 class="text-4xl">Página temporariamente indisponível</h1>
@@ -23,7 +23,7 @@ const canonical = `https://${url.hostname}/`;
     </main>
   </Base>
 ) : !content ? (
-  <Base title="Página em preparação · Vira" noindex>
+  <Base title="Página em preparação · Vira" noindex manifest="/manifest.webmanifest">
     <main class="min-h-screen grid place-items-center p-8 text-center">
       <div>
         <h1 class="text-4xl">Página em preparação</h1>
@@ -37,6 +37,10 @@ const canonical = `https://${url.hostname}/`;
     description={content.subtitle}
     lang={content.language}
     noindex={Boolean(tenant.site.auto_published)}
+    favicon={content.favicon || content.pwaIcon192 || '/favicon.png'}
+    touchIcon={content.pwaIcon192 || '/pwa-icon-192.png'}
+    themeColor={content.themeColor}
+    pageBackground={content.backgroundColor}
   >
     <link slot="head" rel="canonical" href={canonical} />
     <meta slot="head" property="og:title" content={content.title} />

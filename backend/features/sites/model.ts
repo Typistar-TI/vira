@@ -14,8 +14,28 @@ export const siteSchema = z.object({
   layout: z.enum(['pulse', 'editorial', 'showcase']),
   language: z.enum(['pt', 'en']),
   title: text(100),
+  appName: text(50).default(''),
   subtitle: text(300),
   heroImage: imagePath,
+  favicon: imagePath.default(''),
+  pwaIcon192: imagePath.default(''),
+  pwaIcon512: imagePath.default(''),
+  themeColor: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/)
+    .default('#ffffff'),
+  backgroundColor: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/)
+    .default('#f9f7fc'),
+  textColor: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/)
+    .default('#30243c'),
+  accentColor: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/)
+    .default('#684395'),
   primaryLabel: text(40),
   primaryUrl: url,
   aboutTitle: text(80),
@@ -35,8 +55,16 @@ export const defaultSite: SiteContent = {
   layout: 'pulse',
   language: 'pt',
   title: 'Este espaço está no ar.',
+  appName: '',
   subtitle: 'Uma nova página está sendo preparada. Volte em breve para conhecer as novidades.',
   heroImage: '',
+  favicon: '',
+  pwaIcon192: '',
+  pwaIcon512: '',
+  themeColor: '#ffffff',
+  backgroundColor: '#f9f7fc',
+  textColor: '#30243c',
+  accentColor: '#684395',
   primaryLabel: '',
   primaryUrl: '',
   aboutTitle: '',
@@ -60,7 +88,25 @@ export function initialSite(language: 'pt' | 'en'): SiteContent {
 }
 
 export function parseSite(value: unknown): SiteContent {
-  return siteSchema.parse(value);
+  const content = siteSchema.parse(value);
+  const original =
+    typeof value === 'object' && value !== null ? (value as Record<string, unknown>) : {};
+  if (
+    original.backgroundColor === undefined ||
+    original.textColor === undefined ||
+    original.accentColor === undefined
+  ) {
+    const colors =
+      content.layout === 'editorial'
+        ? { backgroundColor: '#f6f5f0', textColor: '#243942', accentColor: '#1e7778' }
+        : content.layout === 'showcase'
+          ? { backgroundColor: '#121b27', textColor: '#f6f4f0', accentColor: '#f3a77d' }
+          : { backgroundColor: '#f9f7fc', textColor: '#30243c', accentColor: '#684395' };
+    if (original.backgroundColor === undefined) content.backgroundColor = colors.backgroundColor;
+    if (original.textColor === undefined) content.textColor = colors.textColor;
+    if (original.accentColor === undefined) content.accentColor = colors.accentColor;
+  }
+  return content;
 }
 
 export function hasAccess(user: {

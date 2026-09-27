@@ -7,8 +7,24 @@ interface Props {
   lang?: 'pt' | 'en';
   noindex?: boolean;
   appearance?: 'dark' | 'light';
+  manifest?: string;
+  favicon?: string;
+  touchIcon?: string;
+  themeColor?: string;
+  pageBackground?: string;
 }
-const { title, description = '', lang = 'pt', noindex = false, appearance = 'dark' } = Astro.props;
+const {
+  title,
+  description = '',
+  lang = 'pt',
+  noindex = false,
+  appearance = 'dark',
+  manifest = '/manifest.webmanifest',
+  favicon = '/favicon.png',
+  touchIcon = '/pwa-icon-192.png',
+  themeColor = appearance === 'light' ? '#ffffff' : '#050505',
+  pageBackground,
+} = Astro.props;
 const motionClasses =
   "font-['Outfit',sans-serif] antialiased selection:bg-[#d6a85f] selection:text-black [&_.btn]:transition-[transform,background-color,border-color,box-shadow,opacity] [&_.btn]:duration-300 [&_.btn]:ease-out [&_.btn:active]:scale-[0.97] [&_a]:transition-colors [&_a]:duration-300 [&_button]:transition-[transform,background-color,border-color,box-shadow,opacity] [&_button]:duration-300 [&_button:active]:scale-[0.97] [&_.input]:transition-[border-color,box-shadow] [&_.input]:duration-300 [&_.textarea]:transition-[border-color,box-shadow] [&_.textarea]:duration-300 [&_.select]:transition-[border-color,box-shadow] [&_.select]:duration-300 motion-reduce:[&_*]:!transition-none";
 const darkFields =
@@ -28,7 +44,9 @@ const lightFields =
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content={appearance === 'light' ? '#ffffff' : '#050505'} />
+    <meta name="theme-color" content={themeColor} />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -38,10 +56,13 @@ const lightFields =
     {noindex && <meta name="robots" content="noindex,nofollow" />}
     {description && <meta name="description" content={description} />}
     <title>{title}</title>
-    <link rel="icon" href="/favicon.png" type="image/png" />
+    <link rel="icon" href={favicon} type="image/png" />
+    <link rel="apple-touch-icon" href={touchIcon} />
+    <link rel="manifest" href={manifest} />
     <slot name="head" />
   </head>
   <body
+    style={pageBackground ? `background-color:${pageBackground}` : undefined}
     data-theme={appearance === 'light' ? 'vira-light' : 'vira'}
     class:list={[
       appearance === 'light' ? 'bg-white text-[#17130d]' : 'bg-black text-[#f5f2ec]',
@@ -52,5 +73,12 @@ const lightFields =
   >
     <slot />
     <Motion />
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(() => {});
+        });
+      }
+    </script>
   </body>
 </html>

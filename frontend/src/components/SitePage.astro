@@ -15,17 +15,38 @@ const go = (type: string, index?: number) =>
       : content.products[index || 0]?.url || '#'
     : `/go/${type}${index === undefined ? '' : `/${index}`}`;
 const hasHero = !!content.heroImage;
+const palette =
+  content.layout === 'editorial'
+    ? {
+        bg: '#f6f5f0',
+        fg: '#243942',
+        accent: '#1e7778',
+        surface: '#ffffff',
+        soft: '#dfebe6',
+        line: '#d9e1dc',
+      }
+    : content.layout === 'showcase'
+      ? {
+          bg: '#121b27',
+          fg: '#f6f4f0',
+          accent: '#f3a77d',
+          surface: '#1d2938',
+          soft: '#394353',
+          line: '#3d4955',
+        }
+      : {
+          bg: '#f9f7fc',
+          fg: '#30243c',
+          accent: '#684395',
+          surface: '#ffffff',
+          soft: '#eadff7',
+          line: '#e5dbeb',
+        };
 ---
 
 <div
-  class:list={[
-    'min-h-screen bg-[var(--bg)] text-[var(--fg)] font-[Outfit,sans-serif]',
-    content.layout === 'editorial'
-      ? '[--bg:#f6f5f0] [--surface:#fff] [--fg:#243942] [--accent:#1e7778] [--soft:#dfebe6] [--line:#d9e1dc]'
-      : content.layout === 'showcase'
-        ? '[--bg:#121b27] [--surface:#1d2938] [--fg:#f6f4f0] [--accent:#f3a77d] [--soft:#394353] [--line:#3d4955]'
-        : '[--bg:#f9f7fc] [--surface:#fff] [--fg:#30243c] [--accent:#684395] [--soft:#eadff7] [--line:#e5dbeb]',
-  ]}
+  class="min-h-screen bg-[var(--bg)] text-[var(--fg)] font-[Outfit,sans-serif]"
+  style={`--bg:${content.backgroundColor};--fg:${content.textColor};--accent:${content.accentColor};--surface:${palette.surface};--soft:${palette.soft};--line:${palette.line}`}
 >
   <header class="mx-auto flex max-w-[1180px] items-center justify-between gap-4 px-5 py-6 max-[420px]:p-[18px] [&_a]:text-[var(--fg)] [&_a]:no-underline [&_nav]:flex [&_nav]:items-center [&_nav]:gap-6">
     <a

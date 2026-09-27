@@ -10,6 +10,7 @@ O Vira é uma plataforma para criar e publicar páginas de vendas. O mesmo proje
 - Teste gratuito de sete dias e planos mensal, anual e vitalício.
 - Publicação em subdomínio da plataforma ou em domínio próprio.
 - Upload de imagens, métricas básicas e gerenciamento da conta.
+- Instalação como PWA da plataforma, dos painéis e de cada página pública, inclusive em domínio próprio. Cada cliente pode configurar nome do aplicativo, favicon, ícone e cores do seu site.
 - Painel administrativo separado para acompanhar clientes, domínios e assinaturas e configurar preços, integrações e e-mails automáticos.
 
 ## Tecnologias
@@ -44,6 +45,8 @@ flowchart LR
 ```
 
 O middleware identifica o hostname da requisição e encaminha domínios dos clientes para as rotas públicas. O cadastro cria e publica imediatamente uma página inicial neutra no subdomínio do cliente. Ela fica fora dos mecanismos de busca até o cliente publicar sua primeira edição. Depois disso, o conteúdo editado fica como rascunho no D1; a publicação atualiza uma versão separada para os visitantes. A prévia e a página publicada usam o mesmo componente Astro, para manter o resultado visual consistente.
+
+Os manifests PWA da plataforma, do painel do cliente, do painel administrativo e dos sites publicados têm escopos próprios. Nos sites dos clientes, o manifest usa a versão publicada no domínio em que foi solicitado. Os ícones enviados são convertidos em PNG nos tamanhos necessários e armazenados no R2. O service worker oferece uma mensagem ao ficar sem conexão, sem guardar páginas privadas, APIs ou conteúdo de assinaturas no navegador.
 
 O Worker entrega as requisições `/api/*` ao Hono e as demais ao Astro. As páginas e os componentes Astro acessam o backend apenas por módulos em `frontend/src/api/`, organizados por funcionalidade e chamada. No navegador, esses módulos usam TanStack Query Core para consultas, mutações e cache. Durante a renderização no servidor, os módulos chamam as funções necessárias no mesmo Worker. O backend Hono organiza rotas, regras e consultas por funcionalidade em `backend/features/`.
 

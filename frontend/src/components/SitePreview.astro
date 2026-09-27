@@ -6,6 +6,14 @@ const { site } = Astro.props;
 const content = parseSiteContent(JSON.parse(site.draft_json));
 ---
 
-<Base title={`Prévia — ${content.title}`} lang={content.language} noindex>
+<Base
+  title={`Prévia — ${content.title}`}
+  lang={content.language}
+  noindex
+  manifest="/app/manifest.webmanifest"
+  favicon={content.favicon || '/favicon.png'}
+  themeColor={content.themeColor}
+  pageBackground={content.backgroundColor}
+>
   <SitePage content={content} preview />
 </Base>

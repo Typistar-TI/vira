@@ -79,6 +79,17 @@ const t = en
       deleteAccount: 'Delete account',
       confirmEmail: 'Type your email to confirm',
       privacy: 'Privacy',
+      identity: 'Site identity and app',
+      identityHint:
+        'These changes appear on your public site after you publish. Visitors can install it on their phones.',
+      favicon: 'Browser icon (favicon)',
+      appIcon: 'App icon (PWA)',
+      appName: 'Name shown when installed',
+      iconHint: 'Choose a square PNG, JPG or WebP image. Vira prepares the sizes for phones.',
+      browserColor: 'Browser bar color',
+      pageColor: 'Page background',
+      textColor: 'Text color',
+      accentColor: 'Accent color',
     }
   : {
       dashboard: 'Seu espaço',
@@ -137,11 +148,29 @@ const t = en
       deleteAccount: 'Excluir conta',
       confirmEmail: 'Digite seu e-mail para confirmar',
       privacy: 'Privacidade',
+      identity: 'Identidade do site e aplicativo',
+      identityHint:
+        'As alterações aparecem no site público depois de publicar. Os visitantes poderão instalá-lo no celular.',
+      favicon: 'Ícone do navegador (favicon)',
+      appIcon: 'Ícone do aplicativo (PWA)',
+      appName: 'Nome mostrado após instalar',
+      iconHint:
+        'Escolha uma imagem quadrada PNG, JPG ou WebP. O Vira prepara os tamanhos para celular.',
+      browserColor: 'Cor da barra do navegador',
+      pageColor: 'Fundo da página',
+      textColor: 'Cor do texto',
+      accentColor: 'Cor de destaque',
     };
 const trialDays = Math.max(0, Math.ceil((user.trial_ends_at * 1000 - Date.now()) / 86400000));
 ---
 
-<Base title={`${t.dashboard} · Vira`} lang={en ? 'en' : 'pt'} noindex appearance="light">
+<Base
+  title={`${t.dashboard} · Vira`}
+  lang={en ? 'en' : 'pt'}
+  noindex
+  appearance="light"
+  manifest="/app/manifest.webmanifest"
+>
   <div class="min-h-screen bg-white text-[#17130d]">
     <header class="border-b border-[#d8ae73] bg-white">
       <div class="mx-auto flex max-w-[1380px] items-center justify-between gap-5 px-5 py-4 sm:px-8">
@@ -293,6 +322,101 @@ const trialDays = Math.max(0, Math.ceil((user.trial_ends_at * 1000 - Date.now())
                 English
               </option>
             </select>
+            <h3>{t.identity}</h3>
+            <p class="text-sm text-[#625a51]">{t.identityHint}</p>
+            <div class="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label for="favicon-file">{t.favicon}</label>
+                <input
+                  class="file-input file-input-bordered w-full"
+                  id="favicon-file"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                />
+                <input type="hidden" name="favicon" value={content.favicon} />
+                {content.favicon && (
+                  <img
+                    src={content.favicon}
+                    alt=""
+                    width="48"
+                    height="48"
+                    class="mt-2 rounded-lg border border-[#d8ae73]"
+                  />
+                )}
+              </div>
+              <div>
+                <label for="pwa-icon-file">{t.appIcon}</label>
+                <input
+                  class="file-input file-input-bordered w-full"
+                  id="pwa-icon-file"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                />
+                <input type="hidden" name="pwaIcon192" value={content.pwaIcon192} />
+                <input type="hidden" name="pwaIcon512" value={content.pwaIcon512} />
+                {content.pwaIcon192 && (
+                  <img
+                    src={content.pwaIcon192}
+                    alt=""
+                    width="48"
+                    height="48"
+                    class="mt-2 rounded-lg border border-[#d8ae73]"
+                  />
+                )}
+              </div>
+            </div>
+            <small>{t.iconHint}</small>
+            <label for="appName">{t.appName}</label>
+            <input
+              class="input input-bordered"
+              id="appName"
+              name="appName"
+              maxlength="50"
+              value={content.appName}
+              placeholder={content.title}
+            />
+            <div class="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label for="themeColor">{t.browserColor}</label>
+                <input
+                  class="input input-bordered h-12 p-1"
+                  id="themeColor"
+                  name="themeColor"
+                  type="color"
+                  value={content.themeColor}
+                />
+              </div>
+              <div>
+                <label for="backgroundColor">{t.pageColor}</label>
+                <input
+                  class="input input-bordered h-12 p-1"
+                  id="backgroundColor"
+                  name="backgroundColor"
+                  type="color"
+                  value={content.backgroundColor}
+                />
+              </div>
+              <div>
+                <label for="textColor">{t.textColor}</label>
+                <input
+                  class="input input-bordered h-12 p-1"
+                  id="textColor"
+                  name="textColor"
+                  type="color"
+                  value={content.textColor}
+                />
+              </div>
+              <div>
+                <label for="accentColor">{t.accentColor}</label>
+                <input
+                  class="input input-bordered h-12 p-1"
+                  id="accentColor"
+                  name="accentColor"
+                  type="color"
+                  value={content.accentColor}
+                />
+              </div>
+            </div>
             <label for="title">{t.title}</label>
             <input
               class="input input-bordered"
@@ -652,7 +776,57 @@ const trialDays = Math.max(0, Math.ceil((user.trial_ends_at * 1000 - Date.now())
       const data = await uploadMedia(body);
       return data.url as string;
     }
+    async function iconFile(file: File, size: number): Promise<File> {
+      if (
+        file.size > 5 * 1024 * 1024 ||
+        !['image/png', 'image/jpeg', 'image/webp'].includes(file.type)
+      )
+        throw new Error(
+          document.documentElement.lang === 'en'
+            ? 'Use a PNG, JPG or WebP image up to 5 MB.'
+            : 'Use uma imagem PNG, JPG ou WebP de até 5 MB.',
+        );
+      const bitmap = await createImageBitmap(file);
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = canvas.height = size;
+        const context = canvas.getContext('2d');
+        if (!context) throw new Error('Canvas indisponível');
+        context.fillStyle = input(form, 'backgroundColor');
+        context.fillRect(0, 0, size, size);
+        const scale = Math.min((size * 0.82) / bitmap.width, (size * 0.82) / bitmap.height);
+        const width = bitmap.width * scale;
+        const height = bitmap.height * scale;
+        context.drawImage(bitmap, (size - width) / 2, (size - height) / 2, width, height);
+        const blob = await new Promise<Blob>((resolve, reject) =>
+          canvas.toBlob(
+            (result) => (result ? resolve(result) : reject(new Error('Falha ao preparar ícone'))),
+            'image/png',
+          ),
+        );
+        return new File([blob], `icon-${size}.png`, { type: 'image/png' });
+      } finally {
+        bitmap.close();
+      }
+    }
     async function collect() {
+      const faviconFile = form.querySelector<HTMLInputElement>('#favicon-file')?.files?.[0];
+      let favicon = input(form, 'favicon');
+      if (faviconFile) {
+        favicon = await upload(await iconFile(faviconFile, 64));
+        form.querySelector<HTMLInputElement>('[name="favicon"]')!.value = favicon;
+        form.querySelector<HTMLInputElement>('#favicon-file')!.value = '';
+      }
+      const pwaFile = form.querySelector<HTMLInputElement>('#pwa-icon-file')?.files?.[0];
+      let pwaIcon192 = input(form, 'pwaIcon192');
+      let pwaIcon512 = input(form, 'pwaIcon512');
+      if (pwaFile) {
+        pwaIcon192 = await upload(await iconFile(pwaFile, 192));
+        pwaIcon512 = await upload(await iconFile(pwaFile, 512));
+        form.querySelector<HTMLInputElement>('[name="pwaIcon192"]')!.value = pwaIcon192;
+        form.querySelector<HTMLInputElement>('[name="pwaIcon512"]')!.value = pwaIcon512;
+        form.querySelector<HTMLInputElement>('#pwa-icon-file')!.value = '';
+      }
       const heroFile = form.querySelector<HTMLInputElement>('#hero-file')?.files?.[0];
       let heroImage = input(form, 'heroImage');
       if (heroFile) {
@@ -680,8 +854,16 @@ const trialDays = Math.max(0, Math.ceil((user.trial_ends_at * 1000 - Date.now())
         layout: input(form, 'layout'),
         language: input(form, 'language'),
         title: input(form, 'title'),
+        appName: input(form, 'appName'),
         subtitle: input(form, 'subtitle'),
         heroImage,
+        favicon,
+        pwaIcon192,
+        pwaIcon512,
+        themeColor: input(form, 'themeColor'),
+        backgroundColor: input(form, 'backgroundColor'),
+        textColor: input(form, 'textColor'),
+        accentColor: input(form, 'accentColor'),
         primaryLabel: input(form, 'primaryLabel'),
         primaryUrl: input(form, 'primaryUrl'),
         aboutTitle: input(form, 'aboutTitle'),
