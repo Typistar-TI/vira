@@ -9,6 +9,14 @@ export const onRequest = defineMiddleware(async (context, next) => {
   }
   const host = context.url.hostname.toLowerCase();
   const root = (await getRootDomain()).toLowerCase();
+  if (
+    (host === `www.${root}` || host === `app.${root}`) &&
+    (context.request.method === 'GET' || context.request.method === 'HEAD')
+  ) {
+    const canonical = new URL(context.url);
+    canonical.hostname = root;
+    return context.redirect(canonical.href, 308);
+  }
   let response: Response;
   if (context.url.pathname.startsWith('/tenant') || context.url.pathname.startsWith('/media/')) {
     response = await next();
@@ -45,6 +53,13 @@ export const onRequest = defineMiddleware(async (context, next) => {
   response.headers.set('content-security-policy', "frame-ancestors 'self'");
   if (context.url.protocol === 'https:')
     response.headers.set('strict-transport-security', 'max-age=31536000; includeSubDomains');
+  if (
+    (host === root || host === 'localhost' || host === '127.0.0.1') &&
+    (context.url.pathname === '/' ||
+      context.url.pathname === '/en' ||
+      context.url.pathname === '/en/')
+  )
+    response.headers.set('cache-control', 'private, no-store');
   if (/^\/(app|admin|api|auth|login)(\/|$)/.test(context.url.pathname))
     response.headers.set('cache-control', 'no-store');
   return response;

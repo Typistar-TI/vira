@@ -4,12 +4,20 @@ import Brand from '@frontend/components/Brand.astro';
 import Walkthrough from '@frontend/components/Walkthrough.astro';
 import { getPublicPrices, type Plan } from '@frontend/api/billing/public-prices';
 import { getRootDomain } from '@frontend/api/config/root-domain';
+import { sessionAdmin } from '@frontend/api/auth/session-admin';
+import { sessionUser } from '@frontend/api/auth/session-user';
 interface Props {
   lang: 'pt' | 'en';
 }
 const { lang } = Astro.props;
 const en = lang === 'en';
 const domain = await getRootDomain();
+const dashboardHref = (await sessionAdmin(Astro.request))
+  ? '/admin'
+  : (await sessionUser(Astro.request))
+    ? '/app'
+    : '/login';
+const signedIn = dashboardHref !== '/login';
 const prices = await getPublicPrices();
 const currency = en ? 'usd' : 'brl';
 const displayPrice = (plan: Plan) => {
@@ -147,10 +155,10 @@ const t = en
       </nav>
       <div class="flex items-center gap-2 sm:gap-4">
         <a
-          href="/login"
+          href={dashboardHref}
           class="btn btn-sm rounded-full border border-[#b88333] bg-white px-5 font-semibold text-[#6f4716] shadow-none transition-colors hover:border-[#9b6823] hover:bg-[#fff9ef] sm:btn-md"
         >
-          {t.nav}
+          {signedIn ? (en ? 'Open dashboard' : 'Abrir painel') : t.nav}
           <span aria-hidden="true">↗</span>
         </a>
       </div>
@@ -178,10 +186,10 @@ const t = en
           </p>
           <div class="mt-9 flex flex-wrap items-center gap-4">
             <a
-              href="/login"
+              href={dashboardHref}
               class="btn h-12 rounded-full border border-[#a66f27] bg-[#b88333] px-7 font-semibold text-white shadow-none transition-transform duration-300 hover:-translate-y-0.5 hover:bg-[#9b6823]"
             >
-              {t.cta}
+              {signedIn ? (en ? 'Go to dashboard' : 'Ir para o painel') : t.cta}
               <span aria-hidden="true">↗</span>
             </a>
             <a
@@ -275,7 +283,13 @@ const t = en
                 ))}
               </ul>
               <a
-                href="/login"
+                href={
+                  dashboardHref === '/admin'
+                    ? '/admin'
+                    : dashboardHref === '/app'
+                      ? '/app#plan-and-billing'
+                      : '/login'
+                }
                 class:list={[
                   'btn mt-auto h-12 w-full rounded-full font-semibold shadow-none',
                   i === 1
