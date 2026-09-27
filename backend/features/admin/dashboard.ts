@@ -94,8 +94,37 @@ export async function getAdminDashboard(search: string, section: string = 'visao
       : null,
     section === 'visao'
       ? env.DB.prepare(
-          'SELECT (SELECT count(*) FROM users) AS users, (SELECT count(*) FROM sites WHERE published_at IS NOT NULL) AS published, (SELECT count(*) FROM domains) AS domains',
-        ).first<{ users: number; published: number; domains: number }>()
+          `SELECT
+            (SELECT count(*) FROM users) AS users,
+            (SELECT count(*) FROM users WHERE created_at >= unixepoch() - 7 * 86400) AS new_users_7d,
+            (SELECT count(*) FROM users WHERE plan = 'trial' AND trial_ends_at > unixepoch()) AS trials_active,
+            (SELECT count(*) FROM users WHERE plan = 'monthly' AND access_until > unixepoch()) AS monthly_active,
+            (SELECT count(*) FROM users WHERE plan = 'yearly' AND access_until > unixepoch()) AS yearly_active,
+            (SELECT count(*) FROM users WHERE plan = 'lifetime') AS lifetime,
+            (SELECT count(*) FROM users WHERE plan = 'expired' OR (plan = 'trial' AND trial_ends_at <= unixepoch()) OR (plan IN ('monthly', 'yearly') AND (access_until IS NULL OR access_until <= unixepoch()))) AS access_ended,
+            (SELECT count(*) FROM sites WHERE published_at IS NOT NULL) AS published,
+            (SELECT count(*) FROM sites WHERE published_at IS NULL) AS drafts,
+            (SELECT count(*) FROM domains) AS domains,
+            (SELECT count(*) FROM domains WHERE status = 'active' AND ssl_status = 'active') AS domains_active,
+            (SELECT count(*) FROM email_outbox WHERE status = 'pending' OR status = 'sending') AS emails_queued,
+            (SELECT count(*) FROM email_outbox WHERE status = 'failed') AS emails_failed,
+            (SELECT count(*) FROM email_outbox WHERE status = 'sent' AND sent_at >= unixepoch() - 30 * 86400) AS emails_sent_30d`,
+        ).first<{
+          users: number;
+          new_users_7d: number;
+          trials_active: number;
+          monthly_active: number;
+          yearly_active: number;
+          lifetime: number;
+          access_ended: number;
+          published: number;
+          drafts: number;
+          domains: number;
+          domains_active: number;
+          emails_queued: number;
+          emails_failed: number;
+          emails_sent_30d: number;
+        }>()
       : null,
     section === 'clientes' ? rootDomain() : '',
   ]);
@@ -107,7 +136,22 @@ export async function getAdminDashboard(search: string, section: string = 'visao
     audit: auditResult?.results ?? [],
     emailTemplates: emailTemplatesResult?.results ?? [],
     emailOutbox: emailOutboxResult?.results ?? [],
-    counts: counts ?? { users: 0, published: 0, domains: 0 },
+    counts: counts ?? {
+      users: 0,
+      new_users_7d: 0,
+      trials_active: 0,
+      monthly_active: 0,
+      yearly_active: 0,
+      lifetime: 0,
+      access_ended: 0,
+      published: 0,
+      drafts: 0,
+      domains: 0,
+      domains_active: 0,
+      emails_queued: 0,
+      emails_failed: 0,
+      emails_sent_30d: 0,
+    },
     domain,
   };
 }

@@ -141,7 +141,7 @@ const t = en
   <link slot="head" rel="alternate" hreflang="x-default" href={'https://' + domain + '/'} />
   <div class="min-h-screen overflow-x-clip bg-white text-[#17130d]">
     <header class="relative z-20 mx-auto flex max-w-[1380px] items-center justify-between gap-4 px-5 pt-5 sm:px-8 sm:pt-7">
-      <Brand href={en ? '/en' : '/'} tone="light" />
+      <Brand href={signedIn ? dashboardHref : en ? '/en' : '/'} tone="light" />
       <nav
         class="hidden items-center gap-7 rounded-full border border-[#d8ae73] bg-white/95 px-7 py-3 text-sm text-[#605448] shadow-[0_8px_30px_-22px_rgba(131,85,21,0.35)] backdrop-blur-md md:flex"
         aria-label={en ? 'Main navigation' : 'Navegação principal'}
@@ -308,7 +308,7 @@ const t = en
     <footer class="border-t border-[#d8ae73] bg-white">
       <div class="mx-auto flex max-w-[1380px] flex-col gap-10 px-5 py-12 sm:px-8 md:flex-row md:items-end md:justify-between">
         <div>
-          <Brand href={en ? '/en' : '/'} tone="light" />
+          <Brand href={signedIn ? dashboardHref : en ? '/en' : '/'} tone="light" />
           <p class="mt-5 max-w-[30ch] text-sm leading-relaxed text-[#625a51]">{t.footer}</p>
         </div>
         <div class="flex flex-wrap gap-6 text-sm text-[#625a51]">

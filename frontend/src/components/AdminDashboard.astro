@@ -98,7 +98,7 @@ const deliveryStatus: Record<string, string> = {
   <div class="min-h-screen bg-white text-[#17130d]">
     <header class="border-b border-[#d8ae73] bg-white">
       <div class="mx-auto flex max-w-[1380px] flex-wrap items-center justify-between gap-3 px-5 py-4 sm:px-8">
-        <Brand tone="light" />
+        <Brand href="/admin" tone="light" />
         <nav
           class="order-3 flex w-full items-center gap-1 overflow-x-auto rounded-full border border-[#d8ae73] bg-white/95 px-3 py-2 text-sm text-[#605448] shadow-[0_8px_30px_-22px_rgba(131,85,21,0.35)] xl:order-none xl:w-auto"
           aria-label="Navegação administrativa"
@@ -108,13 +108,16 @@ const deliveryStatus: Record<string, string> = {
               href={item.href}
               aria-current={section === item.key ? 'page' : undefined}
               class:list={[
-                'rounded-full px-3 py-1.5 whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-[#b88333]',
+                'relative isolate rounded-full px-3 py-1.5 whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-[#b88333]',
                 section === item.key
-                  ? 'bg-[#fff4df] font-semibold text-[#6f4716]'
+                  ? 'font-semibold text-[#6f4716]'
                   : 'hover:bg-[#fff9ef] hover:text-[#9b6823]',
               ]}
             >
-              {item.label}
+              {section === item.key && (
+                <span class="pointer-events-none absolute inset-0 -z-10 rounded-full bg-[#fff4df] [view-transition-name:admin-active-tab]"></span>
+              )}
+              <span>{item.label}</span>
             </a>
           ))}
         </nav>
@@ -147,30 +150,82 @@ const deliveryStatus: Record<string, string> = {
       )}
 
       {section === 'visao' && (
-        <section id="visao" class="mb-16 scroll-mt-24 border-t border-[#d8ae73] pt-8">
+        <section id="visao" class="mb-16 scroll-mt-24">
           <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#17130d] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#625a51]">
             <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#9b6823]">
               Visão geral
             </span>
             <h2>Estado da operação</h2>
           </div>
-          <div class="grid grid-cols-3 border-y border-[#d8ae73] py-5 [&_div]:flex [&_div]:flex-col [&_div]:gap-1 [&_div]:px-3 [&_div:first-child]:pl-0 [&_div+div]:border-l [&_div+div]:border-[#d8ae73] [&_strong]:font-[Outfit] [&_strong]:text-[clamp(2rem,4vw,3.5rem)] [&_strong]:font-medium [&_strong]:leading-none [&_strong]:tracking-tight [&_strong]:text-[#17130d] [&_span]:text-xs [&_span]:text-[#625a51] sm:[&_div]:px-6">
+          <div class="grid gap-8 lg:grid-cols-[minmax(0,1.5fr)_minmax(280px,1fr)]">
             <div>
-              <strong>{counts.users}</strong>
-              <span>clientes</span>
+              <div class="grid grid-cols-2 gap-x-6 border-y border-[#d8ae73] py-5 sm:grid-cols-3">
+                {[
+                  { value: counts.users, label: 'Clientes cadastrados', href: '/admin/clientes' },
+                  { value: counts.new_users_7d, label: 'Novos em 7 dias', href: '/admin/clientes' },
+                  { value: counts.trials_active, label: 'Testes ativos', href: '/admin/clientes' },
+                  {
+                    value: counts.monthly_active + counts.yearly_active + counts.lifetime,
+                    label: 'Clientes pagantes',
+                    href: '/admin/clientes',
+                  },
+                  { value: counts.published, label: 'Sites publicados', href: '/admin/clientes' },
+                  {
+                    value: counts.domains_active,
+                    label: 'Domínios ativos',
+                    href: '/admin/dominios',
+                  },
+                ].map((item) => (
+                  <a
+                    href={item.href}
+                    class="group flex flex-col gap-1 border-b border-[#ead8bd] py-5 no-underline last:border-b-0 hover:text-[#8b5b1e] sm:[&:nth-last-child(-n+3)]:border-b-0"
+                  >
+                    <strong class="font-[Outfit] text-[clamp(2rem,4vw,3.2rem)] font-medium leading-none tracking-tight tabular-nums text-[#17130d] transition-colors group-hover:text-[#8b5b1e]">
+                      {item.value}
+                    </strong>
+                    <span class="text-xs text-[#625a51]">{item.label}</span>
+                  </a>
+                ))}
+              </div>
+              <p class="mt-3 text-xs text-[#766e63]">
+                Cadastros: últimos 7 dias · demais números: situação atual.
+              </p>
             </div>
-            <div>
-              <strong>{counts.published}</strong>
-              <span>páginas publicadas</span>
-            </div>
-            <div>
-              <strong>{counts.domains}</strong>
-              <span>domínios conectados</span>
+            <div class="border-t border-[#d8ae73] lg:border-t-0 lg:border-l lg:pl-8">
+              <h3 class="mb-4 font-[Outfit] text-xl">Detalhamento</h3>
+              <dl class="grid grid-cols-[1fr_auto] gap-x-5 gap-y-3 text-sm [&_dd]:font-semibold [&_dd]:tabular-nums [&_dt]:text-[#625a51]">
+                <dt>Plano mensal ativo</dt>
+                <dd>{counts.monthly_active}</dd>
+                <dt>Plano anual ativo</dt>
+                <dd>{counts.yearly_active}</dd>
+                <dt>Plano vitalício</dt>
+                <dd>{counts.lifetime}</dd>
+                <dt>Acesso encerrado</dt>
+                <dd>{counts.access_ended}</dd>
+                <dt>Sites em rascunho</dt>
+                <dd>{counts.drafts}</dd>
+                <dt>Domínios aguardando ativação</dt>
+                <dd>{counts.domains - counts.domains_active}</dd>
+                <dt>E-mails enviados em 30 dias</dt>
+                <dd>{counts.emails_sent_30d}</dd>
+                <dt>E-mails na fila</dt>
+                <dd>{counts.emails_queued}</dd>
+                <dt>Falhas de envio</dt>
+                <dd>{counts.emails_failed}</dd>
+              </dl>
             </div>
           </div>
-          <h3 class="mt-8 mb-2 font-[Outfit] text-xl">Antes de abrir as vendas</h3>
+          <div class="mt-12 mb-3 flex flex-wrap items-baseline justify-between gap-2">
+            <h3 class="font-[Outfit] text-xl">Integrações</h3>
+            <a
+              href="/admin/configuracoes"
+              class="text-sm font-semibold text-[#8b5b1e] hover:underline"
+            >
+              Abrir configurações ↗
+            </a>
+          </div>
           <p class="mb-3 text-sm text-[#625a51]">
-            Confira as integrações abaixo. DNS e Cloudflare for SaaS também precisam estar ativos.
+            Confira as conexões necessárias para acesso, cobrança e publicação.
           </p>
           <div class="overflow-x-auto border-y border-[#d8ae73]">
             <table class="table w-full">
@@ -204,7 +259,7 @@ const deliveryStatus: Record<string, string> = {
         </section>
       )}
       {section === 'precos' && (
-        <section id="precos" class="mb-16 scroll-mt-24 border-t border-[#d8ae73] pt-8">
+        <section id="precos" class="mb-16 scroll-mt-24">
           <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#17130d] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#625a51]">
             <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#9b6823]">
               Cobrança
@@ -307,7 +362,7 @@ const deliveryStatus: Record<string, string> = {
         </section>
       )}
       {section === 'configuracoes' && (
-        <section id="configuracoes" class="mb-16 scroll-mt-24 border-t border-[#d8ae73] pt-8">
+        <section id="configuracoes" class="mb-16 scroll-mt-24">
           <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#17130d] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#625a51]">
             <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#9b6823]">
               Serviços
@@ -404,7 +459,7 @@ const deliveryStatus: Record<string, string> = {
         </section>
       )}
       {section === 'emails' && (
-        <section id="emails" class="mb-16 scroll-mt-24 border-t border-[#d8ae73] pt-8">
+        <section id="emails" class="mb-16 scroll-mt-24">
           <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#17130d] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#625a51]">
             <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#9b6823]">
               Comunicação
@@ -581,7 +636,7 @@ const deliveryStatus: Record<string, string> = {
         </section>
       )}
       {section === 'clientes' && (
-        <section id="clientes" class="mb-16 scroll-mt-24 border-t border-[#d8ae73] pt-8">
+        <section id="clientes" class="mb-16 scroll-mt-24">
           <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#17130d] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#625a51]">
             <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#9b6823]">
               Contas
@@ -658,7 +713,7 @@ const deliveryStatus: Record<string, string> = {
         </section>
       )}
       {section === 'dominios' && (
-        <section id="dominios" class="mb-16 scroll-mt-24 border-t border-[#d8ae73] pt-8">
+        <section id="dominios" class="mb-16 scroll-mt-24">
           <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#17130d] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#625a51]">
             <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#9b6823]">
               Publicação
@@ -696,7 +751,7 @@ const deliveryStatus: Record<string, string> = {
         </section>
       )}
       {section === 'atividade' && (
-        <section id="atividade" class="mb-16 scroll-mt-24 border-t border-[#d8ae73] pt-8">
+        <section id="atividade" class="mb-16 scroll-mt-24">
           <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#17130d] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#625a51]">
             <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#9b6823]">
               Segurança
@@ -885,4 +940,24 @@ const deliveryStatus: Record<string, string> = {
       location.href = '/';
     });
   </script>
+  <style slot="head" is:inline>
+    @view-transition {
+      navigation: auto;
+    }
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+      animation-duration: 0.18s;
+    }
+    ::view-transition-group(admin-active-tab) {
+      animation-duration: 0.42s;
+      animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    @media (prefers-reduced-motion: reduce) {
+      ::view-transition-old(root),
+      ::view-transition-new(root),
+      ::view-transition-group(admin-active-tab) {
+        animation-duration: 0.01ms;
+      }
+    }
+  </style>
 </Base>
