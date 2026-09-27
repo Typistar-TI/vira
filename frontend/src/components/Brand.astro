@@ -2,8 +2,9 @@
 interface Props {
   href?: string;
   compact?: boolean;
+  tone?: 'light' | 'dark';
 }
-const { href = '/', compact = false } = Astro.props;
+const { href = '/', compact = false, tone = 'dark' } = Astro.props;
 ---
 
 <a href={href} class="inline-flex items-center gap-1.5 no-underline" aria-label="Vira">
@@ -20,7 +21,10 @@ const { href = '/', compact = false } = Astro.props;
       width="122"
       height="50"
       alt=""
-      class="h-[38px] w-[93px] object-contain sm:h-[45px] sm:w-[110px]"
+      class:list={[
+        'h-[38px] w-[93px] object-contain sm:h-[45px] sm:w-[110px]',
+        tone === 'light' && 'brightness-0',
+      ]}
     />
   )}
 </a>

@@ -14,14 +14,19 @@ const [controller, email] = await Promise.all([
 const ready = Boolean(controller && email);
 ---
 
-<Base title={en ? 'Privacy · Vira' : 'Privacidade · Vira'} lang={lang} noindex={!ready}>
-  <div class="min-h-screen bg-[#050505] text-[#f5f2ec]">
-    <header class="mx-auto flex max-w-[1380px] items-center justify-between gap-5 border-b border-[#2d2a25] px-5 py-4 sm:px-8">
-      <Brand href={en ? '/en' : '/'} />
+<Base
+  title={en ? 'Privacy · Vira' : 'Privacidade · Vira'}
+  lang={lang}
+  noindex={!ready}
+  appearance="light"
+>
+  <div class="min-h-screen bg-white text-[#17130d]">
+    <header class="mx-auto flex max-w-[1380px] items-center justify-between gap-5 border-b border-[#d8ae73] px-5 py-4 sm:px-8">
+      <Brand tone="light" href={en ? '/en' : '/'} />
     </header>
     <main class="mx-auto max-w-[1380px] px-5 py-12 sm:px-8">
       <article class="max-w-3xl">
-        <span class="text-xs font-extrabold uppercase tracking-[0.15em] text-[#f5f2ec]">Vira</span>
+        <span class="text-xs font-extrabold uppercase tracking-[0.15em] text-[#17130d]">Vira</span>
         <h1 class="text-4xl mt-2 mb-6">
           {en ? 'Privacy and your data' : 'Privacidade e seus dados'}
         </h1>

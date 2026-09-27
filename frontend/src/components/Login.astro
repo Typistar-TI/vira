@@ -21,19 +21,24 @@ const error = url.searchParams.get('error')?.slice(0, 150);
 const loginUri = googleLoginUrl(url);
 ---
 
-<Base title={en ? 'Sign in · Vira' : 'Entrar · Vira'} lang={en ? 'en' : 'pt'} noindex>
-  <div class="min-h-screen bg-[#050505] text-[#f5f2ec]">
-    <header class="mx-auto flex max-w-[1380px] items-center justify-between gap-5 border-b border-[#2d2a25] px-5 py-4 sm:px-8">
-      <Brand href={'/'} />
+<Base
+  title={en ? 'Sign in · Vira' : 'Entrar · Vira'}
+  lang={en ? 'en' : 'pt'}
+  noindex
+  appearance="light"
+>
+  <div class="min-h-screen bg-white text-[#17130d]">
+    <header class="mx-auto flex max-w-[1380px] items-center justify-between gap-5 border-b border-[#d8ae73] px-5 py-4 sm:px-8">
+      <Brand tone="light" href={'/'} />
     </header>
-    <main class="card rounded-xl border border-[#34312b] bg-[#111110] p-7 [&_h2]:mb-4 [&_h2]:text-[1.45rem] [&_h2]:text-[#f5f2ec] [&_h3]:mt-7 [&_h3]:mb-3 [&_h3]:text-lg [&_label]:mt-4 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold [&_.input]:w-full [&_.textarea]:w-full [&_.select]:w-full [&_small]:text-[#aaa69f] mx-auto my-12 max-w-[480px] sm:my-24">
-      <span class="badge badge-outline h-auto rounded-full border-[#536b9e] px-3 py-2 text-xs font-bold text-[#c9d5ff]">
+    <main class="card rounded-xl border border-[#d8ae73] bg-white p-7 [&_h2]:mb-4 [&_h2]:text-[1.45rem] [&_h2]:text-[#17130d] [&_h3]:mt-7 [&_h3]:mb-3 [&_h3]:text-lg [&_label]:mt-4 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold [&_.input]:w-full [&_.textarea]:w-full [&_.select]:w-full [&_small]:text-[#625a51] mx-auto my-12 max-w-[480px] sm:my-24">
+      <span class="badge badge-outline h-auto rounded-full border-[#d8ae73] px-3 py-2 text-xs font-bold text-[#8b5b1e]">
         {en ? '7 days free' : '7 dias grátis'}
       </span>
       <h1 class="mt-6 mb-4 font-[Outfit] text-[clamp(2.6rem,5vw,3.6rem)] leading-none tracking-[-0.055em]">
         {en ? 'Your page starts here.' : 'Sua página começa aqui.'}
       </h1>
-      <p class="text-[#aaa69f] mb-6">
+      <p class="text-[#625a51] mb-6">
         {clientId
           ? en
             ? 'Use your email to receive a sign-in link, or continue with Google.'
@@ -76,7 +81,7 @@ const loginUri = googleLoginUrl(url);
       )}
       {clientId && (
         <>
-          <p class="text-[#aaa69f] mb-4">{en ? 'Or' : 'Ou'}</p>
+          <p class="text-[#625a51] mb-4">{en ? 'Or' : 'Ou'}</p>
           <div
             id="g_id_onload"
             data-client_id={clientId}
@@ -103,7 +108,7 @@ const loginUri = googleLoginUrl(url);
         </p>
       )}
       {adminLogin && (
-        <p class="text-xs text-[#aaa69f] mt-3">
+        <p class="text-xs text-[#625a51] mt-3">
           {en
             ? 'Administrative access is limited to authorized email addresses.'
             : 'Acesso administrativo restrito a e-mails autorizados.'}
@@ -114,7 +119,7 @@ const loginUri = googleLoginUrl(url);
           {error}
         </p>
       )}
-      <p class="text-xs text-[#aaa69f] mt-6">
+      <p class="text-xs text-[#625a51] mt-6">
         <a href={en ? '/en/privacy' : '/privacidade'}>
           {en ? 'How we use your data' : 'Como usamos seus dados'}
         </a>

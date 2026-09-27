@@ -6,16 +6,29 @@ interface Props {
   description?: string;
   lang?: 'pt' | 'en';
   noindex?: boolean;
+  appearance?: 'dark' | 'light';
 }
-const { title, description = '', lang = 'pt', noindex = false } = Astro.props;
+const { title, description = '', lang = 'pt', noindex = false, appearance = 'dark' } = Astro.props;
+const motionClasses =
+  "font-['Outfit',sans-serif] antialiased selection:bg-[#d6a85f] selection:text-black [&_.btn]:transition-[transform,background-color,border-color,box-shadow,opacity] [&_.btn]:duration-300 [&_.btn]:ease-out [&_.btn:active]:scale-[0.97] [&_a]:transition-colors [&_a]:duration-300 [&_button]:transition-[transform,background-color,border-color,box-shadow,opacity] [&_button]:duration-300 [&_button:active]:scale-[0.97] [&_.input]:transition-[border-color,box-shadow] [&_.input]:duration-300 [&_.textarea]:transition-[border-color,box-shadow] [&_.textarea]:duration-300 [&_.select]:transition-[border-color,box-shadow] [&_.select]:duration-300 motion-reduce:[&_*]:!transition-none";
+const darkFields =
+  '[&_.input]:border-[#45413a] [&_.input]:bg-[#0b0b0b] [&_.textarea]:border-[#45413a] [&_.textarea]:bg-[#0b0b0b] [&_.select]:border-[#45413a] [&_.select]:bg-[#0b0b0b] [&_.file-input]:border-[#45413a] [&_.file-input]:bg-[#0b0b0b]';
+const lightFields =
+  '[&_.input]:border [&_.input]:border-[#d8ae73] [&_.input]:bg-white [&_.textarea]:border [&_.textarea]:border-[#d8ae73] [&_.textarea]:bg-white [&_.select]:border [&_.select]:border-[#d8ae73] [&_.select]:bg-white [&_.file-input]:border [&_.file-input]:border-[#d8ae73] [&_.file-input]:bg-white [&_.btn]:border [&_.btn]:border-[#b88333] [&_.btn-outline]:text-[#6f4716] [&_.alert]:border [&_.alert]:border-[#d8ae73] [&_.alert]:bg-white [&_.alert-error]:text-[#a13535] [&_.alert-info]:text-[#5b4428]';
 ---
 
 <!doctype html>
-<html lang={lang} class="scroll-smooth motion-reduce:scroll-auto">
+<html
+  lang={lang}
+  class:list={[
+    'scroll-smooth motion-reduce:scroll-auto',
+    appearance === 'light' && '[scrollbar-color:#b88333_#ffffff]',
+  ]}
+>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#050505" />
+    <meta name="theme-color" content={appearance === 'light' ? '#ffffff' : '#050505'} />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -28,7 +41,15 @@ const { title, description = '', lang = 'pt', noindex = false } = Astro.props;
     <link rel="icon" href="/favicon.png" type="image/png" />
     <slot name="head" />
   </head>
-  <body class="bg-black font-['Outfit',sans-serif] text-[#f5f2ec] antialiased selection:bg-[#d6a85f] selection:text-black [&_.btn]:transition-[transform,background-color,border-color,box-shadow,opacity] [&_.btn]:duration-300 [&_.btn]:ease-out [&_.btn:active]:scale-[0.97] [&_a]:transition-colors [&_a]:duration-300 [&_button]:transition-[transform,background-color,border-color,box-shadow,opacity] [&_button]:duration-300 [&_button:active]:scale-[0.97] [&_.input]:border-[#45413a] [&_.input]:bg-[#0b0b0b] [&_.input]:transition-[border-color,box-shadow] [&_.input]:duration-300 [&_.textarea]:border-[#45413a] [&_.textarea]:bg-[#0b0b0b] [&_.textarea]:transition-[border-color,box-shadow] [&_.textarea]:duration-300 [&_.select]:border-[#45413a] [&_.select]:bg-[#0b0b0b] [&_.select]:transition-[border-color,box-shadow] [&_.select]:duration-300 [&_.file-input]:border-[#45413a] [&_.file-input]:bg-[#0b0b0b] motion-reduce:[&_*]:!transition-none">
+  <body
+    data-theme={appearance === 'light' ? 'vira-light' : 'vira'}
+    class:list={[
+      appearance === 'light' ? 'bg-white text-[#17130d]' : 'bg-black text-[#f5f2ec]',
+      motionClasses,
+      appearance === 'dark' && darkFields,
+      appearance === 'light' && lightFields,
+    ]}
+  >
     <slot />
     <Motion />
   </body>
