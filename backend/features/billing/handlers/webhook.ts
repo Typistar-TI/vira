@@ -2,7 +2,14 @@ import { env } from 'cloudflare:workers';
 import Stripe from 'stripe';
 import { planForPrice, stripe } from '@backend/features/billing/service';
 import { setting } from '@backend/platform/config';
-import { dashboardUrl, endDate, queueEmail, siteUrl } from '@backend/features/emails/service';
+import {
+  dashboardUrl,
+  endDate,
+  endDateParts,
+  planNames,
+  queueEmail,
+  siteUrl,
+} from '@backend/features/emails/service';
 import { readText } from '@backend/platform/http';
 
 async function updateSubscription(subscription: Stripe.Subscription) {
@@ -40,13 +47,16 @@ async function updateSubscription(subscription: Stripe.Subscription) {
       .first<{ id: string; email: string | null; slug: string }>();
     if (owner?.email) {
       const [pageUrl, panelUrl] = await Promise.all([siteUrl(owner.slug), dashboardUrl()]);
+      const names = planNames(plan);
       await queueEmail(
         'subscription_created',
         `subscription-created:${subscription.id}`,
         owner.email,
         {
           email: owner.email,
-          plan: plan === 'monthly' ? 'mensal / monthly' : 'anual / yearly',
+          plan: `${names.pt} / ${names.en}`,
+          plan_pt: names.pt,
+          plan_en: names.en,
           site_url: pageUrl,
           dashboard_url: panelUrl,
         },
@@ -55,14 +65,20 @@ async function updateSubscription(subscription: Stripe.Subscription) {
         endingAt &&
         endingAt > Math.floor(Date.now() / 1000) &&
         endingAt <= Math.floor(Date.now() / 1000) + 7 * 86400
-      )
+      ) {
+        const date = endDateParts(endingAt);
         await queueEmail('subscription_ending', `ending:${owner.id}:${endingAt}`, owner.email, {
           email: owner.email,
-          plan: plan === 'monthly' ? 'mensal / monthly' : 'anual / yearly',
+          plan: `${names.pt} / ${names.en}`,
+          plan_pt: names.pt,
+          plan_en: names.en,
           site_url: pageUrl,
           dashboard_url: panelUrl,
           end_date: endDate(endingAt),
+          end_date_pt: date.pt,
+          end_date_en: date.en,
         });
+      }
     }
   }
 }
@@ -133,6 +149,8 @@ export const POST = async (request: Request): Promise<Response> => {
               {
                 email: owner.email,
                 plan: 'vitalício / lifetime',
+                plan_pt: 'vitalício',
+                plan_en: 'lifetime',
                 site_url: await siteUrl(owner.slug),
                 dashboard_url: await dashboardUrl(),
               },

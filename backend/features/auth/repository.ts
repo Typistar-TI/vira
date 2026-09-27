@@ -3,6 +3,7 @@ import { initialSite } from '@backend/features/sites/model';
 import {
   dashboardUrl,
   endDate,
+  endDateParts,
   queueEmailStatement,
   siteUrl,
 } from '@backend/features/emails/service';
@@ -76,10 +77,12 @@ async function createUser(email: string, sub: string | null, language: 'pt' | 'e
   const slug = `site-${id.slice(0, 12)}`;
   const content = JSON.stringify(initialSite(language));
   const [pageUrl, panelUrl] = await Promise.all([siteUrl(slug), dashboardUrl()]);
+  const trialEnd = now + 7 * 86400;
+  const date = endDateParts(trialEnd);
   await env.DB.batch([
     env.DB.prepare(
       'INSERT INTO users (id, phone, google_sub, email, created_at, trial_ends_at) VALUES (?, ?, ?, ?, ?, ?)',
-    ).bind(id, `auth-${id}`, sub, email, now, now + 7 * 86400),
+    ).bind(id, `auth-${id}`, sub, email, now, trialEnd),
     env.DB.prepare(
       'INSERT INTO sites (id, user_id, slug, draft_json, published_json, published_at, auto_published, created_at) VALUES (?, ?, ?, ?, ?, ?, 1, ?)',
     ).bind(crypto.randomUUID(), id, slug, content, content, now, now),
@@ -87,7 +90,9 @@ async function createUser(email: string, sub: string | null, language: 'pt' | 'e
       email,
       dashboard_url: panelUrl,
       site_url: pageUrl,
-      end_date: endDate(now + 7 * 86400),
+      end_date: endDate(trialEnd),
+      end_date_pt: date.pt,
+      end_date_en: date.en,
     }),
   ]);
   const user = await getUser(id);

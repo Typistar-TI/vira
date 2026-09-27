@@ -11,9 +11,19 @@ export type EmailKind = (typeof emailKinds)[number];
 
 export const emailVariables = {
   login: ['login_url', 'email'],
-  site_created: ['dashboard_url', 'site_url', 'end_date', 'email'],
-  subscription_created: ['dashboard_url', 'site_url', 'plan', 'email'],
-  subscription_ending: ['dashboard_url', 'site_url', 'plan', 'end_date', 'email'],
+  site_created: ['dashboard_url', 'site_url', 'end_date', 'end_date_pt', 'end_date_en', 'email'],
+  subscription_created: ['dashboard_url', 'site_url', 'plan', 'plan_pt', 'plan_en', 'email'],
+  subscription_ending: [
+    'dashboard_url',
+    'site_url',
+    'plan',
+    'plan_pt',
+    'plan_en',
+    'end_date',
+    'end_date_pt',
+    'end_date_en',
+    'email',
+  ],
 } satisfies Record<EmailKind, string[]>;
 
 export interface EmailTemplate {
@@ -36,7 +46,16 @@ export const escapeHtml = (value: string) =>
   });
 
 export function renderEmail(template: EmailTemplate, variables: Record<string, string>) {
-  const replace = (_match: string, name: string) => escapeHtml(variables[name] ?? '');
+  const [legacyDatePt, legacyDateEn] = (variables.end_date ?? '').split(' / ');
+  const [legacyPlanPt, legacyPlanEn] = (variables.plan ?? '').split(' / ');
+  const values: Record<string, string> = {
+    ...variables,
+    end_date_pt: variables.end_date_pt ?? legacyDatePt ?? '',
+    end_date_en: variables.end_date_en ?? legacyDateEn ?? legacyDatePt ?? '',
+    plan_pt: variables.plan_pt ?? legacyPlanPt ?? '',
+    plan_en: variables.plan_en ?? legacyPlanEn ?? legacyPlanPt ?? '',
+  };
+  const replace = (_match: string, name: string) => escapeHtml(values[name] ?? '');
   return {
     subject: template.subject.replace(/{{\s*([a-z_]+)\s*}}/g, replace),
     html: template.html.replace(/{{\s*([a-z_]+)\s*}}/g, replace),
@@ -48,7 +67,7 @@ export function validateTemplate(key: EmailKind, subject: string, html: string):
     return 'Assunto deve ter até 180 caracteres e uma linha.';
   if (!html || html.length > 32_000) return 'HTML deve ter entre 1 e 32.000 caracteres.';
   if (
-    /<\s*\/?\s*(script|iframe|object|embed|form|meta|base)\b|\bon[a-z]+\s*=|javascript\s*:/i.test(
+    /<\s*\/?\s*(script|iframe|object|embed|form|base)\b|<\s*meta\b[^>]*http-equiv\s*=|\bon[a-z]+\s*=|javascript\s*:/i.test(
       html,
     )
   )
@@ -76,6 +95,9 @@ export async function templateFor(key: EmailKind): Promise<EmailTemplate> {
 
 function plainText(html: string): string {
   return html
+    .replace(/\s+/g, ' ')
+    .replace(/^[\s\S]*?<body\b[^>]*>/i, '')
+    .replace(/<\/body>[\s\S]*$/i, '')
     .replace(/<a\b[^>]*href=(["'])(.*?)\1[^>]*>(.*?)<\/a>/gis, '$3: $2')
     .replace(/<br\s*\/?>/gi, '\n')
     .replace(/<\/(p|div|h[1-6])\s*>/gi, '\n\n')
@@ -85,6 +107,9 @@ function plainText(html: string): string {
     .replace(/&gt;/g, '>')
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
+    .replace(/&nbsp;/g, ' ')
+    .replace(/[ \t]*\n[ \t]*/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
     .trim();
 }
 
@@ -155,7 +180,7 @@ export async function dashboardUrl() {
   return `https://${await rootDomain()}/app`;
 }
 
-export function endDate(timestamp: number) {
+export function endDateParts(timestamp: number) {
   const date = new Date(timestamp * 1000);
   const pt = date.toLocaleDateString('pt-BR', {
     timeZone: 'UTC',
@@ -169,7 +194,22 @@ export function endDate(timestamp: number) {
     month: 'long',
     year: 'numeric',
   });
+  return { pt, en };
+}
+
+export function endDate(timestamp: number) {
+  const { pt, en } = endDateParts(timestamp);
   return `${pt} / ${en}`;
+}
+
+export function planNames(plan: 'trial' | 'monthly' | 'yearly' | 'lifetime') {
+  const names = {
+    trial: { pt: 'teste grátis', en: 'free trial' },
+    monthly: { pt: 'mensal', en: 'monthly' },
+    yearly: { pt: 'anual', en: 'yearly' },
+    lifetime: { pt: 'vitalício', en: 'lifetime' },
+  };
+  return names[plan];
 }
 
 export async function flushEmailOutbox(limit = 10) {

@@ -59,9 +59,17 @@ const emailDescriptions: Record<string, string> = {
 };
 const emailVariables: Record<string, string[]> = {
   login: ['login_url', 'email'],
-  site_created: ['dashboard_url', 'site_url', 'end_date', 'email'],
-  subscription_created: ['dashboard_url', 'site_url', 'plan', 'email'],
-  subscription_ending: ['dashboard_url', 'site_url', 'plan', 'end_date', 'email'],
+  site_created: ['dashboard_url', 'site_url', 'end_date_pt', 'end_date_en', 'email'],
+  subscription_created: ['dashboard_url', 'site_url', 'plan_pt', 'plan_en', 'email'],
+  subscription_ending: [
+    'dashboard_url',
+    'site_url',
+    'plan_pt',
+    'plan_en',
+    'end_date_pt',
+    'end_date_en',
+    'email',
+  ],
 };
 const deliveryStatus: Record<string, string> = {
   pending: 'Aguardando',
@@ -715,7 +723,11 @@ const deliveryStatus: Record<string, string> = {
             dashboard_url: 'https://vira.ia.br/app',
             site_url: 'https://meu-site.vira.ia.br',
             end_date: '27 de setembro de 2026',
+            end_date_pt: '27 de setembro de 2026',
+            end_date_en: 'September 27, 2026',
             plan: 'mensal',
+            plan_pt: 'mensal',
+            plan_en: 'monthly',
             email: 'cliente@exemplo.com',
           };
           const preview = html.replace(
