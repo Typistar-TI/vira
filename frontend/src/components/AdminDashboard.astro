@@ -90,10 +90,19 @@ const deliveryStatus: Record<string, string> = {
     <header class="border-b border-[#d8ae73] bg-white">
       <div class="mx-auto flex max-w-[1380px] items-center justify-between gap-5 px-5 py-4 sm:px-8">
         <Brand tone="light" />
-        <div class="flex items-center gap-4 text-sm text-[#625a51]">
-          <span>Administração</span>
-          <button id="admin-logout" class="btn btn-ghost btn-sm" type="button">
-            Sair
+        <div class="flex items-center gap-1 text-sm text-[#625a51] sm:gap-3">
+          <a href="/" class="btn btn-ghost btn-xs sm:btn-sm" aria-label="Voltar ao site">
+            <span class="sm:hidden">Voltar</span>
+            <span class="hidden sm:inline">Voltar ao site</span>
+          </a>
+          <button
+            id="admin-logout"
+            class="btn btn-ghost btn-xs sm:btn-sm"
+            type="button"
+            aria-label="Encerrar sessão"
+          >
+            <span class="sm:hidden">Sair</span>
+            <span class="hidden sm:inline">Encerrar sessão</span>
           </button>
         </div>
       </div>
