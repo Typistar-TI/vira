@@ -1,0 +1,16 @@
+---
+import AdminDashboard from '@frontend/components/AdminDashboard.astro';
+import { sessionAdmin } from '@frontend/api/auth/session-admin';
+
+const section = Astro.params.section;
+if (section === 'visao') return Astro.redirect('/admin');
+if (
+  !section ||
+  !['precos', 'configuracoes', 'emails', 'clientes', 'dominios', 'atividade'].includes(section)
+)
+  return new Response('Página não encontrada', { status: 404 });
+const admin = await sessionAdmin(Astro.request);
+if (!admin) return Astro.redirect('/login?next=admin');
+---
+
+<AdminDashboard section={section} url={Astro.url} />

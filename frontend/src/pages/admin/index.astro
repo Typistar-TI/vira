@@ -5,4 +5,4 @@ const admin = await sessionAdmin(Astro.request);
 if (!admin) return Astro.redirect('/login?next=admin');
 ---
 
-<AdminDashboard admin={admin} url={Astro.url} />
+<AdminDashboard section="visao" url={Astro.url} />
