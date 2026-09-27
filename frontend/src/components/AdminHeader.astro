@@ -1,0 +1,54 @@
+---
+import Brand from '@frontend/components/Brand.astro';
+import AccountMenu from '@frontend/components/AccountMenu.astro';
+
+interface Props {
+  section: string;
+  admin: { email: string; displayName: string };
+}
+
+const { section, admin } = Astro.props;
+const navigation = [
+  { key: 'visao', href: '/admin', label: 'Visão geral' },
+  { key: 'precos', href: '/admin/precos', label: 'Preços' },
+  { key: 'configuracoes', href: '/admin/configuracoes', label: 'Configurações' },
+  { key: 'emails', href: '/admin/emails', label: 'E-mails' },
+  { key: 'clientes', href: '/admin/clientes', label: 'Clientes' },
+  { key: 'dominios', href: '/admin/dominios', label: 'Domínios' },
+  { key: 'atividade', href: '/admin/atividade', label: 'Atividade' },
+];
+---
+
+<header class="bg-white">
+  <div class="mx-auto flex max-w-[1380px] flex-wrap items-center justify-between gap-3 px-5 py-4 sm:px-8">
+    <Brand href="/admin" tone="light" />
+    <nav
+      class="order-3 flex w-full items-center gap-1 overflow-x-auto rounded-full border border-[#d8ae73] bg-white/95 px-3 py-2 text-sm text-[#605448] shadow-[0_8px_30px_-22px_rgba(131,85,21,0.35)] [view-transition-name:admin-navigation] xl:order-none xl:w-auto"
+      aria-label="Navegação administrativa"
+    >
+      {navigation.map((item) => (
+        <a
+          href={item.href}
+          aria-current={section === item.key ? 'page' : undefined}
+          class:list={[
+            'relative isolate rounded-full px-3 py-1.5 whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-[#b88333]',
+            section === item.key
+              ? 'font-semibold text-[#6f4716]'
+              : 'hover:bg-[#fff9ef] hover:text-[#9b6823]',
+          ]}
+        >
+          {section === item.key && (
+            <span class="pointer-events-none absolute inset-0 -z-10 rounded-full bg-[#fff4df] [view-transition-name:admin-active-tab]"></span>
+          )}
+          <span>{item.label}</span>
+        </a>
+      ))}
+    </nav>
+    <AccountMenu
+      email={admin.email}
+      displayName={admin.displayName}
+      profileHref="/admin/conta"
+      homeHref="/"
+    />
+  </div>
+</header>

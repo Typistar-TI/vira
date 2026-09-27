@@ -6,7 +6,7 @@ import { siteForUser } from '@frontend/api/sites/site-for-user';
 const user = await sessionUser(Astro.request);
 if (!user) return Astro.redirect((await sessionAdmin(Astro.request)) ? '/admin' : '/login');
 const site = await siteForUser(user.id);
-if (!site) return new Response('Página não encontrada', { status: 404 });
+if (!site) return Astro.rewrite('/404');
 ---
 
 <SitePreview site={site} />

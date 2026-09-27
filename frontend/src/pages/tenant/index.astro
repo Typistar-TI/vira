@@ -2,7 +2,7 @@
 import TenantLanding from '@frontend/components/TenantLanding.astro';
 import { tenantForHost } from '@frontend/api/domains/resolve-tenant';
 const tenant = await tenantForHost(Astro.url.hostname);
-if (!tenant) return new Response('Página não encontrada', { status: 404 });
+if (!tenant) return Astro.rewrite('/404');
 ---
 
 <TenantLanding tenant={tenant} url={Astro.url} />

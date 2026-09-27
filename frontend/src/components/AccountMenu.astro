@@ -1,0 +1,68 @@
+---
+interface Props {
+  email: string;
+  displayName?: string;
+  profileHref: string;
+  homeHref: string;
+}
+
+const { email, displayName = '', profileHref, homeHref } = Astro.props;
+const label = displayName || email.split('@')[0] || 'Conta';
+const initials = label
+  .split(/[^\p{L}\p{N}]+/u)
+  .filter(Boolean)
+  .slice(0, 2)
+  .map((part) => part[0].toLocaleUpperCase('pt-BR'))
+  .join('');
+---
+
+<details class="dropdown dropdown-end" data-account-menu>
+  <summary
+    class="btn btn-circle btn-ghost avatar list-none border border-[#d8ae73] bg-[#fff4df] text-sm font-semibold text-[#6f4716] hover:border-[#b88333] hover:bg-[#ffecd0]"
+    aria-label={`Abrir menu da conta de ${label}`}
+  >
+    <span aria-hidden="true">{initials || 'V'}</span>
+  </summary>
+  <ul class="menu dropdown-content z-50 mt-3 w-64 rounded-2xl border border-[#d8ae73] bg-white p-2 shadow-[0_18px_45px_-20px_rgba(95,59,12,0.28)]">
+    <li class="pointer-events-none border-b border-[#ead8bd] px-3 py-2">
+      <span class="block truncate p-0 text-sm font-semibold text-[#17130d]">{label}</span>
+      <small class="block truncate text-xs text-[#625a51]">{email}</small>
+    </li>
+    <li>
+      <a href={profileHref}>Meus dados</a>
+    </li>
+    <li>
+      <a href={homeHref}>Página inicial</a>
+    </li>
+    <li>
+      <a href="/privacidade">Privacidade</a>
+    </li>
+    <li class="border-t border-[#ead8bd] pt-1">
+      <button type="button" data-account-logout>
+        Sair da conta
+      </button>
+    </li>
+  </ul>
+</details>
+
+<script>
+  import { logout } from '@frontend/api/auth/logout';
+
+  document.querySelectorAll<HTMLDetailsElement>('[data-account-menu]').forEach((menu) => {
+    document.addEventListener('click', (event) => {
+      if (!menu.contains(event.target as Node)) menu.open = false;
+    });
+    menu.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        menu.open = false;
+        menu.querySelector('summary')?.focus();
+      }
+    });
+    menu
+      .querySelector<HTMLButtonElement>('[data-account-logout]')
+      ?.addEventListener('click', async () => {
+        await logout();
+        location.href = '/';
+      });
+  });
+</script>

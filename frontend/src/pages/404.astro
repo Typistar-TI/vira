@@ -1,0 +1,30 @@
+---
+import NotFound from '@frontend/components/NotFound.astro';
+import { getRootDomain } from '@frontend/api/config/root-domain';
+import { sessionAdmin } from '@frontend/api/auth/session-admin';
+import { sessionUser } from '@frontend/api/auth/session-user';
+import { tenantForHost } from '@frontend/api/domains/resolve-tenant';
+import { preferredLanguage } from '@frontend/i18n/preferred-language';
+
+const root = (await getRootDomain()).toLowerCase();
+const host = Astro.url.hostname.toLowerCase();
+const platform =
+  host === root ||
+  host === `www.${root}` ||
+  host === `app.${root}` ||
+  host === 'localhost' ||
+  host === '127.0.0.1' ||
+  host.endsWith('.workers.dev');
+const homeHref = platform
+  ? (await sessionAdmin(Astro.request))
+    ? '/admin'
+    : (await sessionUser(Astro.request))
+      ? '/app'
+      : '/'
+  : (await tenantForHost(host))
+    ? '/'
+    : `https://${root}/`;
+Astro.response.status = 404;
+---
+
+<NotFound homeHref={homeHref} lang={preferredLanguage(Astro.request)} />

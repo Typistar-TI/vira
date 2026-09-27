@@ -1,8 +1,9 @@
 ---
-import AdminDashboard from '@frontend/components/AdminDashboard.astro';
+import AdminProfile from '@frontend/components/AdminProfile.astro';
 import { sessionAdmin } from '@frontend/api/auth/session-admin';
+
 const admin = await sessionAdmin(Astro.request);
 if (!admin) return Astro.redirect('/login?next=admin');
 ---
 
-<AdminDashboard section="visao" url={Astro.url} admin={admin} />
+<AdminProfile admin={admin} saved={Astro.url.searchParams.get('saved') === '1'} />

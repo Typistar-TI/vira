@@ -1,9 +1,10 @@
 ---
 import Base from '@frontend/components/Base.astro';
-import Brand from '@frontend/components/Brand.astro';
+import AdminHeader from '@frontend/components/AdminHeader.astro';
+import AdminTransitions from '@frontend/components/AdminTransitions.astro';
 import { adminDashboard } from '@frontend/api/admin/dashboard';
 
-const { url, section = 'visao' } = Astro.props;
+const { url, admin, section = 'visao' } = Astro.props;
 const search = (url.searchParams.get('q') || '').trim().slice(0, 80);
 const navigation = [
   { key: 'visao', href: '/admin', label: 'Visão geral' },
@@ -95,53 +96,9 @@ const deliveryStatus: Record<string, string> = {
   appearance="light"
   manifest="/admin/manifest.webmanifest"
 >
+  <AdminTransitions slot="head" />
   <div class="min-h-screen bg-white text-[#17130d]">
-    <header class="border-b border-[#d8ae73] bg-white">
-      <div class="mx-auto flex max-w-[1380px] flex-wrap items-center justify-between gap-3 px-5 py-4 sm:px-8">
-        <Brand href="/admin" tone="light" />
-        <nav
-          class="order-3 flex w-full items-center gap-1 overflow-x-auto rounded-full border border-[#d8ae73] bg-white/95 px-3 py-2 text-sm text-[#605448] shadow-[0_8px_30px_-22px_rgba(131,85,21,0.35)] xl:order-none xl:w-auto"
-          aria-label="Navegação administrativa"
-        >
-          {navigation.map((item) => (
-            <a
-              href={item.href}
-              aria-current={section === item.key ? 'page' : undefined}
-              class:list={[
-                'relative isolate rounded-full px-3 py-1.5 whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-[#b88333]',
-                section === item.key
-                  ? 'font-semibold text-[#6f4716]'
-                  : 'hover:bg-[#fff9ef] hover:text-[#9b6823]',
-              ]}
-            >
-              {section === item.key && (
-                <span class="pointer-events-none absolute inset-0 -z-10 rounded-full bg-[#fff4df] [view-transition-name:admin-active-tab]"></span>
-              )}
-              <span>{item.label}</span>
-            </a>
-          ))}
-        </nav>
-        <div class="flex items-center gap-1 text-sm text-[#625a51] sm:gap-2">
-          <a
-            href="/"
-            class="btn btn-ghost btn-xs rounded-full sm:btn-sm"
-            aria-label="Voltar ao site"
-          >
-            <span class="sm:hidden">Site</span>
-            <span class="hidden sm:inline">Voltar ao site</span>
-          </a>
-          <button
-            id="admin-logout"
-            class="btn btn-ghost btn-xs rounded-full sm:btn-sm"
-            type="button"
-            aria-label="Encerrar sessão"
-          >
-            <span class="sm:hidden">Sair</span>
-            <span class="hidden sm:inline">Encerrar sessão</span>
-          </button>
-        </div>
-      </div>
-    </header>
+    <AdminHeader section={section} admin={admin} />
     <main class="mx-auto min-w-0 max-w-[1380px] px-5 pt-8 pb-24 sm:px-8 [&_table]:text-sm [&_thead]:bg-[#fff9ef] [&_th]:font-semibold [&_th]:text-[#6f4716] [&_tbody_tr]:border-[#ead8bd] [&_tbody_tr:hover]:bg-[#fffaf2]">
       {section === 'visao' && (
         <h1 class="mb-8 font-[Outfit] text-[clamp(2rem,4vw,3rem)] font-medium leading-none tracking-[-0.04em] text-[#17130d]">
@@ -776,9 +733,11 @@ const deliveryStatus: Record<string, string> = {
                         ? 'Preço alterado'
                         : item.action === 'update_email_template'
                           ? 'Modelo de e-mail alterado'
-                          : item.action === 'clear_setting'
-                            ? 'Configuração limpa'
-                            : 'Configuração alterada'}
+                          : item.action === 'update_profile'
+                            ? 'Nome da conta alterado'
+                            : item.action === 'clear_setting'
+                              ? 'Configuração limpa'
+                              : 'Configuração alterada'}
                     </td>
                     <td>
                       <code>{item.target}</code>
@@ -799,7 +758,6 @@ const deliveryStatus: Record<string, string> = {
     import { updateSetting } from '@frontend/api/admin/update-setting';
     import { updatePrice } from '@frontend/api/admin/update-price';
     import { updateEmailTemplate } from '@frontend/api/admin/update-email-template';
-    import { logout } from '@frontend/api/auth/logout';
     const show = (form: HTMLFormElement, message: string, error = false) => {
       const node = form.querySelector<HTMLElement>('[data-api-status]')!;
       node.textContent = message;
@@ -935,29 +893,5 @@ const deliveryStatus: Record<string, string> = {
         }
       });
     });
-    document.querySelector('#admin-logout')?.addEventListener('click', async () => {
-      await logout();
-      location.href = '/';
-    });
   </script>
-  <style slot="head" is:inline>
-    @view-transition {
-      navigation: auto;
-    }
-    ::view-transition-old(root),
-    ::view-transition-new(root) {
-      animation-duration: 0.18s;
-    }
-    ::view-transition-group(admin-active-tab) {
-      animation-duration: 0.42s;
-      animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
-    }
-    @media (prefers-reduced-motion: reduce) {
-      ::view-transition-old(root),
-      ::view-transition-new(root),
-      ::view-transition-group(admin-active-tab) {
-        animation-duration: 0.01ms;
-      }
-    }
-  </style>
 </Base>

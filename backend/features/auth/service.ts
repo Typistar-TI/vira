@@ -47,15 +47,19 @@ export async function createAdminSession(email: string): Promise<string> {
 
 export async function getSessionAdmin(
   request: Request,
-): Promise<{ id: string; email: string } | null> {
+): Promise<{ id: string; email: string; displayName: string } | null> {
   const token = cookieToken(request, adminSessionName);
   if (!token) return null;
   const row = await env.DB.prepare(
-    'SELECT admin_email FROM admin_sessions WHERE token_hash = ? AND expires_at > ?',
+    `SELECT s.admin_email, a.display_name FROM admin_sessions s
+     JOIN admin_accounts a ON a.email = s.admin_email
+     WHERE s.token_hash = ? AND s.expires_at > ?`,
   )
     .bind(await sha256(token), Math.floor(Date.now() / 1000))
-    .first<{ admin_email: string }>();
-  return row ? { id: row.admin_email, email: row.admin_email } : null;
+    .first<{ admin_email: string; display_name: string }>();
+  return row
+    ? { id: row.admin_email, email: row.admin_email, displayName: row.display_name }
+    : null;
 }
 
 export async function getSessionUser(request: Request): Promise<UserRow | null> {

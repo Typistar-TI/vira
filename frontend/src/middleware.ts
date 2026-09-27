@@ -18,7 +18,11 @@ export const onRequest = defineMiddleware(async (context, next) => {
     return context.redirect(canonical.href, 308);
   }
   let response: Response;
-  if (context.url.pathname.startsWith('/tenant') || context.url.pathname.startsWith('/media/')) {
+  if (
+    context.url.pathname === '/404' ||
+    context.url.pathname.startsWith('/tenant') ||
+    context.url.pathname.startsWith('/media/')
+  ) {
     response = await next();
   } else {
     const platform =
@@ -60,7 +64,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
       context.url.pathname === '/en/')
   )
     response.headers.set('cache-control', 'private, no-store');
-  if (/^\/(app|admin|api|auth|login)(\/|$)/.test(context.url.pathname))
+  if (response.status === 404 || /^\/(app|admin|api|auth|login)(\/|$)/.test(context.url.pathname))
     response.headers.set('cache-control', 'no-store');
   return response;
 });

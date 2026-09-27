@@ -1,0 +1,49 @@
+---
+import Base from '@frontend/components/Base.astro';
+import Brand from '@frontend/components/Brand.astro';
+
+interface Props {
+  homeHref: string;
+  lang: 'pt' | 'en';
+}
+
+const { homeHref, lang } = Astro.props;
+const en = lang === 'en';
+---
+
+<Base
+  title={en ? 'Page not found · Vira' : 'Página não encontrada · Vira'}
+  lang={lang}
+  noindex
+  appearance="light"
+>
+  <div class="min-h-screen bg-white text-[#17130d]">
+    <header class="mx-auto flex max-w-[1380px] items-center px-5 py-5 sm:px-8">
+      <Brand href={homeHref} tone="light" />
+    </header>
+    <main class="mx-auto flex min-h-[min(72vh,650px)] max-w-[1380px] flex-col justify-center px-5 pb-20 sm:px-8">
+      <span class="font-mono text-xs font-semibold uppercase tracking-[0.2em] text-[#9b6823]">
+        {en ? 'Error 404' : 'Erro 404'}
+      </span>
+      <div class="mt-5 flex items-baseline gap-5">
+        <span
+          class="font-[Outfit] text-[clamp(7rem,21vw,17rem)] font-medium leading-none tracking-[-0.1em] text-[#b88333]"
+          aria-hidden="true"
+        >
+          404
+        </span>
+      </div>
+      <h1 class="mt-4 font-[Outfit] text-[clamp(2rem,4vw,3.5rem)] font-medium leading-none tracking-[-0.05em]">
+        {en ? 'This page is not here.' : 'Essa página não está aqui.'}
+      </h1>
+      <p class="mt-5 max-w-[48ch] text-lg leading-relaxed text-[#625a51]">
+        {en
+          ? 'The address may have changed or the page may have been removed. You can return to the beginning.'
+          : 'O endereço pode ter mudado ou a página pode ter sido removida. Você pode voltar ao início.'}
+      </p>
+      <a href={homeHref} class="btn btn-primary mt-9 w-fit rounded-full px-7">
+        {en ? 'Go to home' : 'Voltar ao início'} <span aria-hidden="true">↗</span>
+      </a>
+    </main>
+  </div>
+</Base>
