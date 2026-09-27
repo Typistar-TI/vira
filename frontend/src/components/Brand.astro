@@ -9,7 +9,7 @@ const { href = '/', compact = false, tone = 'dark' } = Astro.props;
 
 <a href={href} class="inline-flex items-center gap-1.5 no-underline" aria-label="Vira">
   <img
-    src="/vira-mark.png"
+    src={tone === 'light' ? '/vira-mark-amber.png' : '/vira-mark.png'}
     width="40"
     height="40"
     alt=""
@@ -17,14 +17,11 @@ const { href = '/', compact = false, tone = 'dark' } = Astro.props;
   />
   {!compact && (
     <img
-      src="/vira-wordmark.png"
+      src={tone === 'light' ? '/vira-wordmark-amber.png' : '/vira-wordmark.png'}
       width="122"
       height="50"
       alt=""
-      class:list={[
-        'h-[38px] w-[93px] object-contain sm:h-[45px] sm:w-[110px]',
-        tone === 'light' && 'brightness-0',
-      ]}
+      class="h-[38px] w-[93px] object-contain sm:h-[45px] sm:w-[110px]"
     />
   )}
 </a>
