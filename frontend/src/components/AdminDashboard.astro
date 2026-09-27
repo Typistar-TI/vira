@@ -3,7 +3,7 @@ import Base from '@frontend/components/Base.astro';
 import Brand from '@frontend/components/Brand.astro';
 import { adminDashboard } from '@frontend/api/admin/dashboard';
 
-const { admin, url } = Astro.props;
+const { url } = Astro.props;
 const search = (url.searchParams.get('q') || '').trim().slice(0, 80);
 
 const { settings, prices, customers, domains, audit, emailTemplates, emailOutbox, counts, domain } =
@@ -107,240 +107,282 @@ const deliveryStatus: Record<string, string> = {
         </div>
       </div>
     </header>
-    <div class="mx-auto grid max-w-[1380px] grid-cols-[minmax(0,1fr)] px-5 sm:px-8 lg:grid-cols-[230px_minmax(0,1fr)]">
-      <aside class="min-w-0 border-b border-[#d8ae73] py-6 lg:sticky lg:top-0 lg:h-screen lg:border-r lg:border-b-0 lg:pr-6 lg:py-10">
-        <p class="mb-5 font-mono text-[11px] uppercase tracking-[0.18em] text-[#9b6823]">
-          Vira / Admin
-        </p>
+    <div class="sticky top-0 z-30 border-b border-[#d8ae73] bg-white/95 backdrop-blur-md">
+      <div class="mx-auto max-w-[1380px] px-5 sm:px-8">
         <nav
-          class="flex gap-1 overflow-x-auto whitespace-nowrap lg:flex-col lg:overflow-visible"
+          class="flex gap-1 overflow-x-auto whitespace-nowrap py-2"
           aria-label="Seções do painel"
         >
           <a
-            class="rounded-lg border-l-2 border-[#b88333] px-3 py-2.5 text-sm text-[#17130d] transition-colors hover:bg-[#fff9ef]"
+            class="rounded-lg px-3 py-2 text-sm font-semibold text-[#6f4716] transition-colors hover:bg-[#fff9ef] focus-visible:outline-2 focus-visible:outline-[#b88333]"
             href="#visao"
           >
-            ↗ &nbsp;Visão geral
+            Visão geral
           </a>
           <a
-            class="rounded-lg px-3 py-2.5 text-sm text-[#625a51] transition-colors hover:bg-[#fff9ef] hover:text-[#9b6823]"
+            class="rounded-lg px-3 py-2 text-sm text-[#625a51] transition-colors hover:bg-[#fff9ef] hover:text-[#9b6823] focus-visible:outline-2 focus-visible:outline-[#b88333]"
             href="#precos"
           >
-            ↗ &nbsp;Preços
+            Preços
           </a>
           <a
-            class="rounded-lg px-3 py-2.5 text-sm text-[#625a51] transition-colors hover:bg-[#fff9ef] hover:text-[#9b6823]"
+            class="rounded-lg px-3 py-2 text-sm text-[#625a51] transition-colors hover:bg-[#fff9ef] hover:text-[#9b6823] focus-visible:outline-2 focus-visible:outline-[#b88333]"
             href="#configuracoes"
           >
-            ↗ &nbsp;Configurações
+            Configurações
           </a>
           <a
-            class="rounded-lg px-3 py-2.5 text-sm text-[#625a51] transition-colors hover:bg-[#fff9ef] hover:text-[#9b6823]"
+            class="rounded-lg px-3 py-2 text-sm text-[#625a51] transition-colors hover:bg-[#fff9ef] hover:text-[#9b6823] focus-visible:outline-2 focus-visible:outline-[#b88333]"
             href="#emails"
           >
-            ↗ &nbsp;E-mails
+            E-mails
           </a>
           <a
-            class="rounded-lg px-3 py-2.5 text-sm text-[#625a51] transition-colors hover:bg-[#fff9ef] hover:text-[#9b6823]"
+            class="rounded-lg px-3 py-2 text-sm text-[#625a51] transition-colors hover:bg-[#fff9ef] hover:text-[#9b6823] focus-visible:outline-2 focus-visible:outline-[#b88333]"
             href="#clientes"
           >
-            ↗ &nbsp;Clientes
+            Clientes
           </a>
           <a
-            class="rounded-lg px-3 py-2.5 text-sm text-[#625a51] transition-colors hover:bg-[#fff9ef] hover:text-[#9b6823]"
+            class="rounded-lg px-3 py-2 text-sm text-[#625a51] transition-colors hover:bg-[#fff9ef] hover:text-[#9b6823] focus-visible:outline-2 focus-visible:outline-[#b88333]"
             href="#dominios"
           >
-            ↗ &nbsp;Domínios
+            Domínios
           </a>
           <a
-            class="rounded-lg px-3 py-2.5 text-sm text-[#625a51] transition-colors hover:bg-[#fff9ef] hover:text-[#9b6823]"
+            class="rounded-lg px-3 py-2 text-sm text-[#625a51] transition-colors hover:bg-[#fff9ef] hover:text-[#9b6823] focus-visible:outline-2 focus-visible:outline-[#b88333]"
             href="#atividade"
           >
-            ↗ &nbsp;Atividade
+            Atividade
           </a>
         </nav>
-      </aside>
-      <main class="min-w-0 pt-10 pb-24 lg:pl-10">
-        <div class="relative mb-10 min-h-[260px] overflow-hidden rounded-xl border border-[#d8ae73] bg-white p-7 sm:p-9 [&_h1]:my-3 [&_h1]:font-[Outfit] [&_h1]:text-[clamp(2.4rem,5vw,4.4rem)] [&_h1]:leading-none [&_h1]:text-[#17130d] [&_p]:max-w-[56ch] [&_p]:text-[#625a51]">
-          <img
-            src="/vira-hero-light.webp"
-            width="1586"
-            height="992"
-            alt=""
-            class="pointer-events-none absolute inset-y-0 right-0 hidden h-full w-1/2 object-cover object-center opacity-55 md:block"
-          />
-          <div class="pointer-events-none absolute inset-0 bg-gradient-to-r from-white via-white to-transparent"></div>
-          <div class="relative z-10 max-w-[760px]">
-            <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#9b6823]">
-              Operação do Vira
-            </span>
-            <h1>Seu negócio, em ordem.</h1>
-            <p>Configure o lançamento, acompanhe clientes e mantenha os planos atualizados.</p>
-            <p class="mt-7 text-sm">
-              Acesso autorizado · <strong class="text-[#17130d]">{admin.email}</strong>
-            </p>
+      </div>
+    </div>
+    <main class="mx-auto min-w-0 max-w-[1380px] px-5 pt-8 pb-24 sm:px-8 [&_table]:text-sm [&_thead]:bg-[#fff9ef] [&_th]:font-semibold [&_th]:text-[#6f4716] [&_tbody_tr]:border-[#ead8bd] [&_tbody_tr:hover]:bg-[#fffaf2]">
+      <h1 class="mb-8 font-[Outfit] text-[clamp(2rem,4vw,3rem)] font-medium leading-none tracking-[-0.04em] text-[#17130d]">
+        Bem-vindo
+      </h1>
+
+      <section id="visao" class="mb-16 scroll-mt-24 border-t border-[#d8ae73] pt-8">
+        <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#17130d] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#625a51]">
+          <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#9b6823]">
+            Visão geral
+          </span>
+          <h2>Estado da operação</h2>
+        </div>
+        <div class="grid grid-cols-3 border-y border-[#d8ae73] py-5 [&_div]:flex [&_div]:flex-col [&_div]:gap-1 [&_div]:px-3 [&_div:first-child]:pl-0 [&_div+div]:border-l [&_div+div]:border-[#d8ae73] [&_strong]:font-[Outfit] [&_strong]:text-[clamp(2rem,4vw,3.5rem)] [&_strong]:font-medium [&_strong]:leading-none [&_strong]:tracking-tight [&_strong]:text-[#17130d] [&_span]:text-xs [&_span]:text-[#625a51] sm:[&_div]:px-6">
+          <div>
+            <strong>{counts.users}</strong>
+            <span>clientes</span>
+          </div>
+          <div>
+            <strong>{counts.published}</strong>
+            <span>páginas publicadas</span>
+          </div>
+          <div>
+            <strong>{counts.domains}</strong>
+            <span>domínios conectados</span>
           </div>
         </div>
-
-        <section
-          id="visao"
-          class="mb-20 scroll-mt-8 border-t border-[#d8ae73] pt-9 first:border-t-0 first:pt-0"
-        >
-          <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#17130d] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#625a51]">
-            <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#9b6823]">
-              Visão geral
-            </span>
-            <h2>Estado da operação</h2>
-          </div>
-          <div class="grid gap-3 sm:grid-cols-3 [&_div]:flex [&_div]:min-h-36 [&_div]:flex-col [&_div]:justify-between [&_div]:rounded-xl [&_div]:border [&_div]:border-[#d8ae73] [&_div]:bg-white [&_div]:p-5 [&_strong]:font-[Outfit] [&_strong]:text-5xl [&_strong]:font-medium [&_strong]:tracking-tight [&_strong]:text-[#17130d] [&_span]:font-mono [&_span]:text-xs [&_span]:uppercase [&_span]:tracking-wide [&_span]:text-[#766e63]">
-            <div>
-              <strong>{counts.users}</strong>
-              <span>clientes</span>
-            </div>
-            <div>
-              <strong>{counts.published}</strong>
-              <span>páginas publicadas</span>
-            </div>
-            <div>
-              <strong>{counts.domains}</strong>
-              <span>domínios conectados</span>
-            </div>
-          </div>
-          <div class="mt-4 grid items-center gap-7 rounded-xl border border-[#d8ae73] bg-white p-7 md:grid-cols-[1fr_1.2fr] [&_h3]:mb-2 [&_h3]:text-xl [&_h3]:text-[#17130d] [&_p]:leading-relaxed [&_p]:text-[#625a51] [&_li]:flex [&_li]:items-center [&_li]:gap-2.5 [&_li]:border-b [&_li]:border-[#d8ae73] [&_li]:py-2 [&_li]:text-sm [&_li_strong]:ml-auto [&_li_strong]:text-xs [&_li_strong]:text-[#625a51]">
-            <div>
-              <h3>Antes de abrir as vendas</h3>
-              <p>
-                Estes itens dependem das configurações abaixo. O DNS e o Cloudflare for SaaS também
-                devem estar ativos.
-              </p>
-            </div>
-            <ul>
+        <h3 class="mt-8 mb-2 font-[Outfit] text-xl">Antes de abrir as vendas</h3>
+        <p class="mb-3 text-sm text-[#625a51]">
+          Confira as integrações abaixo. DNS e Cloudflare for SaaS também precisam estar ativos.
+        </p>
+        <div class="overflow-x-auto border-y border-[#d8ae73]">
+          <table class="table w-full">
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Estado</th>
+              </tr>
+            </thead>
+            <tbody>
               {required.map((item) => (
-                <li>
-                  <span
-                    class={
-                      item.ready
-                        ? 'h-2.5 w-2.5 flex-none rounded-full bg-[#7ddcb7]'
-                        : 'h-2.5 w-2.5 flex-none rounded-full bg-[#9b6823]'
-                    }
-                  ></span>
-                  {item.label}
-                  <strong>{item.ready ? 'Pronto' : 'Pendente'}</strong>
-                </li>
+                <tr>
+                  <td>{item.label}</td>
+                  <td>
+                    <span
+                      class:list={[
+                        'badge badge-sm',
+                        item.ready
+                          ? 'badge-outline border-[#d8ae73] text-[#6f4716]'
+                          : 'badge-outline border-[#c8c4bd] text-[#625a51]',
+                      ]}
+                    >
+                      {item.ready ? 'Pronto' : 'Pendente'}
+                    </span>
+                  </td>
+                </tr>
               ))}
-            </ul>
-          </div>
-        </section>
-        <section
-          id="precos"
-          class="mb-20 scroll-mt-8 border-t border-[#d8ae73] pt-9 first:border-t-0 first:pt-0"
-        >
-          <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#17130d] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#625a51]">
-            <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#9b6823]">
-              Cobrança
-            </span>
-            <h2>Preços e planos</h2>
-            <p>
-              Ao ativar um preço, o Vira confere o valor, a moeda e a periodicidade na Stripe. Use
-              um Price ID já criado na Stripe.
-            </p>
-          </div>
-          <div class="grid gap-4 md:grid-cols-2">
-            {prices.map((row) => (
-              <form
-                class="card rounded-xl border border-[#d8ae73] bg-white p-4 shadow-none sm:p-6 [&_h3]:mb-4 [&_h3]:text-xl [&_h3]:text-[#17130d] [&_label]:mt-3 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold"
-                data-api-price-form
-                data-plan={row.plan}
-                data-currency={row.currency}
-              >
-                <div class="flex items-start justify-between [&_span]:badge [&_span]:badge-secondary">
-                  <h3>{planName[row.plan]}</h3>
-                  <span>{row.currency.toUpperCase()}</span>
-                </div>
-                <label>
-                  Valor em {row.currency.toUpperCase()}
-                  <input
-                    class="input input-bordered w-full"
-                    name="amount"
-                    type="number"
-                    min="0"
-                    max="1000000"
-                    step="0.01"
-                    value={row.amount_minor === null ? '' : (row.amount_minor / 100).toFixed(2)}
-                    placeholder="0,00"
-                    required
-                  />
-                </label>
-                <label>
-                  Price ID da Stripe
-                  <input
-                    class="input input-bordered w-full"
-                    name="stripe_price_id"
-                    value={row.stripe_price_id ?? ''}
-                    placeholder="price_..."
-                    autocomplete="off"
-                  />
-                </label>
-                <label class="my-4 flex! items-center gap-2 [&_input]:checkbox [&_input]:checkbox-primary">
-                  <input name="active" type="checkbox" checked={Boolean(row.active)} /> Disponível
-                  para compra
-                </label>
-                <button
-                  class="btn btn-primary rounded-xl border-0 font-bold shadow-none"
-                  type="submit"
-                >
-                  Salvar preço
-                </button>
-                <p
-                  class="mt-2 text-sm text-success [hidden]:hidden"
-                  data-api-status
-                  role="status"
-                  hidden
-                ></p>
-              </form>
-            ))}
-          </div>
-        </section>
-        <section
-          id="configuracoes"
-          class="mb-20 scroll-mt-8 border-t border-[#d8ae73] pt-9 first:border-t-0 first:pt-0"
-        >
-          <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#17130d] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#625a51]">
-            <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#9b6823]">
-              Serviços
-            </span>
-            <h2>Configurações</h2>
-            <p>
-              Os segredos ficam criptografados no banco. Depois de salvos, apenas o estado
-              “configurado” aparece aqui.
-            </p>
-          </div>
-          <div class="grid gap-4 md:grid-cols-2">
-            {groups.map((group) => (
-              <div class="card rounded-xl border border-[#d8ae73] bg-white p-4 shadow-none sm:p-6 [&_h3]:mb-4 [&_h3]:text-xl [&_h3]:text-[#17130d] [&_label]:mt-3 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold">
-                <h3>{group.title}</h3>
-                {group.keys.map((key) => {
+            </tbody>
+          </table>
+        </div>
+      </section>
+      <section id="precos" class="mb-16 scroll-mt-24 border-t border-[#d8ae73] pt-8">
+        <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#17130d] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#625a51]">
+          <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#9b6823]">
+            Cobrança
+          </span>
+          <h2>Preços e planos</h2>
+          <p>
+            Ao ativar um preço, o Vira confere o valor, a moeda e a periodicidade na Stripe. Use um
+            Price ID já criado na Stripe.
+          </p>
+        </div>
+        <div class="overflow-x-auto border-y border-[#d8ae73]">
+          <table class="table w-full min-w-[760px]">
+            <thead>
+              <tr>
+                <th>Plano</th>
+                <th>Moeda</th>
+                <th>Valor</th>
+                <th>Price ID da Stripe</th>
+                <th>Disponível</th>
+                <th>
+                  <span class="sr-only">Ação</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {prices.map((row) => {
+                const formId = `price-${row.plan}-${row.currency}`;
+                return (
+                  <tr>
+                    <td class="font-semibold">
+                      <form
+                        id={formId}
+                        data-api-price-form
+                        data-plan={row.plan}
+                        data-currency={row.currency}
+                      >
+                        {planName[row.plan]}
+                        <p
+                          class="mt-1 text-xs text-[#6f4716] [hidden]:hidden"
+                          data-api-status
+                          role="status"
+                          hidden
+                        ></p>
+                      </form>
+                    </td>
+                    <td>
+                      <span class="badge badge-outline border-[#d8ae73]">
+                        {row.currency.toUpperCase()}
+                      </span>
+                    </td>
+                    <td>
+                      <input
+                        class="input input-bordered w-28"
+                        form={formId}
+                        aria-label={`Valor de ${planName[row.plan]} em ${row.currency.toUpperCase()}`}
+                        name="amount"
+                        type="number"
+                        min="0"
+                        max="1000000"
+                        step="0.01"
+                        value={row.amount_minor === null ? '' : (row.amount_minor / 100).toFixed(2)}
+                        placeholder="0,00"
+                        required
+                      />
+                    </td>
+                    <td>
+                      <input
+                        class="input input-bordered w-full min-w-48"
+                        form={formId}
+                        aria-label={`Price ID de ${planName[row.plan]} em ${row.currency.toUpperCase()}`}
+                        name="stripe_price_id"
+                        value={row.stripe_price_id ?? ''}
+                        placeholder="price_..."
+                        autocomplete="off"
+                      />
+                    </td>
+                    <td>
+                      <input
+                        class="checkbox checkbox-primary"
+                        form={formId}
+                        aria-label={`Disponibilizar ${planName[row.plan]} em ${row.currency.toUpperCase()}`}
+                        name="active"
+                        type="checkbox"
+                        checked={Boolean(row.active)}
+                      />
+                    </td>
+                    <td>
+                      <button class="btn btn-primary btn-sm" form={formId} type="submit">
+                        Salvar
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </section>
+      <section id="configuracoes" class="mb-16 scroll-mt-24 border-t border-[#d8ae73] pt-8">
+        <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#17130d] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#625a51]">
+          <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#9b6823]">
+            Serviços
+          </span>
+          <h2>Configurações</h2>
+          <p>
+            Os segredos ficam criptografados no banco. Depois de salvos, apenas o estado
+            “configurado” aparece aqui.
+          </p>
+        </div>
+        <div class="overflow-x-auto border-y border-[#d8ae73]">
+          <table class="table w-full min-w-[780px]">
+            <thead>
+              <tr>
+                <th>Grupo</th>
+                <th>Configuração</th>
+                <th>Estado</th>
+                <th>Valor</th>
+                <th>
+                  <span class="sr-only">Ação</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {groups.map((group) =>
+                group.keys.map((key) => {
                   const row = settings.find((item) => item.key === key);
                   if (!row) return null;
+                  const formId = `setting-form-${key}`;
                   return (
-                    <form
-                      class="border-t border-[#d8ae73] py-3 [&_label]:flex [&_label]:justify-between [&_label]:gap-2.5"
-                      data-key={key}
-                      data-secret={Boolean(row.encrypted)}
-                      data-api-setting-form
-                    >
-                      <label for={`setting-${key}`}>
-                        {labels[key]}{' '}
+                    <tr>
+                      <td class="text-xs text-[#625a51]">{group.title}</td>
+                      <td class="font-medium">
+                        <form
+                          id={formId}
+                          data-key={key}
+                          data-secret={Boolean(row.encrypted)}
+                          data-api-setting-form
+                        >
+                          <label for={`setting-${key}`}>{labels[key]}</label>
+                          <p
+                            class="mt-1 text-xs text-[#6f4716] [hidden]:hidden"
+                            data-api-status
+                            role="status"
+                            hidden
+                          ></p>
+                        </form>
+                      </td>
+                      <td>
                         <span
-                          class={row.value ? 'text-xs text-success' : 'text-xs text-error'}
+                          class:list={[
+                            'badge badge-sm',
+                            row.value
+                              ? 'badge-outline border-[#d8ae73] text-[#6f4716]'
+                              : 'badge-outline border-[#c8c4bd] text-[#625a51]',
+                          ]}
                           data-api-config-state
                         >
                           {row.value ? 'Configurado' : 'Pendente'}
                         </span>
-                      </label>
-                      <div class="flex gap-2 [&_input]:min-w-0 [&_input]:flex-1">
+                      </td>
+                      <td>
                         <input
-                          class="input input-bordered w-full"
+                          class="input input-bordered w-full min-w-56"
+                          form={formId}
                           id={`setting-${key}`}
                           name="value"
                           type={
@@ -356,296 +398,327 @@ const deliveryStatus: Record<string, string> = {
                           }
                           autocomplete="off"
                         />
-                        <button class="btn btn-outline" type="submit">
+                      </td>
+                      <td>
+                        <button class="btn btn-outline btn-sm" form={formId} type="submit">
                           Salvar
                         </button>
-                      </div>
-                      <p
-                        class="mt-2 text-sm text-success [hidden]:hidden"
-                        data-api-status
-                        role="status"
-                        hidden
-                      ></p>
-                    </form>
-                  );
-                })}
-              </div>
-            ))}
-          </div>
-        </section>
-        <section
-          id="emails"
-          class="mb-20 scroll-mt-8 border-t border-[#d8ae73] pt-9 first:border-t-0 first:pt-0"
-        >
-          <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#17130d] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#625a51]">
-            <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#9b6823]">
-              Comunicação
-            </span>
-            <h2>E-mails automáticos</h2>
-            <p>
-              Edite o assunto e o HTML de cada mensagem. As variáveis entre chaves recebem os dados
-              reais antes do envio. Desative um modelo para suspender novos envios desse tipo.
-            </p>
-          </div>
-          <div class="grid gap-5">
-            {emailTemplates.map((row) => (
-              <form
-                class="rounded-xl border border-[#d8ae73] bg-white p-5 sm:p-7"
-                data-api-email-template-form
-                data-key={row.key}
-              >
-                <div class="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <h3 class="font-[Outfit] text-2xl text-[#17130d]">{emailLabels[row.key]}</h3>
-                    <p class="mt-1 max-w-[70ch] text-sm leading-relaxed text-[#625a51]">
-                      {emailDescriptions[row.key]}
-                    </p>
-                  </div>
-                  <label class="flex items-center gap-2 text-sm font-semibold text-[#17130d]">
-                    <input
-                      class="checkbox checkbox-primary"
-                      name="enabled"
-                      type="checkbox"
-                      checked={Boolean(row.enabled)}
-                    />
-                    Ativo
-                  </label>
-                </div>
-                <p class="mt-5 text-xs text-[#625a51]">
-                  Variáveis: {emailVariables[row.key].map((name) => `{{${name}}}`).join(' · ')}
-                </p>
-                <label
-                  class="mt-5 block text-sm font-semibold text-[#17130d]"
-                  for={`email-subject-${row.key}`}
-                >
-                  Assunto
-                </label>
-                <input
-                  id={`email-subject-${row.key}`}
-                  class="input input-bordered mt-2 w-full"
-                  name="subject"
-                  type="text"
-                  maxlength="180"
-                  value={row.subject}
-                  required
-                />
-                <label
-                  class="mt-5 block text-sm font-semibold text-[#17130d]"
-                  for={`email-html-${row.key}`}
-                >
-                  HTML do e-mail
-                </label>
-                <textarea
-                  id={`email-html-${row.key}`}
-                  class="textarea textarea-bordered mt-2 min-h-52 w-full font-mono text-xs leading-relaxed"
-                  name="html"
-                  maxlength="32000"
-                  spellcheck="false"
-                  required
-                >{row.html}</textarea>
-                <div class="mt-4 flex flex-wrap items-center gap-3">
-                  <button
-                    class="btn btn-primary rounded-xl border-0 font-bold shadow-none"
-                    type="submit"
-                  >
-                    Salvar modelo
-                  </button>
-                  <button
-                    class="btn btn-outline rounded-xl"
-                    type="button"
-                    data-email-preview-button
-                  >
-                    Ver prévia
-                  </button>
-                  <p
-                    class="text-sm text-success [hidden]:hidden"
-                    data-api-status
-                    role="status"
-                    hidden
-                  ></p>
-                </div>
-                <div
-                  class="mt-5 hidden rounded-xl border border-[#d8ae73] bg-[#fffdf9] p-3"
-                  data-email-preview-container
-                >
-                  <p class="mb-2 font-mono text-[11px] uppercase tracking-wider text-[#9b6823]">
-                    Prévia isolada
-                  </p>
-                  <iframe
-                    title={`Prévia: ${emailLabels[row.key]}`}
-                    class="h-80 w-full rounded-lg bg-white"
-                    sandbox=""
-                    data-email-preview
-                  ></iframe>
-                </div>
-              </form>
-            ))}
-          </div>
-          <div class="mt-8 rounded-xl border border-[#d8ae73] bg-white p-5 sm:p-7">
-            <h3 class="font-[Outfit] text-xl text-[#17130d]">Últimos envios</h3>
-            <p class="mt-1 text-sm text-[#625a51]">Histórico mantido por 30 dias.</p>
-            <div class="mt-4 overflow-x-auto">
-              <table class="table w-full">
-                <thead>
-                  <tr>
-                    <th>Mensagem</th>
-                    <th>Destinatário</th>
-                    <th>Estado</th>
-                    <th>Criado</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {emailOutbox.map((item) => (
-                    <tr>
-                      <td>{emailLabels[item.template_key] ?? item.template_key}</td>
-                      <td>{item.recipient}</td>
-                      <td title={item.last_error ?? ''}>
-                        {deliveryStatus[item.status] ?? item.status}
                       </td>
-                      <td>{date(item.created_at)}</td>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-              {emailOutbox.length === 0 && (
-                <p class="py-3 text-sm text-[#625a51]">Nenhum envio registrado.</p>
+                  );
+                }),
               )}
-            </div>
-          </div>
-        </section>
-        <section
-          id="clientes"
-          class="mb-20 scroll-mt-8 border-t border-[#d8ae73] pt-9 first:border-t-0 first:pt-0"
-        >
-          <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#17130d] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#625a51]">
-            <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#9b6823]">
-              Contas
-            </span>
-            <h2>Clientes e assinaturas</h2>
-            <p>
-              Busque por e-mail ou endereço da página. Os planos mudam apenas pelos eventos de
-              cobrança da Stripe.
-            </p>
-          </div>
-          <form
-            class="mb-3.5 flex gap-2 [&_input]:w-full [&_input]:max-w-[360px]"
-            action="/admin#clientes"
-            method="get"
-          >
-            <input
-              class="input input-bordered w-full"
-              name="q"
-              type="search"
-              value={search}
-              placeholder="E-mail ou endereço da página"
-              maxlength="80"
-            />
-            <button class="btn btn-primary" type="submit">
-              Buscar
-            </button>
-          </form>
-          <div class="card rounded-xl border border-[#d8ae73] bg-white p-4 shadow-none sm:p-6 [&_h3]:mb-4 [&_h3]:text-xl [&_h3]:text-[#17130d] [&_label]:mt-3 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold overflow-auto [&_table]:table [&_table]:w-full [&_th]:text-xs [&_th]:uppercase [&_th]:text-[#625a51] [&_td]:whitespace-nowrap [&_td_small]:text-[#625a51]">
-            <table class="table">
-              <thead>
-                <tr>
-                  <th>E-mail</th>
-                  <th>Plano</th>
-                  <th>Acesso até</th>
-                  <th>Cadastro</th>
-                  <th>Página</th>
-                  <th>Assinatura</th>
-                </tr>
-              </thead>
-              <tbody>
-                {customers.map((row) => (
+            </tbody>
+          </table>
+        </div>
+      </section>
+      <section id="emails" class="mb-16 scroll-mt-24 border-t border-[#d8ae73] pt-8">
+        <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#17130d] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#625a51]">
+          <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#9b6823]">
+            Comunicação
+          </span>
+          <h2>E-mails automáticos</h2>
+          <p>
+            Edite o assunto e o HTML de cada mensagem. As variáveis entre chaves recebem os dados
+            reais antes do envio. Desative um modelo para suspender novos envios desse tipo.
+          </p>
+        </div>
+        <div class="overflow-x-auto border-y border-[#d8ae73]">
+          <table class="table w-full">
+            <thead>
+              <tr>
+                <th>Mensagem</th>
+                <th>Estado</th>
+                <th class="hidden md:table-cell">Assunto</th>
+                <th>
+                  <span class="sr-only">Ação</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {emailTemplates.map((row) => (
+                <>
                   <tr>
-                    <td>{row.email ?? 'Conta antiga'}</td>
-                    <td>{row.plan}</td>
+                    <td class="font-medium">{emailLabels[row.key]}</td>
                     <td>
-                      {date(row.access_until ?? (row.plan === 'trial' ? row.trial_ends_at : null))}
-                    </td>
-                    <td>{date(row.created_at)}</td>
-                    <td>
-                      <a
-                        href={`https://${row.slug}.${domain}/`}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                      <span
+                        class:list={[
+                          'badge badge-sm',
+                          row.enabled
+                            ? 'badge-outline border-[#d8ae73] text-[#6f4716]'
+                            : 'badge-outline border-[#c8c4bd] text-[#625a51]',
+                        ]}
                       >
-                        {row.slug}
-                      </a>
-                      <small>{row.published_at ? 'Publicada' : 'Rascunho'}</small>
+                        {row.enabled ? 'Ativo' : 'Desativado'}
+                      </span>
+                    </td>
+                    <td
+                      class="hidden max-w-80 truncate md:table-cell"
+                      title={row.subject}
+                      data-email-subject
+                    >
+                      {row.subject}
                     </td>
                     <td>
-                      <code>{row.stripe_subscription_id ?? '—'}</code>
+                      <button
+                        class="btn btn-outline btn-sm"
+                        type="button"
+                        data-email-toggle
+                        aria-controls={`email-editor-${row.key}`}
+                        aria-expanded="false"
+                      >
+                        Editar
+                      </button>
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-            {customers.length === 0 && (
-              <p class="my-2 text-[#625a51]">
-                {search
-                  ? 'Nenhuma conta corresponde à busca.'
-                  : 'Nenhum cliente ainda. As contas aparecerão aqui após o primeiro cadastro.'}
-              </p>
-            )}
-          </div>
-        </section>
-        <section
-          id="dominios"
-          class="mb-20 scroll-mt-8 border-t border-[#d8ae73] pt-9 first:border-t-0 first:pt-0"
-        >
-          <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#17130d] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#625a51]">
-            <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#9b6823]">
-              Publicação
-            </span>
-            <h2>Domínios dos clientes</h2>
-            <p>Acompanhe a ativação do hostname e do certificado TLS.</p>
-          </div>
-          <div class="card rounded-xl border border-[#d8ae73] bg-white p-4 shadow-none sm:p-6 [&_h3]:mb-4 [&_h3]:text-xl [&_h3]:text-[#17130d] [&_label]:mt-3 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold overflow-auto [&_table]:table [&_table]:w-full [&_th]:text-xs [&_th]:uppercase [&_th]:text-[#625a51] [&_td]:whitespace-nowrap [&_td_small]:text-[#625a51]">
-            <table class="table">
+                  <tr id={`email-editor-${row.key}`} class="hidden" data-email-editor-row>
+                    <td colspan="4" class="bg-[#fffdf9] p-5 sm:p-7">
+                      <form data-api-email-template-form data-key={row.key}>
+                        <p class="max-w-[70ch] text-sm leading-relaxed text-[#625a51]">
+                          {emailDescriptions[row.key]}
+                        </p>
+                        <label class="mt-5 flex items-center gap-2 text-sm font-semibold text-[#17130d]">
+                          <input
+                            class="checkbox checkbox-primary"
+                            name="enabled"
+                            type="checkbox"
+                            checked={Boolean(row.enabled)}
+                          />{' '}
+                          Ativo
+                        </label>
+                        <p class="mt-4 text-xs text-[#625a51]">
+                          Variáveis:{' '}
+                          {emailVariables[row.key].map((name) => `{{${name}}}`).join(' · ')}
+                        </p>
+                        <label
+                          class="mt-5 block text-sm font-semibold text-[#17130d]"
+                          for={`email-subject-${row.key}`}
+                        >
+                          Assunto
+                        </label>
+                        <input
+                          id={`email-subject-${row.key}`}
+                          class="input input-bordered mt-2 w-full"
+                          name="subject"
+                          type="text"
+                          maxlength="180"
+                          value={row.subject}
+                          required
+                        />
+                        <label
+                          class="mt-5 block text-sm font-semibold text-[#17130d]"
+                          for={`email-html-${row.key}`}
+                        >
+                          HTML do e-mail
+                        </label>
+                        <textarea
+                          id={`email-html-${row.key}`}
+                          class="textarea textarea-bordered mt-2 min-h-52 w-full font-mono text-xs leading-relaxed"
+                          name="html"
+                          maxlength="32000"
+                          spellcheck="false"
+                          required
+                        >{row.html}</textarea>
+                        <div class="mt-4 flex flex-wrap items-center gap-3">
+                          <button class="btn btn-primary" type="submit">
+                            Salvar modelo
+                          </button>
+                          <button class="btn btn-outline" type="button" data-email-preview-button>
+                            Ver prévia
+                          </button>
+                          <p
+                            class="text-sm text-[#6f4716] [hidden]:hidden"
+                            data-api-status
+                            role="status"
+                            hidden
+                          ></p>
+                        </div>
+                        <div
+                          class="mt-5 hidden border border-[#d8ae73] bg-white p-3"
+                          data-email-preview-container
+                        >
+                          <p class="mb-2 font-mono text-[11px] uppercase tracking-wider text-[#9b6823]">
+                            Prévia isolada
+                          </p>
+                          <iframe
+                            title={`Prévia: ${emailLabels[row.key]}`}
+                            class="h-80 w-full bg-white"
+                            sandbox=""
+                            data-email-preview
+                          ></iframe>
+                        </div>
+                      </form>
+                    </td>
+                  </tr>
+                </>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div class="mt-8">
+          <h3 class="font-[Outfit] text-xl text-[#17130d]">Últimos envios</h3>
+          <p class="mt-1 text-sm text-[#625a51]">Histórico mantido por 30 dias.</p>
+          <div class="mt-4 overflow-x-auto">
+            <table class="table w-full">
               <thead>
                 <tr>
-                  <th>Domínio</th>
-                  <th>Cliente</th>
-                  <th>Hostname</th>
-                  <th>TLS</th>
-                  <th>Adicionado</th>
+                  <th>Mensagem</th>
+                  <th>Destinatário</th>
+                  <th>Estado</th>
+                  <th>Criado</th>
                 </tr>
               </thead>
               <tbody>
-                {domains.map((row) => (
+                {emailOutbox.map((item) => (
                   <tr>
-                    <td>{row.hostname}</td>
-                    <td>{row.email ?? 'Conta antiga'}</td>
-                    <td>{row.status}</td>
-                    <td>{row.ssl_status}</td>
-                    <td>{date(row.created_at)}</td>
+                    <td>{emailLabels[item.template_key] ?? item.template_key}</td>
+                    <td>{item.recipient}</td>
+                    <td title={item.last_error ?? ''}>
+                      {deliveryStatus[item.status] ?? item.status}
+                    </td>
+                    <td>{date(item.created_at)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            {domains.length === 0 && (
-              <p class="my-2 text-[#625a51]">Nenhum domínio de cliente conectado ainda.</p>
+            {emailOutbox.length === 0 && (
+              <p class="py-3 text-sm text-[#625a51]">Nenhum envio registrado.</p>
             )}
           </div>
-        </section>
-        <section
-          id="atividade"
-          class="mb-20 scroll-mt-8 border-t border-[#d8ae73] pt-9 first:border-t-0 first:pt-0"
+        </div>
+      </section>
+      <section id="clientes" class="mb-16 scroll-mt-24 border-t border-[#d8ae73] pt-8">
+        <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#17130d] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#625a51]">
+          <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#9b6823]">
+            Contas
+          </span>
+          <h2>Clientes e assinaturas</h2>
+          <p>
+            Busque por e-mail ou endereço da página. Os planos mudam apenas pelos eventos de
+            cobrança da Stripe.
+          </p>
+        </div>
+        <form
+          class="mb-3.5 flex gap-2 [&_input]:w-full [&_input]:max-w-[360px]"
+          action="/admin#clientes"
+          method="get"
         >
-          <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#17130d] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#625a51]">
-            <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#9b6823]">
-              Segurança
-            </span>
-            <h2>Atividade administrativa</h2>
-          </div>
-          <div class="card rounded-xl border border-[#d8ae73] bg-white p-4 shadow-none sm:p-6 [&_h3]:mb-4 [&_h3]:text-xl [&_h3]:text-[#17130d] [&_label]:mt-3 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold [&>div]:flex [&>div]:items-center [&>div]:gap-5 [&>div]:border-b [&>div]:border-[#d8ae73] [&>div]:py-3 [&>div]:text-sm [&_span]:min-w-20 [&_span]:text-[#625a51] [&_code]:ml-auto [&_code]:text-[#17130d]">
-            {audit.length ? (
-              audit.map((item) => (
-                <div>
-                  <span>{date(item.created_at)}</span>
-                  <strong>
+          <input
+            class="input input-bordered w-full"
+            name="q"
+            type="search"
+            value={search}
+            placeholder="E-mail ou endereço da página"
+            maxlength="80"
+          />
+          <button class="btn btn-primary" type="submit">
+            Buscar
+          </button>
+        </form>
+        <div class="overflow-x-auto border-y border-[#d8ae73] [&_td]:whitespace-nowrap [&_td_small]:block [&_td_small]:text-[#625a51]">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>E-mail</th>
+                <th>Plano</th>
+                <th>Acesso até</th>
+                <th>Cadastro</th>
+                <th>Página</th>
+                <th>Assinatura</th>
+              </tr>
+            </thead>
+            <tbody>
+              {customers.map((row) => (
+                <tr>
+                  <td>{row.email ?? 'Conta antiga'}</td>
+                  <td>{row.plan}</td>
+                  <td>
+                    {date(row.access_until ?? (row.plan === 'trial' ? row.trial_ends_at : null))}
+                  </td>
+                  <td>{date(row.created_at)}</td>
+                  <td>
+                    <a
+                      href={`https://${row.slug}.${domain}/`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {row.slug}
+                    </a>
+                    <small>{row.published_at ? 'Publicada' : 'Rascunho'}</small>
+                  </td>
+                  <td>
+                    <code>{row.stripe_subscription_id ?? '—'}</code>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {customers.length === 0 && (
+            <p class="my-2 text-[#625a51]">
+              {search
+                ? 'Nenhuma conta corresponde à busca.'
+                : 'Nenhum cliente ainda. As contas aparecerão aqui após o primeiro cadastro.'}
+            </p>
+          )}
+        </div>
+      </section>
+      <section id="dominios" class="mb-16 scroll-mt-24 border-t border-[#d8ae73] pt-8">
+        <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#17130d] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#625a51]">
+          <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#9b6823]">
+            Publicação
+          </span>
+          <h2>Domínios dos clientes</h2>
+          <p>Acompanhe a ativação do hostname e do certificado TLS.</p>
+        </div>
+        <div class="overflow-x-auto border-y border-[#d8ae73] [&_td]:whitespace-nowrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Domínio</th>
+                <th>Cliente</th>
+                <th>Hostname</th>
+                <th>TLS</th>
+                <th>Adicionado</th>
+              </tr>
+            </thead>
+            <tbody>
+              {domains.map((row) => (
+                <tr>
+                  <td>{row.hostname}</td>
+                  <td>{row.email ?? 'Conta antiga'}</td>
+                  <td>{row.status}</td>
+                  <td>{row.ssl_status}</td>
+                  <td>{date(row.created_at)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {domains.length === 0 && (
+            <p class="my-2 text-[#625a51]">Nenhum domínio de cliente conectado ainda.</p>
+          )}
+        </div>
+      </section>
+      <section id="atividade" class="mb-16 scroll-mt-24 border-t border-[#d8ae73] pt-8">
+        <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#17130d] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#625a51]">
+          <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#9b6823]">
+            Segurança
+          </span>
+          <h2>Atividade administrativa</h2>
+        </div>
+        <div class="overflow-x-auto border-y border-[#d8ae73]">
+          <table class="table w-full min-w-[540px]">
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Alteração</th>
+                <th>Item</th>
+              </tr>
+            </thead>
+            <tbody>
+              {audit.map((item) => (
+                <tr>
+                  <td>{date(item.created_at)}</td>
+                  <td>
                     {item.action === 'update_price'
                       ? 'Preço alterado'
                       : item.action === 'update_email_template'
@@ -653,17 +726,20 @@ const deliveryStatus: Record<string, string> = {
                         : item.action === 'clear_setting'
                           ? 'Configuração limpa'
                           : 'Configuração alterada'}
-                  </strong>
-                  <code>{item.target}</code>
-                </div>
-              ))
-            ) : (
-              <p class="my-2 text-[#625a51]">Nenhuma alteração registrada ainda.</p>
-            )}
-          </div>
-        </section>
-      </main>
-    </div>
+                  </td>
+                  <td>
+                    <code>{item.target}</code>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {audit.length === 0 && (
+            <p class="py-4 text-sm text-[#625a51]">Nenhuma alteração registrada ainda.</p>
+          )}
+        </div>
+      </section>
+    </main>
   </div>
   <script>
     import { updateSetting } from '@frontend/api/admin/update-setting';
@@ -675,21 +751,21 @@ const deliveryStatus: Record<string, string> = {
       node.textContent = message;
       node.hidden = false;
       node.classList.toggle('text-error', error);
-      node.classList.toggle('text-success', !error);
+      node.classList.toggle('text-[#6f4716]', !error);
     };
     document.querySelectorAll<HTMLFormElement>('[data-api-setting-form]').forEach((form) =>
       form.addEventListener('submit', async (event) => {
         event.preventDefault();
-        const button = form.querySelector<HTMLButtonElement>('button[type=submit]')!;
+        const button = form.closest('tr')!.querySelector<HTMLButtonElement>('button[type=submit]')!;
         button.disabled = true;
         try {
-          const value = form.querySelector<HTMLInputElement>('[name=value]')!.value;
+          const field = form.elements.namedItem('value') as HTMLInputElement;
+          const value = field.value;
           if (!value.trim()) throw new Error('Informe um valor.');
           await updateSetting(form.dataset.key || '', value);
-          if (form.dataset.secret === 'true')
-            form.querySelector<HTMLInputElement>('[name=value]')!.value = '';
-          const badge = form.querySelector<HTMLElement>('[data-api-config-state]')!;
-          badge.className = 'text-xs text-success';
+          if (form.dataset.secret === 'true') field.value = '';
+          const badge = form.closest('tr')!.querySelector<HTMLElement>('[data-api-config-state]')!;
+          badge.className = 'badge badge-sm badge-outline border-[#d8ae73] text-[#6f4716]';
           badge.textContent = 'Configurado';
           show(form, 'Salvo.');
         } catch (error) {
@@ -702,10 +778,10 @@ const deliveryStatus: Record<string, string> = {
     document.querySelectorAll<HTMLFormElement>('[data-api-price-form]').forEach((form) =>
       form.addEventListener('submit', async (event) => {
         event.preventDefault();
-        const button = form.querySelector<HTMLButtonElement>('button[type=submit]')!;
+        const button = form.closest('tr')!.querySelector<HTMLButtonElement>('button[type=submit]')!;
         button.disabled = true;
         try {
-          const input = form.querySelector<HTMLInputElement>('[name=amount]')!;
+          const input = form.elements.namedItem('amount') as HTMLInputElement;
           const amount = Number(input.value);
           if (!Number.isFinite(amount) || !Number.isInteger(amount * 100))
             throw new Error('Informe um valor com até duas casas decimais.');
@@ -713,10 +789,10 @@ const deliveryStatus: Record<string, string> = {
             plan: form.dataset.plan,
             currency: form.dataset.currency,
             amount_minor: Math.round(amount * 100),
-            stripe_price_id: form
-              .querySelector<HTMLInputElement>('[name=stripe_price_id]')!
-              .value.trim(),
-            active: form.querySelector<HTMLInputElement>('[name=active]')!.checked,
+            stripe_price_id: (
+              form.elements.namedItem('stripe_price_id') as HTMLInputElement
+            ).value.trim(),
+            active: (form.elements.namedItem('active') as HTMLInputElement).checked,
           };
           await updatePrice(body);
           show(form, 'Preço salvo.');
@@ -724,6 +800,25 @@ const deliveryStatus: Record<string, string> = {
           show(form, error instanceof Error ? error.message : 'Falha ao salvar', true);
         } finally {
           button.disabled = false;
+        }
+      }),
+    );
+    document.querySelectorAll<HTMLButtonElement>('[data-email-toggle]').forEach((button) =>
+      button.addEventListener('click', () => {
+        const row = document.getElementById(button.getAttribute('aria-controls') || '');
+        if (!row) return;
+        const opening = row.classList.contains('hidden');
+        document
+          .querySelectorAll<HTMLElement>('[data-email-editor-row]')
+          .forEach((item) => item.classList.add('hidden'));
+        document.querySelectorAll<HTMLButtonElement>('[data-email-toggle]').forEach((item) => {
+          item.setAttribute('aria-expanded', 'false');
+          item.textContent = 'Editar';
+        });
+        if (opening) {
+          row.classList.remove('hidden');
+          button.setAttribute('aria-expanded', 'true');
+          button.textContent = 'Fechar';
         }
       }),
     );
@@ -763,6 +858,21 @@ const deliveryStatus: Record<string, string> = {
             subject: form.querySelector<HTMLInputElement>('[name=subject]')!.value,
             html: form.querySelector<HTMLTextAreaElement>('[name=html]')!.value,
           });
+          const badge = form
+            .closest('tr')
+            ?.previousElementSibling?.querySelector<HTMLElement>('.badge');
+          if (badge) {
+            const enabled = form.querySelector<HTMLInputElement>('[name=enabled]')!.checked;
+            badge.className = `badge badge-sm badge-outline ${enabled ? 'border-[#d8ae73] text-[#6f4716]' : 'border-[#c8c4bd] text-[#625a51]'}`;
+            badge.textContent = enabled ? 'Ativo' : 'Desativado';
+          }
+          const subject = form
+            .closest('tr')
+            ?.previousElementSibling?.querySelector<HTMLElement>('[data-email-subject]');
+          if (subject) {
+            subject.textContent = form.querySelector<HTMLInputElement>('[name=subject]')!.value;
+            subject.title = subject.textContent;
+          }
           show(form, 'Modelo salvo.');
         } catch (error) {
           show(form, error instanceof Error ? error.message : 'Falha ao salvar', true);
