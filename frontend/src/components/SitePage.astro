@@ -53,7 +53,15 @@ const palette =
       href="#top"
       class="max-w-[220px] overflow-hidden text-ellipsis whitespace-nowrap font-[Outfit] text-[22px] font-extrabold"
     >
-      {content.title.split(' ').slice(0, 2).join(' ')}
+      {content.logo ? (
+        <img
+          src={content.logo}
+          alt={content.appName || content.title}
+          class="h-11 max-w-[190px] object-contain object-left"
+        />
+      ) : (
+        content.title.split(' ').slice(0, 2).join(' ')
+      )}
     </a>
     <nav>
       {(content.about || content.benefits.length > 0) && (

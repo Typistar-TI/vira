@@ -3,7 +3,9 @@ import Base from '@frontend/components/Base.astro';
 import Brand from '@frontend/components/Brand.astro';
 import Walkthrough from '@frontend/components/Walkthrough.astro';
 import MobileNavigation from '@frontend/components/MobileNavigation.astro';
+import ProjectShowcase from '@frontend/components/ProjectShowcase.astro';
 import { getPublicPrices, type Plan } from '@frontend/api/billing/public-prices';
+import { getPublicShowcase } from '@frontend/api/showcase/public-showcase';
 import { getRootDomain } from '@frontend/api/config/root-domain';
 import { sessionAdmin } from '@frontend/api/auth/session-admin';
 import { sessionUser } from '@frontend/api/auth/session-user';
@@ -20,6 +22,19 @@ const dashboardHref = (await sessionAdmin(Astro.request))
     : '/login';
 const signedIn = dashboardHref !== '/login';
 const prices = await getPublicPrices();
+const { createdCount, projects } = await getPublicShowcase();
+const count = new Intl.NumberFormat(en ? 'en-US' : 'pt-BR').format(createdCount);
+const createdLabel = en
+  ? createdCount === 0
+    ? 'Be the first to create a page here'
+    : createdCount === 1
+      ? '1 person has created a page here'
+      : `${count} people have created their pages here`
+  : createdCount === 0
+    ? 'Seja a primeira pessoa a criar sua página'
+    : createdCount === 1
+      ? '1 pessoa já criou sua página aqui'
+      : `${count} pessoas já criaram suas páginas aqui`;
 const currency = en ? 'usd' : 'brl';
 const displayPrice = (plan: Plan) => {
   const row = prices.find((item) => item.plan === plan && item.currency === currency);
@@ -33,7 +48,6 @@ const displayPrice = (plan: Plan) => {
 const t = en
   ? {
       nav: 'Start free',
-      eyebrow: 'Your next page starts here',
       titleA: 'Put your idea',
       titleB: 'out there.',
       intro:
@@ -82,7 +96,6 @@ const t = en
     }
   : {
       nav: 'Começar grátis',
-      eyebrow: 'Sua próxima página começa aqui',
       titleA: 'Coloque sua ideia',
       titleB: 'no mundo.',
       intro:
@@ -150,6 +163,9 @@ const t = en
         <a class="transition-colors hover:text-[#9b6823]" href="#como-funciona">
           {en ? 'How it works' : 'Como funciona'}
         </a>
+        <a class="transition-colors hover:text-[#9b6823]" href="#vitrine">
+          {en ? 'Projects' : 'Projetos'}
+        </a>
         <a class="transition-colors hover:text-[#9b6823]" href="#planos">
           {en ? 'Plans' : 'Planos'}
         </a>
@@ -161,6 +177,7 @@ const t = en
           iconOnly
           links={[
             { href: '#como-funciona', label: en ? 'How it works' : 'Como funciona' },
+            { href: '#vitrine', label: en ? 'Projects' : 'Projetos' },
             { href: '#planos', label: en ? 'Plans' : 'Planos' },
           ]}
         />
@@ -190,7 +207,7 @@ const t = en
         <div class="relative z-10 max-w-[690px] text-left" data-reveal>
           <span class="inline-flex items-center gap-2 rounded-full border border-[#d8ae73] bg-white px-4 py-2 font-mono text-[10px] uppercase tracking-[0.19em] text-[#8b5b1e]">
             <span class="h-1.5 w-1.5 rounded-full bg-[#b88333]"></span>
-            {t.eyebrow}
+            {createdLabel}
           </span>
           <h1
             id="hero-title"
@@ -248,6 +265,7 @@ const t = en
         </a>
       </section>
       <Walkthrough lang={lang} heading={t.section} intro={t.sectionText} steps={t.steps} />
+      <ProjectShowcase lang={lang} projects={projects} />
       <section
         id="planos"
         class="mx-auto max-w-[1380px] scroll-mt-12 bg-white px-5 py-24 sm:px-8 md:py-32"

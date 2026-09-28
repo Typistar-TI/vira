@@ -84,6 +84,9 @@ const t = en
       identityHint:
         'These changes appear on your public site after you publish. Visitors can install it on their phones.',
       favicon: 'Browser icon (favicon)',
+      logo: 'Project logo',
+      logoHint: 'Your logo appears on your page. Allow it in the Vira showcase below if you wish.',
+      showcaseConsent: 'Show my published page and logo in the Vira showcase',
       appIcon: 'App icon (PWA)',
       appName: 'Name shown when installed',
       iconHint: 'Choose a square PNG, JPG or WebP image. Vira prepares the sizes for phones.',
@@ -152,6 +155,10 @@ const t = en
       identityHint:
         'As alterações aparecem no site público depois de publicar. Os visitantes poderão instalá-lo no celular.',
       favicon: 'Ícone do navegador (favicon)',
+      logo: 'Logo do projeto',
+      logoHint:
+        'A logo aparece na sua página. Você pode autorizar a exibição na vitrine do Vira abaixo.',
+      showcaseConsent: 'Mostrar minha página publicada e logo na vitrine do Vira',
       appIcon: 'Ícone do aplicativo (PWA)',
       appName: 'Nome mostrado após instalar',
       iconHint:
@@ -338,6 +345,33 @@ const trialDays = Math.max(0, Math.ceil((user.trial_ends_at * 1000 - Date.now())
             </select>
             <h3>{t.identity}</h3>
             <p class="text-sm text-[#625a51]">{t.identityHint}</p>
+            <label for="logo-file">{t.logo}</label>
+            <input
+              class="file-input file-input-bordered w-full"
+              id="logo-file"
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+            />
+            <input type="hidden" name="logo" value={content.logo} />
+            {content.logo && (
+              <img
+                src={content.logo}
+                alt=""
+                width="120"
+                height="80"
+                class="mt-2 h-20 w-30 rounded-lg border border-[#d8ae73] object-contain p-2"
+              />
+            )}
+            <small>{t.logoHint}</small>
+            <label class="mt-4 flex items-start gap-3 text-sm font-medium text-[#17130d]">
+              <input
+                class="checkbox checkbox-primary mt-0.5 shrink-0 border border-[#b88333]"
+                name="showInShowcase"
+                type="checkbox"
+                checked={content.showInShowcase}
+              />
+              <span>{t.showcaseConsent}</span>
+            </label>
             <div class="grid gap-4 sm:grid-cols-2">
               <div>
                 <label for="favicon-file">{t.favicon}</label>
@@ -813,6 +847,13 @@ const trialDays = Math.max(0, Math.ceil((user.trial_ends_at * 1000 - Date.now())
       }
     }
     async function collect() {
+      const logoFile = form.querySelector<HTMLInputElement>('#logo-file')?.files?.[0];
+      let logo = input(form, 'logo');
+      if (logoFile) {
+        logo = await upload(logoFile);
+        form.querySelector<HTMLInputElement>('[name="logo"]')!.value = logo;
+        form.querySelector<HTMLInputElement>('#logo-file')!.value = '';
+      }
       const faviconFile = form.querySelector<HTMLInputElement>('#favicon-file')?.files?.[0];
       let favicon = input(form, 'favicon');
       if (faviconFile) {
@@ -860,6 +901,8 @@ const trialDays = Math.max(0, Math.ceil((user.trial_ends_at * 1000 - Date.now())
         appName: input(form, 'appName'),
         subtitle: input(form, 'subtitle'),
         heroImage,
+        logo,
+        showInShowcase: form.querySelector<HTMLInputElement>('[name="showInShowcase"]')!.checked,
         favicon,
         pwaIcon192,
         pwaIcon512,

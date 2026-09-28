@@ -1,0 +1,118 @@
+---
+import type { PublicShowcase } from '@frontend/api/showcase/public-showcase';
+
+interface Props {
+  lang: 'pt' | 'en';
+  projects: PublicShowcase['projects'];
+}
+
+const { lang, projects } = Astro.props;
+const en = lang === 'en';
+const moving = projects.length >= 4;
+const rows = moving
+  ? [0, 1, 2].map((offset) =>
+      Array.from(
+        { length: Math.max(8, projects.length) },
+        (_, index) => projects[(index + offset * 2) % projects.length],
+      ),
+    )
+  : [];
+---
+
+<section id="vitrine" class="bg-white py-20 sm:py-28" aria-labelledby="showcase-heading">
+  <div class="mx-auto max-w-[1380px] px-5 sm:px-8" data-reveal>
+    <p class="font-mono text-[11px] uppercase tracking-[0.22em] text-[#9b6823]">
+      {en ? 'Made with Vira' : 'Feito com Vira'}
+    </p>
+    <h2
+      id="showcase-heading"
+      class="mt-5 max-w-[14ch] font-['Outfit',sans-serif] text-[clamp(2.8rem,6vw,5.7rem)] font-medium leading-[1.02] tracking-[-0.06em]"
+    >
+      {en ? 'Real ideas, already online.' : 'Ideias reais, já no ar.'}
+    </h2>
+    <p class="mt-5 max-w-[55ch] text-[#625a51]">
+      {en
+        ? 'Projects shared by people who created and published their pages with Vira.'
+        : 'Projetos compartilhados por quem criou e publicou sua página com o Vira.'}
+    </p>
+  </div>
+  {moving ? (
+    <div class="mt-12 space-y-3 overflow-hidden sm:mt-16 sm:space-y-4 [mask-image:linear-gradient(to_right,transparent,black_7%,black_93%,transparent)]">
+      {rows.map((row, rowIndex) => (
+        <div
+          class="overflow-hidden"
+          aria-hidden={rowIndex > 0 ? 'true' : undefined}
+          aria-label={
+            rowIndex === 0 ? (en ? 'Published projects' : 'Projetos publicados') : undefined
+          }
+        >
+          <div
+            class:list={[
+              'flex w-max motion-reduce:animate-none hover:[animation-play-state:paused] focus-within:[animation-play-state:paused]',
+              rowIndex === 1 ? 'animate-showcase-right' : 'animate-showcase-left',
+            ]}
+          >
+            {[false, true].map((duplicate) => (
+              <div
+                class="flex shrink-0 gap-3 pr-3 sm:gap-4 sm:pr-4"
+                aria-hidden={duplicate ? 'true' : undefined}
+              >
+                {row.map((project, itemIndex) => (
+                  <a
+                    href={project.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-hidden={
+                      duplicate || rowIndex > 0 || itemIndex >= projects.length ? 'true' : undefined
+                    }
+                    tabindex={
+                      duplicate || rowIndex > 0 || itemIndex >= projects.length ? -1 : undefined
+                    }
+                    class="flex h-32 w-52 shrink-0 flex-col items-center justify-center gap-2 rounded-[1.5rem] border border-[#d8ae73] bg-white px-5 py-3 text-center text-sm font-semibold text-[#4f473e] shadow-[0_12px_30px_-24px_rgba(131,85,21,0.35)] transition-[border-color,transform] duration-300 hover:-translate-y-1 hover:border-[#b88333] focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-[#b88333] sm:h-40 sm:w-64"
+                  >
+                    <img
+                      src={project.logo}
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                      class="max-h-19 w-full object-contain sm:max-h-24"
+                    />
+                    <span class="max-w-full truncate">{project.name}</span>
+                  </a>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  ) : projects.length > 0 ? (
+    <div class="mx-auto mt-12 flex max-w-[1380px] flex-wrap justify-center gap-3 px-5 sm:mt-16 sm:gap-4 sm:px-8">
+      {projects.map((project) => (
+        <a
+          href={project.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="flex h-32 w-52 flex-col items-center justify-center gap-2 rounded-[1.5rem] border border-[#d8ae73] bg-white px-5 py-3 text-center text-sm font-semibold text-[#4f473e] transition-colors hover:border-[#b88333] focus-visible:outline-2 focus-visible:outline-[#b88333] sm:h-40 sm:w-64"
+        >
+          <img
+            src={project.logo}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            class="max-h-19 w-full object-contain sm:max-h-24"
+          />
+          <span class="max-w-full truncate">{project.name}</span>
+        </a>
+      ))}
+    </div>
+  ) : (
+    <div class="mx-auto mt-12 max-w-[1380px] px-5 sm:px-8">
+      <p class="rounded-[1.5rem] border border-[#d8ae73] bg-white px-6 py-12 text-center text-[#625a51]">
+        {en
+          ? 'The first projects will appear here as their owners share them.'
+          : 'Os primeiros projetos aparecerão aqui quando seus donos os compartilharem.'}
+      </p>
+    </div>
+  )}
+</section>

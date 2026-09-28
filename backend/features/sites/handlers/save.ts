@@ -13,6 +13,7 @@ export const POST = async (request: Request): Promise<Response> => {
     const ownedPrefix = `/media/${site.id}/`;
     const images = [
       content.heroImage,
+      content.logo,
       content.favicon,
       content.pwaIcon192,
       content.pwaIcon512,

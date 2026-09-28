@@ -8,6 +8,7 @@ import { routes as domainsRoutes } from './features/domains/routes';
 import { routes as mediaRoutes } from './features/media/routes';
 import { routes as analyticsRoutes } from './features/analytics/routes';
 import { routes as sitesRoutes } from './features/sites/routes';
+import { routes as showcaseRoutes } from './features/showcase/routes';
 
 export const api = new Hono();
 
@@ -43,3 +44,4 @@ api.route('/api/domains', domainsRoutes);
 api.route('/api/media', mediaRoutes);
 api.route('/api', analyticsRoutes);
 api.route('/api/site', sitesRoutes);
+api.route('/api/showcase', showcaseRoutes);

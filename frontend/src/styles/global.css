@@ -30,6 +30,16 @@
   --radius-field: 0.375rem;
   --radius-box: 0.75rem;
 }
+@theme {
+  --animate-showcase-left: showcase-slide 68s linear infinite;
+  --animate-showcase-right: showcase-slide 82s linear infinite reverse;
+
+  @keyframes showcase-slide {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+}
 @plugin 'daisyui/theme' {
   name: vira-light;
   color-scheme: light;
