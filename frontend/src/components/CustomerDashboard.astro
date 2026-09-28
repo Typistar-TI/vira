@@ -17,11 +17,19 @@ const priceRows = await getPublicPrices();
 const priceMap = Object.fromEntries(
   priceRows.map((row) => [`${row.plan}_${row.currency}`, row.amount_minor]),
 );
+const priceReady = Object.fromEntries(
+  priceRows.map((row) => [
+    `${row.plan}_${row.currency}`,
+    row.active === 1 && Boolean(row.stripe_price_id?.startsWith('price_')),
+  ]),
+);
 const priceText = (plan: string) => {
   const amount = priceMap[`${plan}_brl`];
   return amount
     ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(amount / 100)
-    : '—';
+    : en
+      ? 'Coming soon'
+      : 'Em breve';
 };
 const t = en
   ? {
@@ -685,13 +693,28 @@ const trialDays = Math.max(0, Math.ceil((user.trial_ends_at * 1000 - Date.now())
                 : user.plan}
             </p>
             <div class="mt-5 flex flex-wrap gap-2.5">
-              <button class="btn btn-outline" data-plan="monthly" data-label={t.monthly}>
+              <button
+                class="btn btn-outline"
+                data-plan="monthly"
+                data-label={t.monthly}
+                disabled={!priceReady.monthly_brl}
+              >
                 {t.monthly} · <span data-amount>{priceText('monthly')}</span>
               </button>
-              <button class="btn btn-outline" data-plan="yearly" data-label={t.yearly}>
+              <button
+                class="btn btn-outline"
+                data-plan="yearly"
+                data-label={t.yearly}
+                disabled={!priceReady.yearly_brl}
+              >
                 {t.yearly} · <span data-amount>{priceText('yearly')}</span>
               </button>
-              <button class="btn btn-outline" data-plan="lifetime" data-label={t.lifetime}>
+              <button
+                class="btn btn-outline"
+                data-plan="lifetime"
+                data-label={t.lifetime}
+                disabled={!priceReady.lifetime_brl}
+              >
                 {t.lifetime} · <span data-amount>{priceText('lifetime')}</span>
               </button>
             </div>
@@ -700,6 +723,7 @@ const trialDays = Math.max(0, Math.ceil((user.trial_ends_at * 1000 - Date.now())
               class="select select-bordered"
               id="currency"
               data-prices={JSON.stringify(priceMap)}
+              data-ready={JSON.stringify(priceReady)}
             >
               <option value="brl">BRL · R$</option>
               <option value="usd">USD · $</option>
@@ -1023,6 +1047,7 @@ const trialDays = Math.max(0, Math.ceil((user.trial_ends_at * 1000 - Date.now())
       });
     const currencySelect = document.querySelector<HTMLSelectElement>('#currency')!;
     const priceMap = JSON.parse(currencySelect.dataset.prices || '{}') as Record<string, number>;
+    const priceReady = JSON.parse(currencySelect.dataset.ready || '{}') as Record<string, boolean>;
     currencySelect.addEventListener('change', () => {
       document.querySelectorAll<HTMLButtonElement>('[data-plan]').forEach((button) => {
         const amount = priceMap[`${button.dataset.plan}_${currencySelect.value}`];
@@ -1032,7 +1057,10 @@ const trialDays = Math.max(0, Math.ceil((user.trial_ends_at * 1000 - Date.now())
               style: 'currency',
               currency: currencySelect.value.toUpperCase(),
             }).format(amount / 100)
-          : '—';
+          : document.documentElement.lang === 'en'
+            ? 'Coming soon'
+            : 'Em breve';
+        button.disabled = !priceReady[`${button.dataset.plan}_${currencySelect.value}`];
       });
     });
     document.querySelectorAll<HTMLButtonElement>('[data-plan]').forEach((button) =>

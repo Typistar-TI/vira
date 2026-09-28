@@ -21,7 +21,7 @@ export async function stripe() {
 
 export async function publicPrices(): Promise<PriceRow[]> {
   const result = await env.DB.prepare(
-    "SELECT plan, currency, amount_minor, stripe_price_id, active FROM plan_prices WHERE active = 1 AND amount_minor > 0 AND stripe_price_id LIKE 'price_%'",
+    'SELECT plan, currency, amount_minor, stripe_price_id, active FROM plan_prices WHERE amount_minor > 0',
   ).all<PriceRow>();
   return result.results;
 }

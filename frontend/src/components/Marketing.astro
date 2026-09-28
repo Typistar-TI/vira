@@ -45,6 +45,16 @@ const displayPrice = (plan: Plan) => {
       }).format(row.amount_minor / 100)
     : null;
 };
+const planPrices = (['monthly', 'yearly', 'lifetime'] as const).map(displayPrice);
+const planReady = (['monthly', 'yearly', 'lifetime'] as const).map((plan) =>
+  prices.some(
+    (item) =>
+      item.plan === plan &&
+      item.currency === currency &&
+      item.active === 1 &&
+      item.stripe_price_id?.startsWith('price_'),
+  ),
+);
 const t = en
   ? {
       nav: 'Start free',
@@ -84,7 +94,7 @@ const t = en
       monthlyDesc: 'Keep your page live with a flexible monthly subscription.',
       yearlyDesc: 'One annual payment for a full year.',
       lifetimeDesc: 'Pay once and keep access to your page.',
-      priceLater: 'Price at checkout',
+      comingSoon: 'Coming soon',
       included: [
         'One published page',
         'Three layouts',
@@ -132,7 +142,7 @@ const t = en
       monthlyDesc: 'Mantenha sua página no ar com uma assinatura flexível.',
       yearlyDesc: 'Um pagamento para o ano inteiro.',
       lifetimeDesc: 'Pague uma vez e mantenha o acesso à sua página.',
-      priceLater: 'Valor no checkout',
+      comingSoon: 'Em breve',
       included: [
         'Uma página publicada',
         'Três layouts',
@@ -279,14 +289,11 @@ const t = en
           </h2>
           <p class="mt-5 text-[#625a51]">{t.plansText}</p>
         </div>
-        <div class="grid border-y border-[#d8ae73] lg:grid-cols-3">
+        <div class="grid auto-rows-fr gap-4 lg:grid-cols-3">
           {[t.monthly, t.yearly, t.lifetime].map((name, i) => (
             <article
               data-reveal
-              class:list={[
-                'flex flex-col border-b border-[#d8ae73] bg-white px-1 py-9 lg:border-r lg:border-b-0 lg:px-8 lg:py-10 lg:first:pl-0 lg:last:border-r-0',
-                i === 1 && 'lg:px-8',
-              ]}
+              class="flex h-full min-w-0 flex-col rounded-[1.5rem] border border-[#d8ae73] bg-white px-6 py-8 sm:px-8 lg:py-10"
             >
               <div class="flex items-center justify-between">
                 <span class="font-mono text-[11px] uppercase tracking-[0.16em] text-[#9b6823]">
@@ -306,8 +313,8 @@ const t = en
               <p class="mt-4 min-h-16 max-w-[34ch] leading-relaxed text-[#625a51]">
                 {[t.monthlyDesc, t.yearlyDesc, t.lifetimeDesc][i]}
               </p>
-              <p class="mt-10 border-b border-[#d8ae73] pb-7 font-['Outfit',sans-serif] text-[clamp(2.2rem,4vw,3.4rem)] font-medium leading-none tracking-[-0.05em]">
-                {displayPrice((['monthly', 'yearly', 'lifetime'] as const)[i]) || t.priceLater}
+              <p class="mt-10 border-b border-[#d8ae73] pb-7 font-['Outfit',sans-serif] text-[clamp(2rem,3.5vw,3.4rem)] font-medium leading-none tracking-[-0.05em] tabular-nums">
+                {planPrices[i] ?? t.comingSoon}
               </p>
               <ul class="my-8 space-y-3 text-sm text-[#4f473e]">
                 {t.included.map((item) => (
@@ -319,24 +326,26 @@ const t = en
                   </li>
                 ))}
               </ul>
-              <a
-                href={
-                  dashboardHref === '/admin'
-                    ? '/admin'
-                    : dashboardHref === '/app'
-                      ? '/app#plan-and-billing'
-                      : '/login'
-                }
-                class:list={[
-                  'btn mt-auto h-12 w-full rounded-full font-semibold shadow-none',
-                  i === 1
-                    ? 'border border-[#a66f27] bg-[#b88333] text-white hover:bg-[#9b6823]'
-                    : 'border border-[#b88333] bg-white text-[#6f4716] hover:border-[#9b6823] hover:bg-[#fff9ef]',
-                ]}
-              >
-                {t.select}
-                <span aria-hidden="true">↗</span>
-              </a>
+              {planPrices[i] && planReady[i] && (
+                <a
+                  href={
+                    dashboardHref === '/admin'
+                      ? '/admin'
+                      : dashboardHref === '/app'
+                        ? '/app#plan-and-billing'
+                        : '/login'
+                  }
+                  class:list={[
+                    'btn mt-auto h-12 w-full rounded-full font-semibold shadow-none',
+                    i === 1
+                      ? 'border border-[#a66f27] bg-[#b88333] text-white hover:bg-[#9b6823]'
+                      : 'border border-[#b88333] bg-white text-[#6f4716] hover:border-[#9b6823] hover:bg-[#fff9ef]',
+                  ]}
+                >
+                  {t.select}
+                  <span aria-hidden="true">↗</span>
+                </a>
+              )}
             </article>
           ))}
         </div>
