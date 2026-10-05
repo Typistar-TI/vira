@@ -93,6 +93,10 @@ Cada cadastro cria e publica a página inicial e inicia o teste de um dia na mes
 | `frontend/src/middleware.ts`   | Roteamento por hostname.                                          |
 | `frontend/wrangler.jsonc`      | Configuração do Worker e dos serviços Cloudflare.                 |
 
+Cada feature do backend separa entradas em `controller/`, regras em `service/`, persistência em `repository/` e tipos/esquemas em `entities/`; `routes.ts` compõe os controllers. Componentes do frontend são visuais: autenticação, consultas e ações ficam nas páginas e seus scripts.
+
+O painel do cliente navega por páginas: `/app` (Conteúdo), `/app/plano`, `/app/dominio` e `/app/conta`. Conteúdo usa apenas o editor interativo, com controles sobre a prévia e seleção de template dentro deles. Alterar a prévia não salva nem publica; essas ações são explícitas.
+
 ## Desenvolvimento local
 
 Requer Node.js 22.12 ou superior. Após instalar as dependências, aplique as migrações locais e inicie o servidor:

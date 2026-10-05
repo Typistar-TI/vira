@@ -5,13 +5,14 @@ import MobileNavigation from './MobileNavigation.astro';
 interface Props {
   email: string;
   en: boolean;
+  section: string;
 }
-const { email, en } = Astro.props;
+const { email, en, section } = Astro.props;
 const links = [
-  { href: '#editor', label: en ? 'Content' : 'Conteúdo' },
-  { href: '#plan-and-billing', label: en ? 'Plan and billing' : 'Plano e cobrança' },
-  { href: '#domain-form', label: en ? 'Domain' : 'Domínio' },
-  { href: '#account', label: en ? 'Account' : 'Conta' },
+  { key: 'conteudo', href: '/app', label: en ? 'Content' : 'Conteúdo' },
+  { key: 'plano', href: '/app/plano', label: en ? 'Plan and billing' : 'Plano e cobrança' },
+  { key: 'dominio', href: '/app/dominio', label: en ? 'Domain' : 'Domínio' },
+  { key: 'conta', href: '/app/conta', label: en ? 'Account' : 'Conta' },
 ];
 ---
 
@@ -25,7 +26,13 @@ const links = [
       {links.map((link) => (
         <a
           href={link.href}
-          class="rounded-full px-3 py-1.5 whitespace-nowrap transition-colors hover:bg-[#fff9ef] hover:text-[#9b6823] focus-visible:outline-2 focus-visible:outline-[#b88333]"
+          aria-current={section === link.key ? 'page' : undefined}
+          class:list={[
+            'rounded-full px-3 py-1.5 whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-[#b88333]',
+            section === link.key
+              ? 'bg-[#fff4df] font-semibold text-[#6f4716]'
+              : 'hover:bg-[#fff9ef] hover:text-[#9b6823]',
+          ]}
         >
           {link.label}
         </a>
@@ -36,12 +43,12 @@ const links = [
         <MobileNavigation
           label={en ? 'Sections' : 'Seções'}
           lang={en ? 'en' : 'pt'}
-          links={links}
+          links={links.map((link) => ({ ...link, current: section === link.key }))}
         />
       </div>
       <AccountMenu
         email={email}
-        profileHref="/app#account"
+        profileHref="/app/conta"
         profileLabel={en ? 'Account and data' : 'Conta e dados'}
         homeHref="/"
         lang={en ? 'en' : 'pt'}
