@@ -264,7 +264,7 @@ const t = en
     </header>
     <main>
       <section
-        class="relative isolate mx-auto grid max-w-[1380px] items-center gap-12 overflow-hidden px-5 pb-28 pt-14 sm:px-8 lg:min-h-[700px] lg:grid-cols-[0.95fr_1.05fr] lg:gap-14 lg:pb-28 lg:pt-20"
+        class="relative isolate mx-auto max-w-[1380px] overflow-hidden px-5 pb-24 pt-10 sm:px-8 lg:pt-14"
         aria-labelledby="hero-title"
       >
         <img
@@ -277,53 +277,54 @@ const t = en
         />
         <div
           aria-hidden="true"
-          class="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-r from-white/95 via-white/75 to-white/40"
+          class="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-b from-white/50 via-white/30 to-white/90"
         ></div>
-        <div class="relative z-10 max-w-[690px] text-left" data-reveal>
-          <span class="inline-flex items-center gap-2 rounded-full border border-[#d8ae73] bg-white px-4 py-2 font-mono text-[10px] uppercase tracking-[0.19em] text-[#8b5b1e]">
-            <span class="h-1.5 w-1.5 rounded-full bg-[#b88333]"></span>
-            {createdLabel}
-          </span>
-          <h1
-            id="hero-title"
-            class="mt-8 max-w-[12ch] font-['Outfit',sans-serif] text-[clamp(3.2rem,5.5vw,6.2rem)] font-medium leading-[0.98] tracking-[-0.065em]"
-          >
-            {t.titleA}
-            <br />
-            <span class="text-[#a66f27]">{t.titleB}</span>
-          </h1>
-          <p class="mt-8 max-w-[48ch] text-[clamp(1rem,1.6vw,1.2rem)] leading-relaxed text-[#625a51]">
-            {t.intro}
-          </p>
-          <div class="mt-9 flex flex-wrap items-center gap-4">
-            <a
-              href={dashboardHref}
-              class="btn h-12 rounded-full border border-[#a66f27] bg-[#b88333] px-7 font-semibold text-white shadow-none transition-transform duration-300 hover:-translate-y-0.5 hover:bg-[#9b6823]"
-            >
-              {signedIn ? (en ? 'Go to dashboard' : 'Ir para o painel') : t.cta}
-              <span aria-hidden="true">↗</span>
-            </a>
-            <a
-              href="#como-funciona"
-              class="px-5 py-3 text-sm font-semibold text-[#6f4716] underline decoration-[#b88333] underline-offset-8 transition-colors hover:text-[#17130d]"
-            >
-              {t.demo}
-            </a>
-          </div>
-          <p class="mt-6 text-xs text-[#766e63]">
-            {en
-              ? 'No card required · Email or Google sign-in'
-              : 'Sem cartão · Entre por e-mail ou Google'}
-          </p>
-        </div>
-        <div class="relative" data-reveal>
+        <div class="relative z-10 mx-auto w-full max-w-[820px]" data-reveal>
           <AssistantChat
             endpoint="/api/assistant/chat"
             lang={lang}
             name={t.assistantName}
             greeting={t.assistantGreeting}
             suggestions={t.assistantSuggestions}
-          />
+          >
+            <div slot="intro" class="px-6 pb-3 pt-2 text-center sm:px-10">
+              <p class="font-mono text-[10px] uppercase tracking-[0.16em] text-[#8b5b1e]">
+                {createdLabel}
+              </p>
+              <h1
+                id="hero-title"
+                class="mt-4 font-['Outfit',sans-serif] text-[clamp(2rem,4vw,3.2rem)] font-medium leading-[1.1] tracking-[-0.05em]"
+              >
+                {en ? 'Your page ready.' : 'Sua página pronta.'}
+                <span class="text-[#a66f27]">
+                  {en ? ' Your AI assisting.' : ' Sua IA atendendo.'}
+                </span>
+              </h1>
+              <p class="mx-auto mt-3 max-w-[52ch] text-sm leading-relaxed text-[#625a51]">
+                {en
+                  ? 'Create your site with an AI assistant. Try a conversation below.'
+                  : 'Crie seu site com uma assistente de IA. Experimente uma conversa abaixo.'}
+              </p>
+            </div>
+            <div slot="footer" class="flex flex-col items-center gap-3 px-6 pb-6 pt-4">
+              <a
+                href={dashboardHref}
+                class="btn rounded-full border border-[#a66f27] bg-[#b88333] px-6 text-white shadow-none hover:bg-[#9b6823]"
+              >
+                {signedIn
+                  ? en
+                    ? 'Go to dashboard'
+                    : 'Ir para o painel'
+                  : en
+                    ? 'Create my page'
+                    : 'Criar minha página'}
+                <span aria-hidden="true">↗</span>
+              </a>
+              <p class="text-xs text-[#766e63]">
+                {en ? '1-day free trial · No card required' : '1 dia grátis · Sem cartão'}
+              </p>
+            </div>
+          </AssistantChat>
         </div>
         <a
           href="#como-funciona"

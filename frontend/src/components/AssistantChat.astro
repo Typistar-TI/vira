@@ -112,6 +112,7 @@ const panelClass = floating
         </button>
       )}
     </header>
+    <slot name="intro" />
     <div data-assistant-log aria-live="polite" class="flex-1 space-y-3 overflow-y-auto px-5 py-5">
       <div
         class="mr-auto max-w-[85%] rounded-2xl rounded-bl-md px-4 py-2.5 text-sm leading-relaxed"
@@ -163,17 +164,18 @@ const panelClass = floating
         </svg>
       </button>
     </form>
+    <slot name="footer" />
   </div>
 </div>
 
 <style>
   .assistant-demo [data-assistant-panel] {
-    height: 560px;
-    min-height: 460px;
-    border: 0;
-    border-radius: 0;
-    background: transparent !important;
-    box-shadow: none;
+    height: auto;
+    min-height: 580px;
+    border: 1px solid var(--a-line);
+    border-radius: 2rem;
+    background: rgb(255 255 255 / 96%) !important;
+    box-shadow: 0 24px 80px -40px rgb(70 45 15 / 35%);
   }
 
   .assistant-demo header {
@@ -188,8 +190,9 @@ const panelClass = floating
   }
 
   .assistant-demo [data-assistant-log] {
-    padding-top: 2rem;
-    padding-bottom: 2rem;
+    max-height: 320px;
+    min-height: 120px;
+    padding: 1.25rem 1.5rem;
   }
 
   .assistant-demo [data-assistant-log] :global(> div) {
@@ -235,7 +238,8 @@ const panelClass = floating
 
   @media (max-width: 640px) {
     .assistant-demo [data-assistant-panel] {
-      height: 480px;
+      min-height: 540px;
+      border-radius: 1.5rem;
     }
   }
 </style>
