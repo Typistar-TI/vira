@@ -288,38 +288,25 @@ const t = en
             suggestions={t.assistantSuggestions}
           >
             <div slot="intro" class="px-6 pb-3 pt-2 text-center sm:px-10">
-              <p class="font-mono text-[10px] uppercase tracking-[0.16em] text-[#8b5b1e]">
+              <p class="font-mono text-[9px] uppercase tracking-[0.12em] text-[#8b5b1e]">
                 {createdLabel}
               </p>
               <h1
                 id="hero-title"
-                class="mt-4 font-['Outfit',sans-serif] text-[clamp(2rem,4vw,3.2rem)] font-medium leading-[1.1] tracking-[-0.05em]"
+                class="mt-3 font-['Outfit',sans-serif] text-[clamp(1.6rem,3vw,2.4rem)] font-medium leading-[1.15] tracking-[-0.05em]"
               >
                 {en ? 'Your page ready.' : 'Sua página pronta.'}
                 <span class="text-[#a66f27]">
                   {en ? ' Your AI assisting.' : ' Sua IA atendendo.'}
                 </span>
               </h1>
-              <p class="mx-auto mt-3 max-w-[52ch] text-sm leading-relaxed text-[#625a51]">
+              <p class="mx-auto mt-2 max-w-[60ch] text-xs leading-relaxed text-[#625a51] sm:text-[13px]">
                 {en
                   ? 'Create your site with an AI assistant. Try a conversation below.'
                   : 'Crie seu site com uma assistente de IA. Experimente uma conversa abaixo.'}
               </p>
             </div>
             <div slot="footer" class="flex flex-col items-center gap-3 px-6 pb-6 pt-4">
-              <a
-                href={dashboardHref}
-                class="btn rounded-full border border-[#a66f27] bg-[#b88333] px-6 text-white shadow-none hover:bg-[#9b6823]"
-              >
-                {signedIn
-                  ? en
-                    ? 'Go to dashboard'
-                    : 'Ir para o painel'
-                  : en
-                    ? 'Create my page'
-                    : 'Criar minha página'}
-                <span aria-hidden="true">↗</span>
-              </a>
               <p class="text-xs text-[#766e63]">
                 {en ? '1-day free trial · No card required' : '1 dia grátis · Sem cartão'}
               </p>

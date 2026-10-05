@@ -81,7 +81,7 @@ const panelClass = floating
       class="flex items-center gap-3 border-b px-5 py-4"
       style={`border-color:${palette.line};background:${palette.soft}`}
     >
-      {floating ? (
+      {floating && (
         <span
           class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm text-white"
           style={`background:${palette.accent}`}
@@ -89,23 +89,6 @@ const panelClass = floating
         >
           ✳
         </span>
-      ) : (
-        <div class="flex shrink-0 items-center gap-1.5" aria-label="Vira">
-          <img
-            src="/vira-mark-amber.png"
-            width="40"
-            height="40"
-            alt=""
-            class="h-9 w-9 object-contain sm:h-10 sm:w-10"
-          />
-          <img
-            src="/vira-wordmark-amber.png"
-            width="122"
-            height="50"
-            alt="Vira"
-            class="h-[38px] w-[93px] object-contain sm:h-[45px] sm:w-[110px]"
-          />
-        </div>
       )}
       <div class="min-w-0">
         <p class="truncate font-['Outfit',sans-serif] text-sm font-semibold">{assistantName}</p>
@@ -216,22 +199,10 @@ const panelClass = floating
   }
 
   .assistant-demo [data-assistant-log] :global(> div) {
-    max-width: 100%;
-    border-radius: 0;
-    padding: 0.75rem 0;
-    background: transparent !important;
-    color: var(--a-text);
-    font-size: 1rem;
-    line-height: 1.8;
+    width: fit-content;
+    max-width: min(85%, 48rem);
     white-space: pre-wrap;
     overflow-wrap: anywhere;
-  }
-
-  .assistant-demo [data-assistant-log] :global(> .ml-auto) {
-    margin-left: 2rem;
-    padding-left: 1rem;
-    border-left: 2px solid var(--a-line);
-    font-weight: 500;
   }
 
   .assistant-demo [data-assistant-suggestions] button {
