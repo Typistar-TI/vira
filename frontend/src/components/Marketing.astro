@@ -223,9 +223,6 @@ const t = en
         class="hidden items-center gap-7 rounded-full border border-[#d8ae73] bg-white/95 px-7 py-3 text-sm text-[#605448] shadow-[0_8px_30px_-22px_rgba(131,85,21,0.35)] backdrop-blur-md md:flex"
         aria-label={en ? 'Main navigation' : 'Navegação principal'}
       >
-        <a class="transition-colors hover:text-[#9b6823]" href="#recursos">
-          {en ? 'Features' : 'Recursos'}
-        </a>
         <a class="transition-colors hover:text-[#9b6823]" href="#como-funciona">
           {en ? 'How it works' : 'Como funciona'}
         </a>
@@ -242,7 +239,6 @@ const t = en
           lang={en ? 'en' : 'pt'}
           iconOnly
           links={[
-            { href: '#recursos', label: en ? 'Features' : 'Recursos' },
             { href: '#como-funciona', label: en ? 'How it works' : 'Como funciona' },
             { href: '#vitrine', label: en ? 'Projects' : 'Projetos' },
             { href: '#planos', label: en ? 'Plans' : 'Planos' },
@@ -268,9 +264,21 @@ const t = en
     </header>
     <main>
       <section
-        class="relative mx-auto grid max-w-[1380px] items-center gap-12 px-5 pb-28 pt-14 sm:px-8 lg:min-h-[700px] lg:grid-cols-[0.95fr_1.05fr] lg:gap-14 lg:pb-28 lg:pt-20"
+        class="relative isolate mx-auto grid max-w-[1380px] items-center gap-12 overflow-hidden px-5 pb-28 pt-14 sm:px-8 lg:min-h-[700px] lg:grid-cols-[0.95fr_1.05fr] lg:gap-14 lg:pb-28 lg:pt-20"
         aria-labelledby="hero-title"
       >
+        <img
+          src="/vira-hero-light.webp"
+          width="1586"
+          height="992"
+          alt=""
+          fetchpriority="high"
+          class="pointer-events-none absolute inset-0 -z-20 h-full w-full select-none object-cover object-center opacity-45"
+        />
+        <div
+          aria-hidden="true"
+          class="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-r from-white/95 via-white/75 to-white/40"
+        ></div>
         <div class="relative z-10 max-w-[690px] text-left" data-reveal>
           <span class="inline-flex items-center gap-2 rounded-full border border-[#d8ae73] bg-white px-4 py-2 font-mono text-[10px] uppercase tracking-[0.19em] text-[#8b5b1e]">
             <span class="h-1.5 w-1.5 rounded-full bg-[#b88333]"></span>
@@ -328,47 +336,6 @@ const t = en
             class="h-7 w-px bg-gradient-to-b from-[#b88333] to-transparent"
           ></span>
         </a>
-      </section>
-      <section
-        id="recursos"
-        class="mx-auto max-w-[1380px] scroll-mt-12 px-5 pb-6 pt-4 sm:px-8"
-        aria-labelledby="features-title"
-      >
-        <div class="mb-10 max-w-[760px]" data-reveal>
-          <p class="font-mono text-[11px] uppercase tracking-[0.22em] text-[#9b6823]">
-            {t.featuresEyebrow}
-          </p>
-          <h2
-            id="features-title"
-            class="mt-4 font-['Outfit',sans-serif] text-[clamp(2.6rem,5vw,4.6rem)] font-medium leading-[1.02] tracking-[-0.055em]"
-          >
-            {t.featuresTitle}
-          </h2>
-          <p class="mt-4 text-[#625a51]">{t.featuresText}</p>
-        </div>
-        <div class="grid gap-4 lg:grid-cols-2">
-          {t.features.map((feature) => (
-            <article
-              class="flex h-full flex-col rounded-[1.75rem] border border-[#d8ae73] bg-white p-8 sm:p-10"
-              data-reveal
-            >
-              <h3 class="font-['Outfit',sans-serif] text-[clamp(1.8rem,3vw,2.6rem)] font-medium leading-tight tracking-[-0.04em]">
-                {feature.title}
-              </h3>
-              <p class="mt-3 max-w-[46ch] leading-relaxed text-[#625a51]">{feature.text}</p>
-              <ul class="mt-5 space-y-2 text-sm text-[#4f473e]">
-                {feature.items.map((item) => (
-                  <li class="flex gap-2">
-                    <span class="text-[#9b6823]" aria-hidden="true">
-                      ↗
-                    </span>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </article>
-          ))}
-        </div>
       </section>
       <Walkthrough lang={lang} heading={t.section} intro={t.sectionText} steps={t.steps} />
       <ProjectShowcase lang={lang} projects={projects} />

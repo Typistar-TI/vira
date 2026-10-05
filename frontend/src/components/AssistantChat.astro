@@ -56,7 +56,7 @@ const panelClass = floating
   data-endpoint={endpoint}
   data-lang={lang}
   data-persist={persist ? 'true' : undefined}
-  class:list={[floating && 'fixed bottom-5 right-5 z-50']}
+  class:list={[floating ? 'fixed bottom-5 right-5 z-50' : 'assistant-demo']}
 >
   {floating && (
     <button
@@ -92,7 +92,13 @@ const panelClass = floating
         <p class="truncate font-['Outfit',sans-serif] text-sm font-semibold">{assistantName}</p>
         <p class="flex items-center gap-1.5 text-[11px] opacity-70">
           <span class="h-1.5 w-1.5 rounded-full bg-[#3fa46a]"></span>
-          {en ? 'Online now' : 'Online agora'}
+          {floating
+            ? en
+              ? 'Online now'
+              : 'Online agora'
+            : en
+              ? 'Ask about Vira'
+              : 'Tire suas dúvidas sobre o Vira'}
         </p>
       </div>
       {floating && (
@@ -153,12 +159,86 @@ const panelClass = floating
         style={`background:${palette.accent}`}
       >
         <svg viewBox="0 0 24 24" class="h-5 w-5 fill-current" aria-hidden="true">
-          <path d="M3.4 20.4 21 12 3.4 3.6 3.3 10l12 2-12 2z"></path>
+          <path d="M11 20V7.8l-4.6 4.6L5 11l7-7 7 7-1.4 1.4L13 7.8V20z"></path>
         </svg>
       </button>
     </form>
   </div>
 </div>
+
+<style>
+  .assistant-demo [data-assistant-panel] {
+    height: 560px;
+    min-height: 460px;
+    border: 0;
+    border-radius: 0;
+    background: transparent !important;
+    box-shadow: none;
+  }
+
+  .assistant-demo header {
+    border: 0;
+    background: transparent !important;
+  }
+
+  .assistant-demo header > span {
+    background: transparent !important;
+    color: var(--a-accent);
+    font-size: 1.75rem;
+  }
+
+  .assistant-demo [data-assistant-log] {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+  }
+
+  .assistant-demo [data-assistant-log] :global(> div) {
+    max-width: 100%;
+    border-radius: 0;
+    padding: 0.75rem 0;
+    background: transparent !important;
+    color: var(--a-text);
+    font-size: 1rem;
+    line-height: 1.8;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  .assistant-demo [data-assistant-log] :global(> .ml-auto) {
+    margin-left: 2rem;
+    padding-left: 1rem;
+    border-left: 2px solid var(--a-line);
+    font-weight: 500;
+  }
+
+  .assistant-demo [data-assistant-suggestions] button {
+    background: rgb(255 255 255 / 75%);
+    border-radius: 0.75rem;
+    padding: 0.65rem 0.85rem;
+  }
+
+  .assistant-demo form {
+    margin: 0.75rem 1rem 0.25rem;
+    padding: 0.75rem;
+    border: 1px solid var(--a-line);
+    border-radius: 1.5rem;
+    background: rgb(255 255 255 / 95%);
+    box-shadow: 0 8px 30px -18px rgb(70 45 15 / 25%);
+  }
+
+  .assistant-demo textarea {
+    min-width: 0;
+    border: 0;
+    background: transparent;
+    font-size: 1rem;
+  }
+
+  @media (max-width: 640px) {
+    .assistant-demo [data-assistant-panel] {
+      height: 480px;
+    }
+  }
+</style>
 
 <script>
   import { loadHistory, streamAssistant, type ChatMessage } from '@frontend/api/assistant/chat';
