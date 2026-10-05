@@ -5,6 +5,7 @@ declare module 'cloudflare:workers' {
     DB: import('@cloudflare/workers-types').D1Database;
     MEDIA: import('@cloudflare/workers-types').R2Bucket;
     METRICS: import('@cloudflare/workers-types').AnalyticsEngineDataset;
+    AI: Ai;
     CONFIG_ENCRYPTION_KEY: string;
   };
 }

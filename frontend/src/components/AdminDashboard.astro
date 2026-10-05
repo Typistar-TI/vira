@@ -34,6 +34,7 @@ const groups = [
   { title: 'Identidade e acesso', keys: ['GOOGLE_CLIENT_ID', 'RESEND_API_KEY', 'AUTH_EMAIL_FROM'] },
   { title: 'Cobrança', keys: ['STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET'] },
   { title: 'Domínios e métricas', keys: ['CLOUDFLARE_API_TOKEN', 'CLOUDFLARE_ANALYTICS_TOKEN'] },
+  { title: 'Inteligência artificial', keys: ['AI_MODEL'] },
   { title: 'Privacidade', keys: ['PRIVACY_CONTROLLER_NAME', 'PRIVACY_CONTACT_EMAIL'] },
 ];
 const labels: Record<string, string> = {
@@ -44,6 +45,7 @@ const labels: Record<string, string> = {
   STRIPE_WEBHOOK_SECRET: 'Segredo do webhook Stripe',
   CLOUDFLARE_API_TOKEN: 'Token Cloudflare para domínios',
   CLOUDFLARE_ANALYTICS_TOKEN: 'Token Cloudflare para métricas',
+  AI_MODEL: 'Modelo do Workers AI (opcional)',
   PRIVACY_CONTROLLER_NAME: 'Responsável pelo Vira',
   PRIVACY_CONTACT_EMAIL: 'E-mail de privacidade',
 };
@@ -66,7 +68,7 @@ const emailDescriptions: Record<string, string> = {
   site_created: 'Enviado uma vez, assim que a conta é criada e o site inicial entra no ar.',
   subscription_created: 'Enviado após a Stripe confirmar o plano mensal, anual ou vitalício.',
   subscription_ending:
-    'Enviado cerca de 1 a 2 dias antes do fim do teste ou até 7 dias antes de uma assinatura com cancelamento agendado.',
+    'Enviado cerca de 12 horas antes do fim do teste ou até 7 dias antes de uma assinatura com cancelamento agendado.',
 };
 const emailVariables: Record<string, string[]> = {
   login: ['login_url', 'email'],

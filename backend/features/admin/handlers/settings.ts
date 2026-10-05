@@ -12,6 +12,7 @@ const editable = new Set([
   'CLOUDFLARE_ANALYTICS_TOKEN',
   'PRIVACY_CONTROLLER_NAME',
   'PRIVACY_CONTACT_EMAIL',
+  'AI_MODEL',
 ]);
 
 export const GET = async (request: Request): Promise<Response> => {

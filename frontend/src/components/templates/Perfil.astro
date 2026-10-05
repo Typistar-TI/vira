@@ -1,0 +1,1135 @@
+---
+import type { SiteContent } from '@frontend/api/sites/parse-site';
+import { primaryLink, productLink } from './links';
+
+interface Props {
+  content: SiteContent;
+  preview?: boolean;
+}
+
+const { content, preview = false } = Astro.props;
+const en = content.language === 'en';
+
+const {
+  title,
+  eyebrow,
+  appName,
+  subtitle,
+  heroImage,
+  logo,
+  primaryLabel,
+  aboutTitle,
+  about,
+  benefits,
+  stats,
+  experience,
+  testimonials,
+  products,
+  links,
+  footerText,
+} = content;
+
+const displayTitle = title || appName;
+const brand = appName || title;
+
+// The schema defaults every collection to an array, but stay defensive so the
+// template never emits broken markup for partially filled content.
+const benefitList = Array.isArray(benefits) ? benefits : [];
+const statList = Array.isArray(stats) ? stats : [];
+const experienceList = Array.isArray(experience) ? experience : [];
+const testimonialList = Array.isArray(testimonials) ? testimonials : [];
+const productList = Array.isArray(products) ? products : [];
+const linkList = Array.isArray(links) ? links : [];
+
+function initials(value: string): string {
+  return value
+    .split(/\s+/)
+    .map((word) => word.trim())
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((word) => word[0]?.toUpperCase() ?? '')
+    .join('');
+}
+
+const monogram = initials(brand) || '•';
+const ctaHref = primaryLabel ? primaryLink(content, preview) : '';
+
+const hasAbout = Boolean(about || aboutTitle || benefitList.length > 0);
+const hasExperience = experienceList.length > 0;
+const hasProjects = productList.length > 0;
+const hasTestimonials = testimonialList.length > 0;
+const hasContact = Boolean(footerText || linkList.length > 0);
+
+const navItems = [
+  hasAbout ? { href: '#sobre', label: en ? 'About' : 'Sobre' } : null,
+  hasExperience ? { href: '#experiencia', label: en ? 'Experience' : 'Experiência' } : null,
+  hasProjects ? { href: '#projetos', label: en ? 'Projects' : 'Projetos' } : null,
+  hasContact ? { href: '#contato', label: en ? 'Contact' : 'Contato' } : null,
+].filter((item): item is { href: string; label: string } => item !== null);
+
+const showNav = navItems.length > 0 || Boolean(primaryLabel);
+const showResume = Boolean(about || primaryLabel);
+const year = new Date().getFullYear();
+---
+
+<div class="perfil">
+  <script is:inline>
+    document.documentElement.classList.add('js');
+  </script>
+  <a class="corner-logo" href="#inicio" aria-label={brand || 'Topo'}>
+    {logo ? (
+      <img src={logo} alt={brand} loading="lazy" decoding="async" />
+    ) : (
+      <span aria-hidden="true">{monogram}</span>
+    )}
+  </a>
+
+  {statList.length > 0 && (
+    <dl class="corner-metrics" aria-label={en ? 'Key numbers' : 'Números principais'}>
+      {statList.map((stat) => (
+        <div class="metric">
+          <dt>{stat.label}</dt>
+          <dd>{stat.value}</dd>
+        </div>
+      ))}
+    </dl>
+  )}
+
+  {showNav && (
+    <nav class="pill" aria-label={en ? 'Section navigation' : 'Navegação da página'}>
+      {navItems.map((item) => (
+        <a href={item.href}>{item.label}</a>
+      ))}
+      {primaryLabel && (
+        <a class="pill-cta" href={ctaHref}>
+          {primaryLabel}
+        </a>
+      )}
+    </nav>
+  )}
+
+  <header id="inicio" class="hero">
+    <div class="hero-inner">
+      {appName && appName !== displayTitle && (
+        <p class="hero-brand" data-rise>
+          {appName}
+        </p>
+      )}
+
+      {displayTitle && <h1 class="hero-name">{displayTitle}</h1>}
+
+      {eyebrow && (
+        <p class="hero-role">
+          <span class="sr-only">{eyebrow}</span>
+          <span class="typed" data-typed aria-hidden="true">
+            {eyebrow}
+          </span>
+          <span class="caret" aria-hidden="true" />
+        </p>
+      )}
+
+      <figure class:list={['portrait', !heroImage && 'is-placeholder']} data-rise>
+        {heroImage ? (
+          <img src={heroImage} alt={brand} loading="eager" decoding="async" />
+        ) : (
+          <span class="portrait-mark" aria-hidden="true">
+            {monogram}
+          </span>
+        )}
+      </figure>
+
+      {subtitle && <p class="hero-subtitle">{subtitle}</p>}
+    </div>
+
+    {showResume && (
+      <aside class="hero-resume" aria-label={en ? 'Summary' : 'Resumo'}>
+        {about && <p class="hero-resume-text">{about}</p>}
+        {primaryLabel && (
+          <a class="cta" href={ctaHref}>
+            <span>{primaryLabel}</span>
+            <span aria-hidden="true">↗</span>
+          </a>
+        )}
+      </aside>
+    )}
+  </header>
+
+  <main>
+    {hasAbout && (
+      <section id="sobre" class="section" data-rise>
+        <p class="kicker">{en ? 'About' : 'Sobre'}</p>
+        {aboutTitle && <h2 class="section-title">{aboutTitle}</h2>}
+        {about && <p class="lead">{about}</p>}
+
+        {benefitList.length > 0 && (
+          <ul class="benefits">
+            {benefitList.map((benefit, index) => (
+              <li class="benefit" data-rise>
+                <span class="benefit-index">{String(index + 1).padStart(2, '0')}</span>
+                <h3>{benefit.title}</h3>
+                <p>{benefit.description}</p>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+    )}
+
+    {hasExperience && (
+      <section id="experiencia" class="section" data-rise>
+        <p class="kicker">{en ? 'Career' : 'Trajetória'}</p>
+        <h2 class="section-title">{en ? 'Experience' : 'Experiência'}</h2>
+
+        <ol class="timeline">
+          {experienceList.map((item, index) => (
+            <li class:list={['tl-item', index % 2 === 1 ? 'is-right' : 'is-left']} data-rise>
+              <div class="tl-card">
+                {item.period && <span class="tl-period">{item.period}</span>}
+                {item.company && <span class="tl-company">{item.company}</span>}
+                {item.role && <h3 class="tl-role">{item.role}</h3>}
+                {item.location && <span class="tl-location">{item.location}</span>}
+                {item.summary && <p class="tl-summary">{item.summary}</p>}
+              </div>
+            </li>
+          ))}
+        </ol>
+      </section>
+    )}
+
+    {hasProjects && (
+      <section id="projetos" class="section" data-rise>
+        <p class="kicker">{en ? 'Selected work' : 'Trabalhos selecionados'}</p>
+        <h2 class="section-title">{en ? 'Projects' : 'Projetos'}</h2>
+
+        <div class="project-grid">
+          {productList.map((product, index) => (
+            <a class="project-card" href={productLink(content, preview, index)} data-rise>
+              <div class="project-media">
+                {product.image ? (
+                  <img src={product.image} alt={product.title} loading="lazy" decoding="async" />
+                ) : (
+                  <span class="project-mark" aria-hidden="true">
+                    {initials(product.title) || String(index + 1).padStart(2, '0')}
+                  </span>
+                )}
+              </div>
+              <div class="project-body">
+                <h3>{product.title}</h3>
+                {product.description && <p>{product.description}</p>}
+                <span class="project-link">
+                  {en ? 'View project' : 'Ver projeto'}
+                  <span aria-hidden="true">→</span>
+                </span>
+              </div>
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
+
+    {hasTestimonials && (
+      <section id="depoimentos" class="section" data-rise>
+        <p class="kicker">{en ? 'Words' : 'Depoimentos'}</p>
+        <h2 class="section-title">{en ? 'Testimonials' : 'Quem já trabalhou comigo'}</h2>
+
+        <div class="quote-grid">
+          {testimonialList.map((testimonial) => (
+            <figure class="quote" data-rise>
+              <span class="quote-mark" aria-hidden="true">
+                &ldquo;
+              </span>
+              <blockquote>{testimonial.quote}</blockquote>
+              {testimonial.name && <figcaption>{testimonial.name}</figcaption>}
+            </figure>
+          ))}
+        </div>
+      </section>
+    )}
+  </main>
+
+  {hasContact && (
+    <footer id="contato" class="section contact" data-rise>
+      <p class="kicker">{en ? 'Contact' : 'Contato'}</p>
+      <h2 class="contact-title">{footerText || (en ? "Let's talk." : 'Vamos conversar.')}</h2>
+
+      {linkList.length > 0 && (
+        <div class="contact-links">
+          {linkList.map((link) => (
+            <a
+              class="contact-btn"
+              href={link.url || '#'}
+              target={link.url.startsWith('http') ? '_blank' : undefined}
+              rel={link.url.startsWith('http') ? 'noopener noreferrer' : undefined}
+            >
+              <span>{link.label}</span>
+              <span aria-hidden="true">{link.url.startsWith('mailto:') ? '@' : '↗'}</span>
+            </a>
+          ))}
+        </div>
+      )}
+
+      <p class="contact-meta">
+        © {year} {displayTitle}
+      </p>
+    </footer>
+  )}
+</div>
+
+<script>
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  if (!reduceMotion.matches) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          entry.target.classList.add('is-visible');
+          observer.unobserve(entry.target);
+        }
+      },
+      { threshold: 0.12, rootMargin: '0px 0px -6% 0px' },
+    );
+
+    document
+      .querySelectorAll<HTMLElement>('[data-rise]')
+      .forEach((element) => observer.observe(element));
+
+    document.querySelectorAll<HTMLElement>('[data-typed]').forEach((element) => {
+      const text = (element.textContent ?? '').trim();
+      if (!text) return;
+
+      element.textContent = '';
+      let index = 0;
+
+      const tick = () => {
+        index += 1;
+        element.textContent = text.slice(0, index);
+        if (index < text.length) window.setTimeout(tick, 44 + Math.random() * 44);
+      };
+
+      window.setTimeout(tick, 360);
+    });
+  }
+</script>
+
+<style>
+  .perfil {
+    --serif: var(--font-display);
+    --mono: var(--font-mono);
+    --sans: var(--font-body);
+
+    position: relative;
+    isolation: isolate;
+    min-height: 100vh;
+    overflow-x: clip;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--sans);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .perfil *,
+  .perfil *::before,
+  .perfil *::after {
+    box-sizing: border-box;
+  }
+
+  .perfil p,
+  .perfil h1,
+  .perfil h2,
+  .perfil h3,
+  .perfil figure,
+  .perfil blockquote,
+  .perfil dl,
+  .perfil dd,
+  .perfil dt {
+    margin: 0;
+  }
+
+  .perfil a {
+    color: inherit;
+  }
+
+  /* Ambient moody wash behind everything. */
+  .perfil::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(
+        58% 42% at 16% 4%,
+        color-mix(in srgb, var(--accent) 18%, transparent),
+        transparent 68%
+      ),
+      radial-gradient(
+        52% 44% at 90% 88%,
+        color-mix(in srgb, var(--accent) 11%, transparent),
+        transparent 72%
+      );
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* ---------------------------------------------------------------- chrome */
+
+  .corner-logo {
+    position: fixed;
+    top: clamp(18px, 3vw, 34px);
+    left: clamp(18px, 3vw, 34px);
+    z-index: 60;
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border: 1px solid var(--line);
+    border-radius: 15px;
+    background: color-mix(in srgb, var(--bg) 82%, transparent);
+    backdrop-filter: blur(12px);
+    color: var(--fg);
+    font-family: var(--serif);
+    font-size: 1.05rem;
+    letter-spacing: 0.02em;
+    text-decoration: none;
+    overflow: hidden;
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .corner-logo:hover {
+    transform: translateY(-2px);
+  }
+
+  .corner-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .corner-metrics {
+    position: fixed;
+    right: clamp(18px, 3vw, 34px);
+    bottom: clamp(18px, 3vw, 34px);
+    z-index: 60;
+    display: flex;
+    gap: clamp(1.1rem, 2.4vw, 2rem);
+    text-align: right;
+  }
+
+  .corner-metrics .metric {
+    display: flex;
+    flex-direction: column-reverse;
+  }
+
+  .corner-metrics dt {
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .corner-metrics dd {
+    font-family: var(--serif);
+    font-size: clamp(1.2rem, 2vw, 1.6rem);
+    line-height: 1.1;
+    color: var(--fg);
+  }
+
+  .pill {
+    position: fixed;
+    top: clamp(16px, 3vw, 28px);
+    left: 50%;
+    z-index: 55;
+    display: flex;
+    align-items: center;
+    gap: clamp(0.15rem, 0.8vw, 0.45rem);
+    max-width: calc(100vw - 28px);
+    padding: 0.4rem 0.5rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--bg) 78%, transparent);
+    backdrop-filter: blur(14px) saturate(1.2);
+    box-shadow: 0 16px 44px -26px color-mix(in srgb, #000 85%, transparent);
+    overflow-x: auto;
+    transform: translateX(-50%);
+    scrollbar-width: none;
+  }
+
+  .pill::-webkit-scrollbar {
+    display: none;
+  }
+
+  .pill a {
+    padding: 0.55rem 0.9rem;
+    border-radius: 999px;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    text-decoration: none;
+    white-space: nowrap;
+    transition:
+      color 0.25s ease,
+      background-color 0.25s ease;
+  }
+
+  .pill a:hover {
+    color: var(--fg);
+    background: var(--soft);
+  }
+
+  .pill a.pill-cta {
+    background: var(--accent);
+    color: var(--bg);
+  }
+
+  .pill a.pill-cta:hover {
+    background: color-mix(in srgb, var(--accent) 88%, var(--fg));
+  }
+
+  /* ------------------------------------------------------------------ hero */
+
+  .hero {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100svh;
+    padding: clamp(120px, 17vh, 190px) clamp(20px, 5vw, 56px) clamp(120px, 18vh, 180px);
+    text-align: center;
+  }
+
+  .hero-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 840px;
+  }
+
+  .hero-brand {
+    margin-bottom: 1.1rem;
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.34em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .hero-name {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: clamp(2.6rem, 8.6vw, 6.2rem);
+    line-height: 1.02;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  .hero-role {
+    margin-top: 1.1rem;
+    min-height: 1.4em;
+    color: var(--accent);
+    font-family: var(--mono);
+    font-size: clamp(0.68rem, 1.5vw, 0.84rem);
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+  }
+
+  .caret {
+    display: inline-block;
+    width: 1.6px;
+    height: 1.05em;
+    margin-left: 4px;
+    background: var(--accent);
+    vertical-align: -0.16em;
+    animation: perfil-caret 1s steps(1) infinite;
+  }
+
+  @keyframes perfil-caret {
+    0%,
+    49% {
+      opacity: 1;
+    }
+    50%,
+    100% {
+      opacity: 0;
+    }
+  }
+
+  .portrait {
+    position: relative;
+    width: clamp(220px, 33vw, 372px);
+    aspect-ratio: 1 / 1;
+    margin-top: clamp(28px, 4vw, 46px);
+    border-radius: 22px;
+    overflow: hidden;
+    background: linear-gradient(155deg, var(--surface), var(--soft));
+    box-shadow:
+      0 0 0 1px var(--line),
+      0 42px 80px -38px color-mix(in srgb, #000 82%, transparent);
+  }
+
+  .portrait.is-placeholder::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      120% 120% at 28% 18%,
+      color-mix(in srgb, var(--accent) 40%, transparent),
+      transparent 62%
+    );
+  }
+
+  .portrait img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: saturate(0.94) contrast(1.03);
+  }
+
+  .portrait-mark {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: 100%;
+    height: 100%;
+    font-family: var(--serif);
+    font-size: clamp(3.4rem, 9vw, 6rem);
+    color: color-mix(in srgb, var(--fg) 78%, transparent);
+  }
+
+  .hero-subtitle {
+    max-width: 46ch;
+    margin-top: clamp(24px, 3vw, 36px);
+    font-size: clamp(1rem, 1.6vw, 1.15rem);
+    color: var(--muted);
+  }
+
+  .hero-resume {
+    position: absolute;
+    bottom: clamp(34px, 6vh, 68px);
+    left: clamp(20px, 5vw, 56px);
+    width: min(300px, 30vw);
+    text-align: left;
+  }
+
+  .hero-resume-text {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 4;
+    color: var(--muted);
+    font-size: 0.9rem;
+    line-height: 1.65;
+  }
+
+  .cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-top: 1.15rem;
+    padding: 0.85rem 1.5rem;
+    border: 1px solid color-mix(in srgb, var(--accent) 62%, transparent);
+    border-radius: 999px;
+    background: var(--accent);
+    color: var(--bg);
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition:
+      transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 0.35s ease;
+  }
+
+  .cta:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 18px 36px -18px color-mix(in srgb, var(--accent) 75%, transparent);
+  }
+
+  /* -------------------------------------------------------------- sections */
+
+  .section {
+    position: relative;
+    z-index: 1;
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: clamp(72px, 10vw, 138px) clamp(20px, 5vw, 56px);
+    border-top: 1px solid var(--line);
+  }
+
+  .kicker {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    margin-bottom: 1.3rem;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+  }
+
+  .kicker::before {
+    content: '';
+    width: 34px;
+    height: 1px;
+    background: var(--line);
+  }
+
+  .section-title {
+    max-width: 20ch;
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    line-height: 1.05;
+    letter-spacing: -0.018em;
+    text-wrap: balance;
+  }
+
+  .lead {
+    max-width: 62ch;
+    margin-top: 1.5rem;
+    color: var(--muted);
+    font-size: clamp(1rem, 1.5vw, 1.15rem);
+    white-space: pre-line;
+  }
+
+  /* ---------------------------------------------------------------- about */
+
+  .benefits {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1px;
+    margin-top: clamp(40px, 6vw, 68px);
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: var(--line);
+    list-style: none;
+    overflow: hidden;
+  }
+
+  .benefit {
+    padding: clamp(24px, 3vw, 36px);
+    background: var(--bg);
+  }
+
+  .benefit-index {
+    display: block;
+    margin-bottom: 1rem;
+    color: var(--accent);
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.22em;
+  }
+
+  .benefit h3 {
+    margin-bottom: 0.6rem;
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 1.35rem;
+    line-height: 1.2;
+  }
+
+  .benefit p {
+    color: var(--muted);
+    font-size: 0.92rem;
+  }
+
+  /* ------------------------------------------------------------ experience */
+
+  .timeline {
+    position: relative;
+    margin-top: clamp(44px, 6vw, 72px);
+    padding: 0;
+    list-style: none;
+  }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 1px;
+    background: var(--line);
+  }
+
+  .tl-item {
+    position: relative;
+    width: 50%;
+    padding: 0 44px 56px 0;
+  }
+
+  .tl-item.is-right {
+    margin-left: 50%;
+    padding: 0 0 56px 44px;
+  }
+
+  .tl-item:last-child {
+    padding-bottom: 0;
+  }
+
+  .tl-item::after {
+    content: '';
+    position: absolute;
+    top: 9px;
+    right: -5px;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 4px var(--bg);
+  }
+
+  .tl-item.is-right::after {
+    right: auto;
+    left: -5px;
+  }
+
+  .tl-card {
+    padding: clamp(22px, 3vw, 32px);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: color-mix(in srgb, var(--surface) 70%, transparent);
+    transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .tl-card:hover {
+    transform: translateY(-3px);
+  }
+
+  .tl-period {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--accent);
+    font-family: var(--serif);
+    font-size: 1rem;
+    font-style: italic;
+  }
+
+  .tl-company {
+    display: block;
+    margin-bottom: 0.35rem;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+  }
+
+  .tl-role {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: clamp(1.3rem, 2.4vw, 1.7rem);
+    line-height: 1.15;
+  }
+
+  .tl-location {
+    display: block;
+    margin-top: 0.35rem;
+    color: var(--muted);
+    font-size: 0.82rem;
+  }
+
+  .tl-summary {
+    margin-top: 0.9rem;
+    color: var(--muted);
+    font-size: 0.92rem;
+    white-space: pre-line;
+  }
+
+  /* -------------------------------------------------------------- projects */
+
+  .project-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: clamp(20px, 3vw, 34px);
+    margin-top: clamp(40px, 6vw, 68px);
+  }
+
+  .project-card {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    background: color-mix(in srgb, var(--surface) 60%, transparent);
+    text-decoration: none;
+    overflow: hidden;
+    transition:
+      transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 0.45s ease;
+  }
+
+  .project-card:hover {
+    transform: translateY(-5px);
+    border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+  }
+
+  .project-media {
+    position: relative;
+    display: grid;
+    place-items: center;
+    aspect-ratio: 16 / 10;
+    background: linear-gradient(150deg, var(--surface), var(--soft));
+    overflow: hidden;
+  }
+
+  .project-media img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .project-card:hover .project-media img {
+    transform: scale(1.05);
+  }
+
+  .project-mark {
+    font-family: var(--serif);
+    font-size: clamp(2rem, 5vw, 3rem);
+    color: color-mix(in srgb, var(--fg) 42%, transparent);
+  }
+
+  .project-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding: clamp(22px, 3vw, 30px);
+  }
+
+  .project-body h3 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 1.45rem;
+    line-height: 1.15;
+  }
+
+  .project-body p {
+    color: var(--muted);
+    font-size: 0.92rem;
+  }
+
+  .project-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.4rem;
+    color: var(--accent);
+    font-family: var(--mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+
+  /* ---------------------------------------------------------- testimonials */
+
+  .quote-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: clamp(20px, 3vw, 34px);
+    margin-top: clamp(40px, 6vw, 68px);
+  }
+
+  .quote {
+    position: relative;
+    padding: clamp(28px, 3.5vw, 42px);
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    background: color-mix(in srgb, var(--surface) 55%, transparent);
+  }
+
+  .quote-mark {
+    display: block;
+    color: color-mix(in srgb, var(--accent) 70%, transparent);
+    font-family: var(--serif);
+    font-size: 3rem;
+    line-height: 0.6;
+  }
+
+  .quote blockquote {
+    margin-top: 1rem;
+    font-family: var(--serif);
+    font-size: clamp(1.15rem, 1.8vw, 1.4rem);
+    font-style: italic;
+    line-height: 1.45;
+  }
+
+  .quote figcaption {
+    margin-top: 1.4rem;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+
+  /* -------------------------------------------------------------- contact */
+
+  .contact {
+    padding-bottom: clamp(90px, 12vw, 150px);
+  }
+
+  .contact-title {
+    max-width: 18ch;
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: clamp(2.2rem, 6vw, 4.2rem);
+    line-height: 1.03;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  .contact-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.9rem;
+    margin-top: clamp(34px, 5vw, 54px);
+  }
+
+  .contact-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.9rem 1.5rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--surface) 60%, transparent);
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition:
+      transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 0.35s ease,
+      color 0.35s ease;
+  }
+
+  .contact-btn:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in srgb, var(--accent) 60%, transparent);
+    color: var(--accent);
+  }
+
+  .contact-meta {
+    margin-top: clamp(56px, 8vw, 96px);
+    padding-top: 1.6rem;
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  /* --------------------------------------------------------------- motion */
+
+  :global(html.js) [data-rise] {
+    opacity: 0;
+    transform: translateY(26px);
+    transition:
+      opacity 0.85s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.85s cubic-bezier(0.22, 1, 0.36, 1);
+    will-change: opacity, transform;
+  }
+
+  :global(html.js) [data-rise].is-visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* ------------------------------------------------------------ responsive */
+
+  @media (max-width: 900px) {
+    .pill {
+      top: auto;
+      bottom: 16px;
+    }
+
+    .hero {
+      padding-bottom: clamp(150px, 24vh, 210px);
+    }
+
+    .hero-resume {
+      position: static;
+      width: min(440px, 100%);
+      margin-top: clamp(36px, 6vw, 52px);
+      text-align: center;
+    }
+
+    .hero-resume-text {
+      -webkit-line-clamp: 5;
+    }
+
+    .timeline::before {
+      left: 7px;
+    }
+
+    .tl-item,
+    .tl-item.is-right {
+      width: 100%;
+      margin-left: 0;
+      padding: 0 0 42px 34px;
+    }
+
+    .tl-item:last-child {
+      padding-bottom: 0;
+    }
+
+    .tl-item::after,
+    .tl-item.is-right::after {
+      right: auto;
+      left: 3px;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .corner-logo,
+    .corner-metrics {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .caret {
+      display: none;
+    }
+
+    :global(html.js) [data-rise] {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+
+    .corner-logo,
+    .cta,
+    .tl-card,
+    .project-card,
+    .project-media img,
+    .contact-btn {
+      transition: none;
+    }
+  }
+</style>

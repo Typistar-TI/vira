@@ -1,8 +1,9 @@
 ---
 import Base from '@frontend/components/Base.astro';
 import SitePage from '@frontend/components/SitePage.astro';
+import AssistantChat from '@frontend/components/AssistantChat.astro';
 import { userHasAccess } from '@frontend/api/sites/has-access';
-import { parseSiteContent } from '@frontend/api/sites/parse-site';
+import { fontHrefs, parseSiteContent } from '@frontend/api/sites/parse-site';
 import { recordView } from '@frontend/api/analytics/record-view';
 const { tenant, url } = Astro.props;
 const active = userHasAccess(tenant.user);
@@ -11,6 +12,19 @@ const content = tenant.site.published_json
   : null;
 if (active && content) recordView(tenant.site.id);
 const canonical = `https://${url.hostname}/`;
+const assistantGreeting = content
+  ? content.language === 'en'
+    ? 'Hi! Ask me anything about this page.'
+    : 'Oi! Pergunte o que quiser sobre esta página.'
+  : '';
+const assistantName = content ? content.appName || content.title : '';
+const assistantPalette = content
+  ? {
+      surface: `color-mix(in srgb, ${content.backgroundColor} 93%, ${content.textColor})`,
+      soft: `color-mix(in srgb, ${content.backgroundColor} 86%, ${content.accentColor})`,
+      line: `color-mix(in srgb, ${content.textColor} 16%, transparent)`,
+    }
+  : { surface: '#ffffff', soft: '#f7efe1', line: '#e8d6b8' };
 ---
 
 {!active ? (
@@ -41,6 +55,7 @@ const canonical = `https://${url.hostname}/`;
     touchIcon={content.pwaIcon192 || '/pwa-icon-192.png'}
     themeColor={content.themeColor}
     pageBackground={content.backgroundColor}
+    fontHref={fontHrefs[content.font]}
   >
     <link slot="head" rel="canonical" href={canonical} />
     <meta slot="head" property="og:title" content={content.title} />
@@ -53,5 +68,25 @@ const canonical = `https://${url.hostname}/`;
       />
     )}
     <SitePage content={content} />
+    <AssistantChat
+      endpoint="/api/public/assistant/chat"
+      lang={content.language}
+      variant="floating"
+      persist
+      name={assistantName}
+      greeting={assistantGreeting}
+      suggestions={
+        content.language === 'en'
+          ? ['What do you offer?', 'How can I contact you?']
+          : ['O que vocês oferecem?', 'Como entro em contato?']
+      }
+      colors={{
+        accent: content.accentColor,
+        text: content.textColor,
+        surface: assistantPalette.surface,
+        soft: assistantPalette.soft,
+        line: assistantPalette.line,
+      }}
+    />
   </Base>
 )}

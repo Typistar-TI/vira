@@ -32,6 +32,9 @@ export async function cleanExpired(environment: WorkerEnv) {
   await environment.DB.prepare('DELETE FROM rate_limits WHERE reset_at <= ?')
     .bind(now - 86400)
     .run();
+  await environment.DB.prepare('DELETE FROM assistant_messages WHERE created_at <= ?')
+    .bind(Date.now() - 30 * 86400000)
+    .run();
   await environment.DB.prepare('DELETE FROM stripe_events WHERE created_at <= ?')
     .bind(now - 180 * 86400)
     .run();

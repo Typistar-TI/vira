@@ -77,7 +77,7 @@ async function createUser(email: string, sub: string | null, language: 'pt' | 'e
   const slug = `site-${id.slice(0, 12)}`;
   const content = JSON.stringify(initialSite(language));
   const [pageUrl, panelUrl] = await Promise.all([siteUrl(slug), dashboardUrl()]);
-  const trialEnd = now + 7 * 86400;
+  const trialEnd = now + 1 * 86400;
   const date = endDateParts(trialEnd);
   await env.DB.batch([
     env.DB.prepare(

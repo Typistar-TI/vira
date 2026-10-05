@@ -1,0 +1,328 @@
+---
+interface Colors {
+  accent?: string;
+  surface?: string;
+  text?: string;
+  line?: string;
+  soft?: string;
+}
+
+interface Props {
+  endpoint: string;
+  lang?: 'pt' | 'en';
+  variant?: 'demo' | 'floating';
+  name?: string;
+  greeting?: string;
+  suggestions?: string[];
+  colors?: Colors;
+  persist?: boolean;
+}
+
+const {
+  endpoint,
+  lang = 'pt',
+  variant = 'demo',
+  name,
+  greeting,
+  suggestions = [],
+  colors = {},
+  persist = false,
+} = Astro.props;
+const en = lang === 'en';
+const floating = variant === 'floating';
+const assistantName = name || (en ? 'Vira assistant' : 'Assistente do Vira');
+const hello =
+  greeting ||
+  (en ? 'Hi! Ask me anything about this page.' : 'Oi! Pergunte o que quiser sobre esta página.');
+const hints = suggestions.length
+  ? suggestions
+  : en
+    ? ['What do you offer?', 'How does it work?', 'How much does it cost?']
+    : ['O que vocês oferecem?', 'Como funciona?', 'Quanto custa?'];
+const palette = {
+  accent: colors.accent || '#b88333',
+  surface: colors.surface || '#ffffff',
+  text: colors.text || '#17130d',
+  line: colors.line || '#e8d6b8',
+  soft: colors.soft || '#f7efe1',
+};
+const panelClass = floating
+  ? 'hidden fixed bottom-24 right-5 z-50 flex h-[min(560px,calc(100svh-8rem))] w-[min(390px,calc(100vw-2.5rem))] flex-col overflow-hidden rounded-[1.5rem] border shadow-[0_30px_80px_-40px_rgba(0,0,0,0.55)]'
+  : 'flex h-full min-h-[480px] flex-col overflow-hidden rounded-[2rem] border shadow-[0_30px_75px_-50px_rgba(143,97,36,0.35)] lg:h-[560px]';
+---
+
+<div
+  data-assistant
+  data-endpoint={endpoint}
+  data-lang={lang}
+  data-persist={persist ? 'true' : undefined}
+  class:list={[floating && 'fixed bottom-5 right-5 z-50']}
+>
+  {floating && (
+    <button
+      type="button"
+      data-assistant-toggle
+      aria-label={en ? 'Open the assistant' : 'Abrir a assistente'}
+      aria-expanded="false"
+      class="flex h-14 w-14 items-center justify-center rounded-full border-0 text-white shadow-[0_16px_40px_-16px_rgba(0,0,0,0.6)] transition-transform duration-300 hover:-translate-y-0.5 active:scale-95"
+      style={`background:${palette.accent}`}
+    >
+      <svg viewBox="0 0 24 24" class="h-6 w-6 fill-current" aria-hidden="true">
+        <path d="M4 4h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H9l-5 4v-4H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z"></path>
+      </svg>
+    </button>
+  )}
+  <div
+    data-assistant-panel
+    class:list={[panelClass]}
+    style={`background:${palette.surface};border-color:${palette.line};color:${palette.text};--a-accent:${palette.accent};--a-soft:${palette.soft};--a-line:${palette.line};--a-text:${palette.text}`}
+  >
+    <header
+      class="flex items-center gap-3 border-b px-5 py-4"
+      style={`border-color:${palette.line};background:${palette.soft}`}
+    >
+      <span
+        class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm text-white"
+        style={`background:${palette.accent}`}
+        aria-hidden="true"
+      >
+        ✳
+      </span>
+      <div class="min-w-0">
+        <p class="truncate font-['Outfit',sans-serif] text-sm font-semibold">{assistantName}</p>
+        <p class="flex items-center gap-1.5 text-[11px] opacity-70">
+          <span class="h-1.5 w-1.5 rounded-full bg-[#3fa46a]"></span>
+          {en ? 'Online now' : 'Online agora'}
+        </p>
+      </div>
+      {floating && (
+        <button
+          type="button"
+          data-assistant-close
+          aria-label={en ? 'Close' : 'Fechar'}
+          class="ml-auto flex h-8 w-8 items-center justify-center rounded-full border-0 bg-transparent text-lg opacity-60 transition-opacity hover:opacity-100"
+        >
+          ×
+        </button>
+      )}
+    </header>
+    <div data-assistant-log aria-live="polite" class="flex-1 space-y-3 overflow-y-auto px-5 py-5">
+      <div
+        class="mr-auto max-w-[85%] rounded-2xl rounded-bl-md px-4 py-2.5 text-sm leading-relaxed"
+        style={`background:${palette.soft}`}
+      >
+        {hello}
+      </div>
+    </div>
+    <div class="px-5 pb-2">
+      <div data-assistant-suggestions class="flex flex-wrap gap-2">
+        {hints.map((hint) => (
+          <button
+            type="button"
+            data-assistant-suggestion
+            class="rounded-full border px-3 py-1.5 text-xs transition-colors hover:opacity-80"
+            style={`border-color:${palette.line};color:${palette.accent}`}
+          >
+            {hint}
+          </button>
+        ))}
+      </div>
+    </div>
+    <form
+      data-assistant-form
+      class="flex items-end gap-2 border-t px-4 py-3"
+      style={`border-color:${palette.line}`}
+    >
+      <label class="sr-only" for={`assistant-input-${lang}-${variant}`}>
+        {en ? 'Your question' : 'Sua pergunta'}
+      </label>
+      <textarea
+        id={`assistant-input-${lang}-${variant}`}
+        data-assistant-input
+        rows="1"
+        maxlength="500"
+        placeholder={en ? 'Type your question…' : 'Escreva sua pergunta…'}
+        class="max-h-28 min-h-11 flex-1 resize-none rounded-2xl border px-4 py-2.5 text-sm outline-none"
+        style={`border-color:${palette.line};color:${palette.text}`}
+      ></textarea>
+      <button
+        type="submit"
+        data-assistant-send
+        aria-label={en ? 'Send' : 'Enviar'}
+        class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-0 text-white transition-transform duration-300 hover:-translate-y-0.5 active:scale-95 disabled:opacity-50"
+        style={`background:${palette.accent}`}
+      >
+        <svg viewBox="0 0 24 24" class="h-5 w-5 fill-current" aria-hidden="true">
+          <path d="M3.4 20.4 21 12 3.4 3.6 3.3 10l12 2-12 2z"></path>
+        </svg>
+      </button>
+    </form>
+  </div>
+</div>
+
+<script>
+  import { loadHistory, streamAssistant, type ChatMessage } from '@frontend/api/assistant/chat';
+
+  function initAssistant(root: HTMLElement) {
+    const panel = root.querySelector<HTMLElement>('[data-assistant-panel]');
+    const log = root.querySelector<HTMLElement>('[data-assistant-log]');
+    const form = root.querySelector<HTMLFormElement>('[data-assistant-form]');
+    const input = root.querySelector<HTMLTextAreaElement>('[data-assistant-input]');
+    const send = root.querySelector<HTMLButtonElement>('[data-assistant-send]');
+    const toggle = root.querySelector<HTMLButtonElement>('[data-assistant-toggle]');
+    const close = root.querySelector<HTMLButtonElement>('[data-assistant-close]');
+    if (!panel || !log || !form || !input || !send) return;
+
+    const endpoint = root.dataset.endpoint || '/api/assistant/chat';
+    const lang = root.dataset.lang === 'en' ? 'en' : 'pt';
+    const en = lang === 'en';
+    const messages: ChatMessage[] = [];
+    let busy = false;
+
+    const persist = root.dataset.persist === 'true';
+    const storeKey = `vira-assistant:${location.hostname}`;
+    const historyEndpoint = endpoint.replace(/\/chat$/, '/history');
+    let conversation = '';
+    try {
+      conversation = persist ? localStorage.getItem(storeKey) || '' : '';
+    } catch {
+      conversation = '';
+    }
+    if (persist && !conversation) {
+      conversation = crypto.randomUUID();
+      try {
+        localStorage.setItem(storeKey, conversation);
+      } catch {
+        /* armazenamento indisponível */
+      }
+    }
+
+    const scroll = () => {
+      log.scrollTop = log.scrollHeight;
+    };
+
+    const bubble = (role: ChatMessage['role'], text: string) => {
+      const node = document.createElement('div');
+      node.className =
+        role === 'user'
+          ? 'ml-auto max-w-[85%] rounded-2xl rounded-br-md px-4 py-2.5 text-sm leading-relaxed text-white'
+          : 'mr-auto max-w-[85%] rounded-2xl rounded-bl-md px-4 py-2.5 text-sm leading-relaxed';
+      node.style.background = role === 'user' ? 'var(--a-accent)' : 'var(--a-soft)';
+      node.textContent = text;
+      log.append(node);
+      scroll();
+      return node;
+    };
+
+    const streamingBubble = () => {
+      const node = document.createElement('div');
+      node.className =
+        'mr-auto max-w-[85%] rounded-2xl rounded-bl-md px-4 py-2.5 text-sm leading-relaxed';
+      node.style.background = 'var(--a-soft)';
+      const dots = document.createElement('span');
+      dots.className = 'inline-flex items-center gap-1';
+      for (let i = 0; i < 3; i += 1) {
+        const dot = document.createElement('span');
+        dot.className = 'h-1.5 w-1.5 animate-bounce rounded-full bg-current opacity-50';
+        dot.style.animationDelay = `${i * 0.15}s`;
+        dots.append(dot);
+      }
+      node.append(dots);
+      log.append(node);
+      scroll();
+      return {
+        set(text: string) {
+          node.textContent = text;
+          scroll();
+        },
+      };
+    };
+
+    const setBusy = (value: boolean) => {
+      busy = value;
+      input.disabled = value;
+      send.disabled = value;
+      input.rows = 1;
+    };
+
+    const submit = async (question: string) => {
+      const clean = question.trim().slice(0, 500);
+      if (!clean || busy) return;
+      bubble('user', clean);
+      if (!persist) messages.push({ role: 'user', content: clean });
+      input.value = '';
+      input.style.height = 'auto';
+      setBusy(true);
+      root.querySelector<HTMLElement>('[data-assistant-suggestions]')?.classList.add('hidden');
+      const pending = streamingBubble();
+      try {
+        const body = persist ? { conversation, message: clean } : { messages, lang };
+        const answer = await streamAssistant({
+          endpoint,
+          body,
+          onToken: (text) => pending.set(text),
+        });
+        if (!answer) {
+          pending.set(en ? 'I could not answer just now.' : 'Não consegui responder agora.');
+        } else if (!persist) {
+          messages.push({ role: 'assistant', content: answer });
+        }
+      } catch {
+        pending.set(
+          en
+            ? 'I could not answer just now. Please try again.'
+            : 'Não consegui responder agora. Tente novamente.',
+        );
+      } finally {
+        setBusy(false);
+        input.focus();
+      }
+    };
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      void submit(input.value);
+    });
+
+    input.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault();
+        void submit(input.value);
+      }
+    });
+
+    input.addEventListener('input', () => {
+      input.style.height = 'auto';
+      input.style.height = `${Math.min(input.scrollHeight, 112)}px`;
+    });
+
+    root.querySelectorAll<HTMLButtonElement>('[data-assistant-suggestion]').forEach((button) => {
+      button.addEventListener('click', () => {
+        void submit(button.textContent || '');
+        root.querySelector<HTMLElement>('[data-assistant-suggestions]')?.classList.add('hidden');
+      });
+    });
+
+    const openPanel = (open: boolean) => {
+      panel.classList.toggle('hidden', !open);
+      toggle?.setAttribute('aria-expanded', String(open));
+      if (open) input.focus();
+    };
+
+    toggle?.addEventListener('click', () => openPanel(panel.classList.contains('hidden')));
+    close?.addEventListener('click', () => openPanel(false));
+
+    if (persist && conversation) {
+      loadHistory(historyEndpoint, conversation)
+        .then((history) => {
+          if (!history.length) return;
+          log.replaceChildren();
+          for (const item of history) bubble(item.role, item.content);
+          root.querySelector<HTMLElement>('[data-assistant-suggestions]')?.classList.add('hidden');
+        })
+        .catch(() => {});
+    }
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-assistant]').forEach(initAssistant);
+</script>

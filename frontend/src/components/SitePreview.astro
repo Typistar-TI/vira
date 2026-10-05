@@ -1,7 +1,7 @@
 ---
 import Base from '@frontend/components/Base.astro';
 import SitePage from '@frontend/components/SitePage.astro';
-import { parseSiteContent } from '@frontend/api/sites/parse-site';
+import { fontHrefs, parseSiteContent } from '@frontend/api/sites/parse-site';
 const { site } = Astro.props;
 const content = parseSiteContent(JSON.parse(site.draft_json));
 ---
@@ -14,6 +14,7 @@ const content = parseSiteContent(JSON.parse(site.draft_json));
   favicon={content.favicon || '/favicon.png'}
   themeColor={content.themeColor}
   pageBackground={content.backgroundColor}
+  fontHref={fontHrefs[content.font]}
 >
   <SitePage content={content} preview />
 </Base>

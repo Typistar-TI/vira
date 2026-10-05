@@ -1,253 +1,42 @@
 ---
-import type { SiteContent } from '@frontend/api/sites/parse-site';
+import { fontStacks, type SiteContent } from '@frontend/api/sites/parse-site';
+import Guardiao from '@frontend/components/templates/Guardiao.astro';
+import Central from '@frontend/components/templates/Central.astro';
+import Perfil from '@frontend/components/templates/Perfil.astro';
+import Estudio from '@frontend/components/templates/Estudio.astro';
+import Classico from '@frontend/components/templates/Classico.astro';
+
 interface Props {
   content: SiteContent;
   preview?: boolean;
 }
 const { content, preview = false } = Astro.props;
-const en = content.language === 'en';
-const editorial = content.layout === 'editorial';
-const showcase = content.layout === 'showcase';
-const go = (type: string, index?: number) =>
-  preview
-    ? type === 'primary'
-      ? content.primaryUrl
-      : content.products[index || 0]?.url || '#'
-    : `/go/${type}${index === undefined ? '' : `/${index}`}`;
-const hasHero = !!content.heroImage;
-const palette =
-  content.layout === 'editorial'
-    ? {
-        bg: '#f6f5f0',
-        fg: '#243942',
-        accent: '#1e7778',
-        surface: '#ffffff',
-        soft: '#dfebe6',
-        line: '#d9e1dc',
-      }
-    : content.layout === 'showcase'
-      ? {
-          bg: '#121b27',
-          fg: '#f6f4f0',
-          accent: '#f3a77d',
-          surface: '#1d2938',
-          soft: '#394353',
-          line: '#3d4955',
-        }
-      : {
-          bg: '#f9f7fc',
-          fg: '#30243c',
-          accent: '#684395',
-          surface: '#ffffff',
-          soft: '#eadff7',
-          line: '#e5dbeb',
-        };
+
+const templates = {
+  guardiao: Guardiao,
+  central: Central,
+  perfil: Perfil,
+  estudio: Estudio,
+  classico: Classico,
+};
+const Template = templates[content.layout];
+
+function luminance(hex: string): number {
+  const value = hex.replace('#', '');
+  const channels = [0, 2, 4].map((offset) => parseInt(value.slice(offset, offset + 2), 16) / 255);
+  const [r, g, b] = channels.map((channel) =>
+    channel <= 0.03928 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4,
+  );
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+const tone = luminance(content.backgroundColor) < 0.42 ? 'dark' : 'light';
+const fonts = fontStacks[content.font];
 ---
 
 <div
-  class="min-h-screen break-words bg-[var(--bg)] text-[var(--fg)] font-[Outfit,sans-serif]"
-  style={`--bg:${content.backgroundColor};--fg:${content.textColor};--accent:${content.accentColor};--surface:${palette.surface};--soft:${palette.soft};--line:${palette.line}`}
+  class="vira-template"
+  data-tone={tone}
+  style={`--bg:${content.backgroundColor};--fg:${content.textColor};--accent:${content.accentColor};--surface:color-mix(in srgb, ${content.backgroundColor} 93%, ${content.textColor});--soft:color-mix(in srgb, ${content.backgroundColor} 86%, ${content.accentColor});--line:color-mix(in srgb, ${content.textColor} 16%, transparent);--muted:color-mix(in srgb, ${content.textColor} 62%, transparent);--font-display:${fonts.display};--font-body:${fonts.body};--font-mono:${fonts.mono};--sans:var(--font-body);--serif:var(--font-display);--mono:var(--font-mono);font-family:var(--font-body)`}
 >
-  <header class="mx-auto flex max-w-[1180px] items-center justify-between gap-4 px-5 py-6 max-[420px]:p-[18px] [&_a]:text-[var(--fg)] [&_a]:no-underline [&_nav]:flex [&_nav]:items-center [&_nav]:gap-6">
-    <a
-      href="#top"
-      class="max-w-[220px] overflow-hidden text-ellipsis whitespace-nowrap font-[Outfit] text-[22px] font-extrabold"
-    >
-      {content.logo ? (
-        <img
-          src={content.logo}
-          alt={content.appName || content.title}
-          class="h-11 max-w-[190px] object-contain object-left"
-        />
-      ) : (
-        content.title.split(' ').slice(0, 2).join(' ')
-      )}
-    </a>
-    <nav>
-      {(content.about || content.benefits.length > 0) && (
-        <a class="hidden md:inline" href="#sobre">
-          {en ? 'About' : 'Sobre'}
-        </a>
-      )}
-      {content.products.length > 0 && (
-        <a class="hidden md:inline" href="#catalogo">
-          {en ? 'Explore' : 'Conheça'}
-        </a>
-      )}
-      {content.primaryUrl && (
-        <a
-          class="btn btn-outline rounded-full border-[var(--line)] px-4 text-[var(--fg)]"
-          href={go('primary')}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          {content.primaryLabel || (en ? 'Contact' : 'Contato')}
-        </a>
-      )}
-    </nav>
-  </header>
-  <main id="top">
-    <section
-      class:list={[
-        'mx-auto grid min-h-[560px] max-w-[1180px] items-center gap-[6%] px-6 pt-5 pb-[70px] md:grid-cols-[1.05fr_0.95fr] md:pt-11 md:pb-24',
-        editorial && 'md:grid-cols-2',
-        showcase && 'md:min-h-[650px]',
-      ]}
-    >
-      <div class="max-w-[650px] [&_p]:text-lg [&_p]:leading-relaxed [&_p]:opacity-80">
-        <span class="text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--accent)]">
-          {en ? 'Welcome' : 'Bem-vindo'}
-        </span>
-        <h1
-          class:list={[
-            'my-5 font-[Outfit] text-[clamp(3.3rem,6.5vw,6.5rem)] leading-none tracking-tight break-words',
-            editorial && 'font-medium',
-          ]}
-        >
-          {content.title}
-        </h1>
-        <p>{content.subtitle}</p>
-        {content.primaryUrl && (
-          <a
-            class="btn mt-5 gap-6 rounded-full border-0 bg-[var(--accent)] px-6 font-extrabold text-[var(--bg)]"
-            href={go('primary')}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {content.primaryLabel || (en ? 'Contact us' : 'Fale conosco')} <span>↗</span>
-          </a>
-        )}
-      </div>
-      {hasHero ? (
-        <img
-          class:list={[
-            'h-[320px] w-full rounded-[26px] object-cover shadow-[24px_24px_0_var(--soft)] md:h-[440px]',
-            editorial && 'rounded-[3px] shadow-[18px_18px_0_var(--soft)]',
-            showcase && 'rounded-t-[100px] rounded-b-[24px]',
-          ]}
-          src={content.heroImage}
-          alt=""
-        />
-      ) : (
-        <div
-          class="grid h-[320px] w-full place-items-center rounded-[26px] bg-gradient-to-br from-[var(--accent)] to-[var(--soft)] text-[170px] text-[var(--bg)] shadow-[24px_24px_0_var(--soft)] md:h-[440px]"
-          aria-hidden="true"
-        >
-          <span>✳</span>
-        </div>
-      )}
-    </section>
-    {(content.about || content.benefits.length > 0) && (
-      <section
-        id="sobre"
-        class="mx-auto grid max-w-[1180px] gap-10 px-6 py-16 md:grid-cols-2 md:gap-[10%] md:py-[90px] [&_p]:text-lg [&_p]:leading-relaxed [&_p]:opacity-80"
-      >
-        <div>
-          <span class="text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--accent)]">
-            {en ? 'What makes us different' : 'O que nos move'}
-          </span>
-          <h2 class="my-4 font-[Outfit] text-[clamp(2.1rem,4vw,4rem)] leading-tight tracking-tight">
-            {content.aboutTitle || (en ? 'About us' : 'Sobre nós')}
-          </h2>
-          <p>{content.about}</p>
-        </div>
-        <div class="space-y-0">
-          {content.benefits
-            .filter((x) => x.title)
-            .map((benefit, i) => (
-              <article class="flex gap-5 border-t border-[var(--line)] py-6 [&_b]:text-sm [&_b]:text-[var(--accent)] [&_p]:leading-relaxed [&_p]:opacity-70">
-                <b>{String(i + 1).padStart(2, '0')}</b>
-                <div>
-                  <h3 class="mb-2 font-[Outfit] text-2xl tracking-tight">{benefit.title}</h3>
-                  <p>{benefit.description}</p>
-                </div>
-              </article>
-            ))}
-        </div>
-      </section>
-    )}
-    {content.stats.length > 0 && (
-      <section
-        class="flex flex-wrap justify-center gap-[8vw] bg-[var(--accent)] px-6 py-14 text-[var(--bg)] [&_div]:flex [&_div]:flex-col [&_strong]:font-[Outfit] [&_strong]:text-[clamp(2.6rem,4vw,4rem)] [&_strong]:font-bold [&_span]:text-sm"
-        aria-label={en ? 'Key numbers' : 'Números em destaque'}
-      >
-        {content.stats
-          .filter((x) => x.value)
-          .map((stat) => (
-            <div>
-              <strong>{stat.value}</strong>
-              <span>{stat.label}</span>
-            </div>
-          ))}
-      </section>
-    )}
-    {content.products.length > 0 && (
-      <section id="catalogo" class="mx-auto max-w-[1180px] px-6 py-16 md:py-[90px]">
-        <span class="text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--accent)]">
-          {en ? 'Explore' : 'Conheça'}
-        </span>
-        <h2 class="my-4 font-[Outfit] text-[clamp(2.1rem,4vw,4rem)] leading-tight tracking-tight">
-          {en ? 'What we offer' : 'O que oferecemos'}
-        </h2>
-        <div class="mt-9 grid gap-[18px] md:grid-cols-3">
-          {content.products
-            .filter((x) => x.title)
-            .map((product, i) => (
-              <article class="card overflow-hidden rounded-[20px] border border-[var(--line)] bg-[var(--surface)] [&_img]:h-[190px] [&_img]:w-full [&_img]:object-cover [&_p]:leading-relaxed [&_p]:opacity-70 [&_a]:font-extrabold [&_a]:text-[var(--accent)]">
-                {product.image && <img src={product.image} alt="" loading="lazy" />}
-                <div class="p-6">
-                  <h3 class="mb-2 font-[Outfit] text-2xl tracking-tight">{product.title}</h3>
-                  <p>{product.description}</p>
-                  {product.url && (
-                    <a href={go('product', i)} target="_blank" rel="noopener noreferrer">
-                      {en ? 'Learn more' : 'Saiba mais'} ↗
-                    </a>
-                  )}
-                </div>
-              </article>
-            ))}
-        </div>
-      </section>
-    )}
-    {content.testimonials.length > 0 && (
-      <section class="mx-auto max-w-[1180px] px-6 py-16 md:py-[90px] border-t border-[var(--line)]">
-        <span class="text-xs font-extrabold uppercase tracking-[0.14em] text-[var(--accent)]">
-          {en ? 'People say' : 'Quem conhece, conta'}
-        </span>
-        <h2 class="my-4 font-[Outfit] text-[clamp(2.1rem,4vw,4rem)] leading-tight tracking-tight">
-          {en ? 'Real stories' : 'Histórias reais'}
-        </h2>
-        <div class="mt-9 grid gap-[18px] md:grid-cols-3">
-          {content.testimonials
-            .filter((x) => x.quote)
-            .map((testimonial) => (
-              <blockquote class="card m-0 rounded-[20px] border border-[var(--line)] bg-[var(--surface)] p-6 [&_p]:text-lg [&_p]:leading-relaxed [&_cite]:font-extrabold [&_cite]:not-italic [&_cite]:text-[var(--accent)]">
-                <p>“{testimonial.quote}”</p>
-                <cite>{testimonial.name}</cite>
-              </blockquote>
-            ))}
-        </div>
-      </section>
-    )}
-    {content.primaryUrl && (
-      <section class="bg-[var(--soft)] px-6 pt-[90px] pb-[110px] text-center [&_p]:mx-auto [&_p]:max-w-[550px] [&_p]:text-lg [&_p]:leading-relaxed [&_p]:opacity-80">
-        <h2 class="my-4 font-[Outfit] text-[clamp(2.1rem,4vw,4rem)] leading-tight tracking-tight">
-          {en ? 'Ready to talk?' : 'Vamos conversar?'}
-        </h2>
-        <p>{content.subtitle}</p>
-        <a
-          class="btn mt-5 gap-6 rounded-full border-0 bg-[var(--accent)] px-6 font-extrabold text-[var(--bg)]"
-          href={go('primary')}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          {content.primaryLabel || (en ? 'Contact us' : 'Fale conosco')} ↗
-        </a>
-      </section>
-    )}
-  </main>
-  <footer class="mx-auto flex max-w-[1180px] flex-col items-center justify-between gap-2 border-t border-[var(--line)] px-6 py-8 text-center sm:flex-row sm:text-left">
-    <span>{content.footerText || content.title}</span>
-    <span>© {new Date().getFullYear()}</span>
-  </footer>
+  <Template content={content} preview={preview} />
 </div>

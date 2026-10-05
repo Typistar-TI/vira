@@ -18,6 +18,7 @@ export const POST = async (request: Request): Promise<Response> => {
       content.pwaIcon192,
       content.pwaIcon512,
       ...content.products.map((product) => product.image),
+      ...content.gallery.map((item) => item.image),
     ].filter(Boolean);
     if (images.some((image) => !image.startsWith(ownedPrefix)))
       return json({ error: 'Uma imagem não pertence à sua página' }, 400);

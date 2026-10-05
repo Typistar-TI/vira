@@ -23,7 +23,7 @@ export async function queueEndingReminders() {
      )
      ORDER BY u.created_at LIMIT 200`,
   )
-    .bind(now, now + 2 * 86400, now, now + 7 * 86400)
+    .bind(now, now + 12 * 3600, now, now + 7 * 86400)
     .all<{
       id: string;
       email: string;

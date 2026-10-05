@@ -15,6 +15,7 @@
   ],
   "r2_buckets": [{ "binding": "MEDIA", "bucket_name": "vira-media" }],
   "analytics_engine_datasets": [{ "binding": "METRICS", "dataset": "vira_metrics" }],
+  "ai": { "binding": "AI", "remote": true },
   "routes": [
     { "pattern": "vira.ia.br/*", "zone_id": "2bbbd3219eb16941c3e21a14bf2c684a" },
     { "pattern": "*.vira.ia.br/*", "zone_id": "2bbbd3219eb16941c3e21a14bf2c684a" },
