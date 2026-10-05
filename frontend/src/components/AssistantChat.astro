@@ -81,13 +81,32 @@ const panelClass = floating
       class="flex items-center gap-3 border-b px-5 py-4"
       style={`border-color:${palette.line};background:${palette.soft}`}
     >
-      <span
-        class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm text-white"
-        style={`background:${palette.accent}`}
-        aria-hidden="true"
-      >
-        ✳
-      </span>
+      {floating ? (
+        <span
+          class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm text-white"
+          style={`background:${palette.accent}`}
+          aria-hidden="true"
+        >
+          ✳
+        </span>
+      ) : (
+        <div class="flex shrink-0 items-center gap-1.5" aria-label="Vira">
+          <img
+            src="/vira-mark-amber.png"
+            width="40"
+            height="40"
+            alt=""
+            class="h-9 w-9 object-contain sm:h-10 sm:w-10"
+          />
+          <img
+            src="/vira-wordmark-amber.png"
+            width="122"
+            height="50"
+            alt="Vira"
+            class="h-[38px] w-[93px] object-contain sm:h-[45px] sm:w-[110px]"
+          />
+        </div>
+      )}
       <div class="min-w-0">
         <p class="truncate font-['Outfit',sans-serif] text-sm font-semibold">{assistantName}</p>
         <p class="flex items-center gap-1.5 text-[11px] opacity-70">
@@ -172,15 +191,16 @@ const panelClass = floating
   .assistant-demo [data-assistant-panel] {
     height: auto;
     min-height: 580px;
-    border: 1px solid var(--a-line);
-    border-radius: 2rem;
-    background: rgb(255 255 255 / 96%) !important;
-    box-shadow: 0 24px 80px -40px rgb(70 45 15 / 35%);
+    border: 0;
+    border-radius: 0;
+    background: transparent !important;
+    box-shadow: none;
   }
 
   .assistant-demo header {
     border: 0;
     background: transparent !important;
+    padding-inline: 0;
   }
 
   .assistant-demo header > span {
@@ -192,7 +212,7 @@ const panelClass = floating
   .assistant-demo [data-assistant-log] {
     max-height: 320px;
     min-height: 120px;
-    padding: 1.25rem 1.5rem;
+    padding: 1.25rem 0;
   }
 
   .assistant-demo [data-assistant-log] :global(> div) {
@@ -221,7 +241,7 @@ const panelClass = floating
   }
 
   .assistant-demo form {
-    margin: 0.75rem 1rem 0.25rem;
+    margin: 0.75rem 0 0.25rem;
     padding: 0.75rem;
     border: 1px solid var(--a-line);
     border-radius: 1.5rem;
@@ -239,7 +259,7 @@ const panelClass = floating
   @media (max-width: 640px) {
     .assistant-demo [data-assistant-panel] {
       min-height: 540px;
-      border-radius: 1.5rem;
+      border-radius: 0;
     }
   }
 </style>
