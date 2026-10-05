@@ -1,4 +1,4 @@
-import { deleteAccount } from '@backend/features/accounts/service';
+import { deleteAccount } from '@backend/features/accounts/service/accounts';
 
 export type WorkerEnv = {
   DB: import('@cloudflare/workers-types').D1Database;
@@ -27,6 +27,9 @@ export async function cleanExpired(environment: WorkerEnv) {
   await environment.DB.prepare('DELETE FROM sessions WHERE expires_at <= ?').bind(now).run();
   await environment.DB.prepare('DELETE FROM admin_sessions WHERE expires_at <= ?').bind(now).run();
   await environment.DB.prepare('DELETE FROM email_login_tokens WHERE expires_at <= ?')
+    .bind(now)
+    .run();
+  await environment.DB.prepare('DELETE FROM email_login_codes WHERE expires_at <= ?')
     .bind(now)
     .run();
   await environment.DB.prepare('DELETE FROM rate_limits WHERE reset_at <= ?')

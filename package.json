@@ -8,6 +8,9 @@
   "scripts": {
     "dev": "astro dev --root frontend",
     "check": "astro check --root frontend && tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:auth": "vitest run tests/backend/auth.test.js",
     "build": "astro build --root frontend",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
@@ -27,16 +30,26 @@
     "stripe": "^22.6.2",
     "tailwindcss": "^4.3.3"
   },
+  "overrides": {
+    "wrangler": "$wrangler",
+    "undici": "^7.29.1",
+    "http-cache-semantics": "^4.2.1",
+    "@cloudflare/vitest-pool-workers": {
+      "miniflare": "5.20261001.0-alpha"
+    }
+  },
   "allowScripts": {
     "esbuild": true
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
+    "@cloudflare/vitest-pool-workers": "^0.22.0",
     "@cloudflare/workers-types": "^5.20260926.1",
     "@types/node": "^26.6.3",
     "prettier": "^3.9.9",
     "prettier-plugin-astro": "^1.1.0",
     "typescript": "^6.0.3",
-    "wrangler": "^4.141.0"
+    "vitest": "^4.1.11",
+    "wrangler": "^4.147.0"
   }
 }

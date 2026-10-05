@@ -1,1 +1,1 @@
-export { recordView } from '@backend/features/analytics/record-view';
+export { recordView } from '@backend/features/analytics/repository/record-view';

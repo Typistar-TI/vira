@@ -1,5 +1,3 @@
 ---
-import EmailConfirmation from '@frontend/components/EmailConfirmation.astro';
+return Astro.redirect('/login', 302);
 ---
-
-<EmailConfirmation url={Astro.url} />

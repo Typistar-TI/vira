@@ -1,6 +1,10 @@
-import { getSessionAdmin, getSessionUser, sameOrigin } from '@backend/features/auth/service';
-import { consumeLimit } from '@backend/features/auth/repository';
-import type { UserRow } from '@backend/features/auth/repository';
+import {
+  getSessionAdmin,
+  getSessionUser,
+  sameOrigin,
+} from '@backend/features/auth/service/session';
+import { consumeLimit } from '@backend/features/auth/repository/users';
+import type { UserRow } from '@backend/features/auth/repository/users';
 
 export function json(value: unknown, status = 200, headers: HeadersInit = {}) {
   const responseHeaders = new Headers(headers);
@@ -37,7 +41,10 @@ export async function readBody(request: Request, maxBytes: number): Promise<Uint
 }
 
 export async function readJson(request: Request, maxBytes = 32 * 1024): Promise<any> {
-  return JSON.parse(new TextDecoder().decode(await readBody(request, maxBytes)));
+  const value = JSON.parse(new TextDecoder().decode(await readBody(request, maxBytes)));
+  if (value === null || typeof value !== 'object' || Array.isArray(value))
+    throw new Error('Envie um objeto JSON');
+  return value;
 }
 
 export async function readText(request: Request, maxBytes = 128 * 1024): Promise<string> {
@@ -62,11 +69,13 @@ export async function requireUser(request: Request): Promise<UserRow | Response>
   const user = await getSessionUser(request);
   if (!user) return json({ error: 'Entre na sua conta' }, 401);
   const path = new URL(request.url).pathname;
-  const allowed = await consumeLimit(
-    `api:${user.id}:${request.method}:${path}`,
-    request.method === 'GET' ? 30 : 60,
-    60,
-  );
+  const allowed =
+    (await consumeLimit(`api-total:${user.id}`, 120, 60)) &&
+    (await consumeLimit(
+      `api:${user.id}:${request.method}:${path}`,
+      request.method === 'GET' ? 30 : 60,
+      60,
+    ));
   return allowed
     ? user
     : json({ error: 'Muitas requisições. Aguarde um minuto.' }, 429, { 'retry-after': '60' });
@@ -84,11 +93,13 @@ export async function requireAdmin(
   const admin = await getSessionAdmin(request);
   if (!admin) return json({ error: 'Acesso restrito' }, 403);
   const path = new URL(request.url).pathname;
-  const allowed = await consumeLimit(
-    `admin-api:${admin.id}:${request.method}:${path}`,
-    request.method === 'GET' ? 30 : 60,
-    60,
-  );
+  const allowed =
+    (await consumeLimit(`admin-api-total:${admin.id}`, 120, 60)) &&
+    (await consumeLimit(
+      `admin-api:${admin.id}:${request.method}:${path}`,
+      request.method === 'GET' ? 30 : 60,
+      60,
+    ));
   return allowed
     ? admin
     : json({ error: 'Muitas requisições. Aguarde um minuto.' }, 429, { 'retry-after': '60' });

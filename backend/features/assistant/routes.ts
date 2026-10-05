@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { GET_HISTORY, POST, POST_SITE } from './handlers/chat';
+import { GET_HISTORY, POST, POST_SITE } from './controller/chat';
 
 export const routes = new Hono();
 routes.post('/chat', (c) => POST(c.req.raw));

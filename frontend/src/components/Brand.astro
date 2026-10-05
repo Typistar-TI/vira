@@ -1,19 +1,11 @@
 ---
-import { sessionAdmin } from '@frontend/api/auth/session-admin';
-import { sessionUser } from '@frontend/api/auth/session-user';
 interface Props {
   href?: string;
   compact?: boolean;
   tone?: 'light' | 'dark';
 }
 const { href, compact = false, tone = 'dark' } = Astro.props;
-const homeHref =
-  href ??
-  ((await sessionAdmin(Astro.request))
-    ? '/admin'
-    : (await sessionUser(Astro.request))
-      ? '/app'
-      : '/');
+const homeHref = href ?? '/';
 ---
 
 <a href={homeHref} class="inline-flex items-center gap-1.5 no-underline" aria-label="Vira">

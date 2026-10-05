@@ -1,0 +1,20 @@
+---
+import Base from '@frontend/components/Base.astro';
+import SitePage from '@frontend/components/SitePage.astro';
+import { fontHrefs, parseSiteContent, type SiteContent } from '@frontend/api/sites/parse-site';
+const { site, liveContent } = Astro.props;
+const content: SiteContent = liveContent || parseSiteContent(JSON.parse(site.draft_json));
+---
+
+<Base
+  title={`Prévia — ${content.title}`}
+  lang={content.language}
+  noindex
+  manifest="/app/manifest.webmanifest"
+  favicon={content.favicon || '/favicon.png'}
+  themeColor={content.themeColor}
+  pageBackground={content.backgroundColor}
+  fontHref={fontHrefs[content.font]}
+>
+  <SitePage content={content} preview />
+</Base>

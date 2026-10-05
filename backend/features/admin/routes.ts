@@ -1,10 +1,10 @@
 import { Hono } from 'hono';
-import { GET as getSettings } from './handlers/settings';
-import { POST as updateSettings } from './handlers/settings';
-import { GET as getPrices } from './handlers/prices';
-import { POST as updatePrices } from './handlers/prices';
-import { POST as updateEmailTemplate } from './handlers/email-templates';
-import { POST as updateProfile } from './handlers/profile';
+import { GET as getSettings } from './controller/settings';
+import { POST as updateSettings } from './controller/settings';
+import { GET as getPrices } from './controller/prices';
+import { POST as updatePrices } from './controller/prices';
+import { POST as updateEmailTemplate } from './controller/email-templates';
+import { POST as updateProfile } from './controller/profile';
 
 export const routes = new Hono();
 routes.get('/settings', (c) => getSettings(c.req.raw));

@@ -24,10 +24,11 @@ function successMessage(path: string, data: unknown): string {
   const messages: Record<string, [string, string]> = {
     '/api/auth/logout': ['Sessão encerrada.', 'Signed out.'],
     '/api/auth/email/start': [
-      'Se o e-mail estiver apto, o link está a caminho.',
-      'If eligible, a sign-in link is on its way.',
+      'Se o e-mail estiver apto, o código está a caminho.',
+      'If eligible, a sign-in code is on its way.',
     ],
     '/api/auth/email/verify': ['Acesso confirmado.', 'Sign-in confirmed.'],
+    '/api/auth/password': ['Acesso confirmado.', 'Sign-in confirmed.'],
     '/api/admin/settings': ['Configuração salva.', 'Setting saved.'],
     '/api/admin/prices': ['Preço salvo.', 'Price saved.'],
     '/api/admin/email-templates': ['Modelo de e-mail salvo.', 'Email template saved.'],

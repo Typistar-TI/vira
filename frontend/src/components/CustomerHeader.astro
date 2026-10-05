@@ -1,0 +1,51 @@
+---
+import Brand from './Brand.astro';
+import AccountMenu from './AccountMenu.astro';
+import MobileNavigation from './MobileNavigation.astro';
+interface Props {
+  email: string;
+  en: boolean;
+}
+const { email, en } = Astro.props;
+const links = [
+  { href: '#editor', label: en ? 'Content' : 'Conteúdo' },
+  { href: '#plan-and-billing', label: en ? 'Plan and billing' : 'Plano e cobrança' },
+  { href: '#domain-form', label: en ? 'Domain' : 'Domínio' },
+  { href: '#account', label: en ? 'Account' : 'Conta' },
+];
+---
+
+<header class="bg-white">
+  <div class="mx-auto flex max-w-[1380px] flex-wrap items-center justify-between gap-3 px-5 py-4 sm:px-8">
+    <Brand href="/app" tone="light" />
+    <nav
+      class="hidden items-center gap-1 overflow-x-auto rounded-full border border-[#d8ae73] bg-white/95 px-3 py-2 text-sm text-[#605448] shadow-[0_8px_30px_-22px_rgba(131,85,21,0.35)] xl:flex"
+      aria-label={en ? 'Dashboard sections' : 'Seções do painel'}
+    >
+      {links.map((link) => (
+        <a
+          href={link.href}
+          class="rounded-full px-3 py-1.5 whitespace-nowrap transition-colors hover:bg-[#fff9ef] hover:text-[#9b6823] focus-visible:outline-2 focus-visible:outline-[#b88333]"
+        >
+          {link.label}
+        </a>
+      ))}
+    </nav>
+    <div class="ml-auto flex items-center gap-2 xl:ml-0">
+      <div class="xl:hidden">
+        <MobileNavigation
+          label={en ? 'Sections' : 'Seções'}
+          lang={en ? 'en' : 'pt'}
+          links={links}
+        />
+      </div>
+      <AccountMenu
+        email={email}
+        profileHref="/app#account"
+        profileLabel={en ? 'Account and data' : 'Conta e dados'}
+        homeHref="/"
+        lang={en ? 'en' : 'pt'}
+      />
+    </div>
+  </div>
+</header>

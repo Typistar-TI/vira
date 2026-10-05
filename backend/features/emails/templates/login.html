@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Seu link para entrar no Vira / Your sign-in link</title>
+    <title>Seu código para entrar no Vira / Your sign-in code</title>
   </head>
   <body
     style="
@@ -46,7 +46,7 @@
               </td>
             </tr>
             <tr>
-              <td style="padding: 28px 34px 20px">
+              <td align="center" style="padding: 28px 34px 20px; text-align: center">
                 <a
                   href="https://vira.ia.br"
                   style="display: inline-block; text-decoration: none; white-space: nowrap"
@@ -82,7 +82,7 @@
               </td>
             </tr>
             <tr>
-              <td style="padding: 10px 34px 38px">
+              <td align="center" style="padding: 10px 34px 38px; text-align: center">
                 <p
                   style="
                     margin: 0 0 15px;
@@ -116,32 +116,38 @@
                     line-height: 24px;
                   "
                 >
-                  Your sign-in link is here.
+                  Your sign-in code is here.
                 </p>
                 <p style="margin: 0 0 8px; color: #4f473e; font-size: 16px; line-height: 25px">
-                  Toque no botão para entrar no Vira. É rápido e você não precisa de senha.
+                  Digite este código na página do Vira. Não compartilhe com ninguém.
                 </p>
                 <p
                   lang="en"
                   style="margin: 0 0 27px; color: #625a51; font-size: 14px; line-height: 23px"
                 >
-                  Tap the button to sign in to Vira. No password needed.
+                  Enter this code on the Vira page. Never share it.
                 </p>
-                <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                <table
+                  align="center"
+                  role="presentation"
+                  cellpadding="0"
+                  cellspacing="0"
+                  border="0"
+                >
                   <tr>
                     <td bgcolor="#a86c24" style="border-radius: 9px; background-color: #a86c24">
-                      <a
-                        href="{{login_url}}"
+                      <span
                         style="
                           display: inline-block;
                           padding: 15px 22px;
                           color: #ffffff;
-                          font-size: 15px;
+                          font-size: 32px;
+                          letter-spacing: 8px;
                           font-weight: 700;
-                          line-height: 20px;
+                          line-height: 40px;
                           text-decoration: none;
                         "
-                        >Entrar no Vira / Sign in</a
+                        >{{login_code}}</span
                       >
                     </td>
                   </tr>
@@ -157,6 +163,7 @@
                 >
                   <tr>
                     <td
+                      align="center"
                       style="
                         padding: 16px 18px;
                         background-color: #fff9f0;
@@ -166,13 +173,13 @@
                       <p
                         style="margin: 0 0 6px; color: #4f473e; font-size: 14px; line-height: 22px"
                       >
-                        Este link funciona uma vez e expira em 15 minutos.
+                        Este código funciona uma vez e expira em 10 minutos.
                       </p>
                       <p
                         lang="en"
                         style="margin: 0; color: #625a51; font-size: 13px; line-height: 21px"
                       >
-                        This link works once and expires in 15 minutes.
+                        This code works once and expires in 10 minutes.
                       </p>
                     </td>
                   </tr>
@@ -181,12 +188,13 @@
                   Não pediu este acesso? Pode ignorar esta mensagem.
                 </p>
                 <p lang="en" style="margin: 0; color: #766e63; font-size: 12px; line-height: 19px">
-                  Did not request this link? You can ignore this email.
+                  Did not request this code? You can ignore this email.
                 </p>
               </td>
             </tr>
             <tr>
               <td
+                align="center"
                 style="
                   padding: 23px 34px 26px;
                   border-top: 1px solid #ead9bd;

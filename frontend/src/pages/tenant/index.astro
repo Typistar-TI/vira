@@ -1,5 +1,5 @@
 ---
-import TenantLanding from '@frontend/components/TenantLanding.astro';
+import TenantLanding from '@frontend/pages/_views/TenantLanding.astro';
 import { tenantForHost } from '@frontend/api/domains/resolve-tenant';
 const tenant = await tenantForHost(Astro.url.hostname);
 if (!tenant) return Astro.rewrite('/404');

@@ -1,5 +1,5 @@
 ---
-import AdminProfile from '@frontend/components/AdminProfile.astro';
+import AdminProfile from '@frontend/pages/_views/AdminProfile.astro';
 import { sessionAdmin } from '@frontend/api/auth/session-admin';
 
 const admin = await sessionAdmin(Astro.request);

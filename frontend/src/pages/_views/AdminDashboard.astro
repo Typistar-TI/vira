@@ -1,0 +1,886 @@
+---
+import Base from '@frontend/components/Base.astro';
+import AdminHeader from '@frontend/components/AdminHeader.astro';
+import AdminTransitions from '@frontend/components/AdminTransitions.astro';
+import ResponsiveTables from '@frontend/components/ResponsiveTables.astro';
+import PreviewStudio from '@frontend/components/PreviewStudio.astro';
+import { adminDashboard } from '@frontend/api/admin/dashboard';
+
+const { url, admin, section = 'visao' } = Astro.props;
+const search = (url.searchParams.get('q') || '').trim().slice(0, 80);
+const navigation = [
+  { key: 'visao', href: '/admin', label: 'Visão geral' },
+  { key: 'precos', href: '/admin/precos', label: 'Preços' },
+  { key: 'configuracoes', href: '/admin/configuracoes', label: 'Configurações' },
+  { key: 'emails', href: '/admin/emails', label: 'E-mails' },
+  { key: 'clientes', href: '/admin/clientes', label: 'Clientes' },
+  { key: 'dominios', href: '/admin/dominios', label: 'Domínios' },
+  { key: 'atividade', href: '/admin/atividade', label: 'Atividade' },
+];
+
+const { settings, prices, customers, domains, audit, emailTemplates, emailOutbox, counts, domain } =
+  await adminDashboard(search, section);
+const byKey = Object.fromEntries(settings.map((row) => [row.key, Boolean(row.value)]));
+const required = [
+  { label: 'Entrar por e-mail', ready: Boolean(byKey.RESEND_API_KEY && byKey.AUTH_EMAIL_FROM) },
+  { label: 'Cobrança', ready: Boolean(byKey.STRIPE_SECRET_KEY && byKey.STRIPE_WEBHOOK_SECRET) },
+  {
+    label: 'Privacidade',
+    ready: Boolean(byKey.PRIVACY_CONTROLLER_NAME && byKey.PRIVACY_CONTACT_EMAIL),
+  },
+  { label: 'Domínios próprios', ready: Boolean(byKey.CLOUDFLARE_API_TOKEN) },
+  { label: 'Métricas', ready: Boolean(byKey.CLOUDFLARE_ANALYTICS_TOKEN) },
+];
+const groups = [
+  { title: 'Identidade e acesso', keys: ['GOOGLE_CLIENT_ID', 'RESEND_API_KEY', 'AUTH_EMAIL_FROM'] },
+  { title: 'Cobrança', keys: ['STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET'] },
+  { title: 'Domínios e métricas', keys: ['CLOUDFLARE_API_TOKEN', 'CLOUDFLARE_ANALYTICS_TOKEN'] },
+  { title: 'Inteligência artificial', keys: ['AI_MODEL'] },
+  { title: 'Privacidade', keys: ['PRIVACY_CONTROLLER_NAME', 'PRIVACY_CONTACT_EMAIL'] },
+];
+const labels: Record<string, string> = {
+  GOOGLE_CLIENT_ID: 'Client ID do Google',
+  RESEND_API_KEY: 'Chave de envio Resend',
+  AUTH_EMAIL_FROM: 'E-mail remetente de acesso',
+  STRIPE_SECRET_KEY: 'Chave secreta Stripe',
+  STRIPE_WEBHOOK_SECRET: 'Segredo do webhook Stripe',
+  CLOUDFLARE_API_TOKEN: 'Token Cloudflare para domínios',
+  CLOUDFLARE_ANALYTICS_TOKEN: 'Token Cloudflare para métricas',
+  AI_MODEL: 'Modelo do Workers AI (opcional)',
+  PRIVACY_CONTROLLER_NAME: 'Responsável pelo Vira',
+  PRIVACY_CONTACT_EMAIL: 'E-mail de privacidade',
+};
+const planName: Record<string, string> = {
+  monthly: 'Mensal',
+  yearly: 'Anual',
+  lifetime: 'Vitalício',
+};
+const date = (time: number | null) =>
+  time ? new Date(time * 1000).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : '—';
+const emailLabels: Record<string, string> = {
+  login: 'Código de acesso',
+  site_created: 'Site criado',
+  subscription_created: 'Assinatura confirmada',
+  subscription_ending: 'Término próximo',
+};
+const emailDescriptions: Record<string, string> = {
+  login:
+    'Enviado quando o cliente pede um código para entrar ou criar uma senha. Sem ele, o acesso por código fica indisponível.',
+  site_created: 'Enviado uma vez, assim que a conta é criada e o site inicial entra no ar.',
+  subscription_created: 'Enviado após a Stripe confirmar o plano mensal, anual ou vitalício.',
+  subscription_ending:
+    'Enviado cerca de 12 horas antes do fim do teste ou até 7 dias antes de uma assinatura com cancelamento agendado.',
+};
+const emailVariables: Record<string, string[]> = {
+  login: ['login_code', 'email'],
+  site_created: ['dashboard_url', 'site_url', 'end_date_pt', 'end_date_en', 'email'],
+  subscription_created: ['dashboard_url', 'site_url', 'plan_pt', 'plan_en', 'email'],
+  subscription_ending: [
+    'dashboard_url',
+    'site_url',
+    'plan_pt',
+    'plan_en',
+    'end_date_pt',
+    'end_date_en',
+    'email',
+  ],
+};
+const deliveryStatus: Record<string, string> = {
+  pending: 'Aguardando',
+  sending: 'Enviando',
+  sent: 'Enviado',
+  failed: 'Falhou',
+  suppressed: 'Desativado',
+};
+---
+
+<Base
+  title={`${section === 'visao' ? 'Administração' : navigation.find((item) => item.key === section)?.label} · Vira`}
+  noindex
+  appearance="light"
+  manifest="/admin/manifest.webmanifest"
+>
+  <AdminTransitions slot="head" />
+  <div class="min-h-screen bg-white text-[#17130d]">
+    <AdminHeader section={section} admin={admin} />
+    <main
+      data-mobile-stack
+      class="mx-auto min-w-0 max-w-[1380px] px-5 pt-8 pb-24 sm:px-8 [&_code]:break-all [&_table]:text-sm [&_thead]:bg-[#fff9ef] [&_th]:font-semibold [&_th]:text-[#6f4716] [&_tbody_tr]:border-[#ead8bd] [&_tbody_tr:hover]:bg-[#fffaf2] max-sm:[&_table]:block max-sm:[&_table]:min-w-0 max-sm:[&_thead]:hidden max-sm:[&_tbody]:block max-sm:[&_tbody_tr]:block max-sm:[&_tbody_tr]:w-full max-sm:[&_tbody_tr]:border-b max-sm:[&_tbody_tr]:py-3 max-sm:[&_tbody_tr.hidden]:!hidden max-sm:[&_td]:block max-sm:[&_td]:min-w-0 max-sm:[&_td]:w-full max-sm:[&_td]:whitespace-normal max-sm:[&_td]:px-2 max-sm:[&_td]:py-2 max-sm:[&_td]:before:mb-1 max-sm:[&_td]:before:block max-sm:[&_td]:before:text-xs max-sm:[&_td]:before:font-semibold max-sm:[&_td]:before:text-[#8b5b1e] max-sm:[&_td]:before:content-[attr(data-label)] max-sm:[&_td_input]:min-w-0 max-sm:[&_td_input]:w-full max-sm:[&_td_input.checkbox]:!w-6 max-sm:[&_td_input.checkbox]:!min-w-6 max-sm:[&_td_textarea]:w-full"
+    >
+      {section === 'visao' && (
+        <h1 class="mb-8 font-[Outfit] text-[clamp(2rem,4vw,3rem)] font-medium leading-none tracking-[-0.04em] text-[#17130d]">
+          Bem-vindo
+        </h1>
+      )}
+
+      {section === 'visao' && (
+        <section id="visao" class="mb-16 scroll-mt-24">
+          <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#17130d] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#625a51]">
+            <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#9b6823]">
+              Visão geral
+            </span>
+            <h2>Estado da operação</h2>
+          </div>
+          <div class="grid gap-8 lg:grid-cols-[minmax(0,1.5fr)_minmax(280px,1fr)]">
+            <div>
+              <div class="grid grid-cols-2 gap-x-6 border-y border-[#d8ae73] py-5 sm:grid-cols-3">
+                {[
+                  { value: counts.users, label: 'Clientes cadastrados', href: '/admin/clientes' },
+                  { value: counts.new_users_7d, label: 'Novos em 7 dias', href: '/admin/clientes' },
+                  { value: counts.trials_active, label: 'Testes ativos', href: '/admin/clientes' },
+                  {
+                    value: counts.monthly_active + counts.yearly_active + counts.lifetime,
+                    label: 'Clientes pagantes',
+                    href: '/admin/clientes',
+                  },
+                  { value: counts.published, label: 'Sites publicados', href: '/admin/clientes' },
+                  {
+                    value: counts.domains_active,
+                    label: 'Domínios ativos',
+                    href: '/admin/dominios',
+                  },
+                ].map((item) => (
+                  <a
+                    href={item.href}
+                    class="group flex flex-col gap-1 border-b border-[#ead8bd] py-5 no-underline last:border-b-0 hover:text-[#8b5b1e] sm:[&:nth-last-child(-n+3)]:border-b-0"
+                  >
+                    <strong class="font-[Outfit] text-[clamp(2rem,4vw,3.2rem)] font-medium leading-none tracking-tight tabular-nums text-[#17130d] transition-colors group-hover:text-[#8b5b1e]">
+                      {item.value}
+                    </strong>
+                    <span class="text-xs text-[#625a51]">{item.label}</span>
+                  </a>
+                ))}
+              </div>
+              <p class="mt-3 text-xs text-[#766e63]">
+                Cadastros: últimos 7 dias · demais números: situação atual.
+              </p>
+            </div>
+            <div class="border-t border-[#d8ae73] lg:border-t-0 lg:border-l lg:pl-8">
+              <h3 class="mb-4 font-[Outfit] text-xl">Detalhamento</h3>
+              <dl class="grid grid-cols-[1fr_auto] gap-x-5 gap-y-3 text-sm [&_dd]:font-semibold [&_dd]:tabular-nums [&_dt]:text-[#625a51]">
+                <dt>Plano mensal ativo</dt>
+                <dd>{counts.monthly_active}</dd>
+                <dt>Plano anual ativo</dt>
+                <dd>{counts.yearly_active}</dd>
+                <dt>Plano vitalício</dt>
+                <dd>{counts.lifetime}</dd>
+                <dt>Acesso encerrado</dt>
+                <dd>{counts.access_ended}</dd>
+                <dt>Sites em rascunho</dt>
+                <dd>{counts.drafts}</dd>
+                <dt>Domínios aguardando ativação</dt>
+                <dd>{counts.domains - counts.domains_active}</dd>
+                <dt>E-mails enviados em 30 dias</dt>
+                <dd>{counts.emails_sent_30d}</dd>
+                <dt>E-mails na fila</dt>
+                <dd>{counts.emails_queued}</dd>
+                <dt>Falhas de envio</dt>
+                <dd>{counts.emails_failed}</dd>
+              </dl>
+            </div>
+          </div>
+          <div class="mt-12 mb-3 flex flex-wrap items-baseline justify-between gap-2">
+            <h3 class="font-[Outfit] text-xl">Integrações</h3>
+            <a
+              href="/admin/configuracoes"
+              class="text-sm font-semibold text-[#8b5b1e] hover:underline"
+            >
+              Abrir configurações ↗
+            </a>
+          </div>
+          <p class="mb-3 text-sm text-[#625a51]">
+            Confira as conexões necessárias para acesso, cobrança e publicação.
+          </p>
+          <div class="overflow-x-auto border-y border-[#d8ae73]">
+            <table class="table w-full">
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {required.map((item) => (
+                  <tr>
+                    <td>{item.label}</td>
+                    <td>
+                      <span
+                        class:list={[
+                          'badge badge-sm',
+                          item.ready
+                            ? 'badge-outline border-[#d8ae73] text-[#6f4716]'
+                            : 'badge-outline border-[#c8c4bd] text-[#625a51]',
+                        ]}
+                      >
+                        {item.ready ? 'Pronto' : 'Pendente'}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
+      {section === 'precos' && (
+        <section id="precos" class="mb-16 scroll-mt-24">
+          <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#17130d] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#625a51]">
+            <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#9b6823]">
+              Cobrança
+            </span>
+            <h2>Preços e planos</h2>
+            <p>
+              Ao ativar um preço, o Vira confere o valor, a moeda e a periodicidade na Stripe. Use
+              um Price ID já criado na Stripe.
+            </p>
+          </div>
+          <div class="overflow-x-auto border-y border-[#d8ae73]">
+            <table class="table w-full min-w-[760px]">
+              <thead>
+                <tr>
+                  <th>Plano</th>
+                  <th>Moeda</th>
+                  <th>Valor</th>
+                  <th>Price ID da Stripe</th>
+                  <th>Disponível</th>
+                  <th>
+                    <span class="sr-only">Ação</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {prices.map((row) => {
+                  const formId = `price-${row.plan}-${row.currency}`;
+                  return (
+                    <tr>
+                      <td class="font-semibold">
+                        <form
+                          id={formId}
+                          data-api-price-form
+                          data-plan={row.plan}
+                          data-currency={row.currency}
+                        >
+                          {planName[row.plan]}
+                        </form>
+                      </td>
+                      <td>
+                        <span class="badge badge-outline border-[#d8ae73]">
+                          {row.currency.toUpperCase()}
+                        </span>
+                      </td>
+                      <td>
+                        <input
+                          class="input input-bordered w-28"
+                          form={formId}
+                          aria-label={`Valor de ${planName[row.plan]} em ${row.currency.toUpperCase()}`}
+                          name="amount"
+                          type="number"
+                          min="0"
+                          max="1000000"
+                          step="0.01"
+                          value={
+                            row.amount_minor === null ? '' : (row.amount_minor / 100).toFixed(2)
+                          }
+                          placeholder="0,00"
+                          required
+                        />
+                      </td>
+                      <td>
+                        <input
+                          class="input input-bordered w-full min-w-48"
+                          form={formId}
+                          aria-label={`Price ID de ${planName[row.plan]} em ${row.currency.toUpperCase()}`}
+                          name="stripe_price_id"
+                          value={row.stripe_price_id ?? ''}
+                          placeholder="price_..."
+                          autocomplete="off"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          class="checkbox checkbox-primary border border-[#b88333]"
+                          form={formId}
+                          aria-label={`Disponibilizar ${planName[row.plan]} em ${row.currency.toUpperCase()}`}
+                          name="active"
+                          type="checkbox"
+                          checked={Boolean(row.active)}
+                        />
+                      </td>
+                      <td>
+                        <button class="btn btn-primary btn-sm" form={formId} type="submit">
+                          Salvar
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
+      {section === 'configuracoes' && (
+        <section id="configuracoes" class="mb-16 scroll-mt-24">
+          <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#17130d] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#625a51]">
+            <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#9b6823]">
+              Serviços
+            </span>
+            <h2>Configurações</h2>
+            <p>
+              Os segredos ficam criptografados no banco. Depois de salvos, apenas o estado
+              “configurado” aparece aqui.
+            </p>
+          </div>
+          <div class="overflow-x-auto border-y border-[#d8ae73]">
+            <table class="table w-full min-w-[780px]">
+              <thead>
+                <tr>
+                  <th>Grupo</th>
+                  <th>Configuração</th>
+                  <th>Estado</th>
+                  <th>Valor</th>
+                  <th>
+                    <span class="sr-only">Ação</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {groups.map((group) =>
+                  group.keys.map((key) => {
+                    const row = settings.find((item) => item.key === key);
+                    if (!row) return null;
+                    const formId = `setting-form-${key}`;
+                    return (
+                      <tr>
+                        <td class="text-xs text-[#625a51]">{group.title}</td>
+                        <td class="font-medium">
+                          <form
+                            id={formId}
+                            data-key={key}
+                            data-secret={Boolean(row.encrypted)}
+                            data-api-setting-form
+                          >
+                            <label for={`setting-${key}`}>{labels[key]}</label>
+                          </form>
+                        </td>
+                        <td>
+                          <span
+                            class:list={[
+                              'badge badge-sm',
+                              row.value
+                                ? 'badge-outline border-[#d8ae73] text-[#6f4716]'
+                                : 'badge-outline border-[#c8c4bd] text-[#625a51]',
+                            ]}
+                            data-api-config-state
+                          >
+                            {row.value ? 'Configurado' : 'Pendente'}
+                          </span>
+                        </td>
+                        <td>
+                          <input
+                            class="input input-bordered w-full min-w-56"
+                            form={formId}
+                            id={`setting-${key}`}
+                            name="value"
+                            type={
+                              row.encrypted
+                                ? 'password'
+                                : key === 'PRIVACY_CONTACT_EMAIL'
+                                  ? 'email'
+                                  : 'text'
+                            }
+                            value={row.encrypted ? '' : row.value}
+                            placeholder={
+                              row.encrypted && row.value ? 'Novo valor para substituir' : ''
+                            }
+                            autocomplete="off"
+                          />
+                        </td>
+                        <td>
+                          <button class="btn btn-outline btn-sm" form={formId} type="submit">
+                            Salvar
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  }),
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
+      {section === 'emails' && (
+        <section id="emails" class="mb-16 scroll-mt-24">
+          <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#17130d] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#625a51]">
+            <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#9b6823]">
+              Comunicação
+            </span>
+            <h2>E-mails automáticos</h2>
+            <p>
+              Edite o assunto e o HTML de cada mensagem. As variáveis entre chaves recebem os dados
+              reais antes do envio. Desative um modelo para suspender novos envios desse tipo.
+            </p>
+          </div>
+          <div class="overflow-x-auto border-y border-[#d8ae73]">
+            <table class="table w-full">
+              <thead>
+                <tr>
+                  <th>Mensagem</th>
+                  <th>Estado</th>
+                  <th class="hidden md:table-cell">Assunto</th>
+                  <th>
+                    <span class="sr-only">Ação</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {emailTemplates.map((row) => (
+                  <>
+                    <tr>
+                      <td class="font-medium">{emailLabels[row.key]}</td>
+                      <td>
+                        <span
+                          class:list={[
+                            'badge badge-sm',
+                            row.enabled
+                              ? 'badge-outline border-[#d8ae73] text-[#6f4716]'
+                              : 'badge-outline border-[#c8c4bd] text-[#625a51]',
+                          ]}
+                        >
+                          {row.enabled ? 'Ativo' : 'Desativado'}
+                        </span>
+                      </td>
+                      <td
+                        class="hidden max-w-80 truncate md:table-cell"
+                        title={row.subject}
+                        data-email-subject
+                      >
+                        {row.subject}
+                      </td>
+                      <td>
+                        <button
+                          class="btn btn-outline btn-sm"
+                          type="button"
+                          data-email-toggle
+                          aria-controls={`email-editor-${row.key}`}
+                          aria-expanded="false"
+                        >
+                          Editar
+                        </button>
+                      </td>
+                    </tr>
+                    <tr id={`email-editor-${row.key}`} class="hidden" data-email-editor-row>
+                      <td colspan="4" class="bg-[#fffdf9] p-5 sm:p-7">
+                        <form data-api-email-template-form data-key={row.key}>
+                          <p class="max-w-[70ch] text-sm leading-relaxed text-[#625a51]">
+                            {emailDescriptions[row.key]}
+                          </p>
+                          <label class="mt-5 flex items-center gap-2 text-sm font-semibold text-[#17130d]">
+                            <input
+                              class="checkbox checkbox-primary border border-[#b88333]"
+                              name="enabled"
+                              type="checkbox"
+                              checked={Boolean(row.enabled)}
+                            />{' '}
+                            Ativo
+                          </label>
+                          <p class="mt-4 text-xs text-[#625a51]">
+                            Variáveis:{' '}
+                            {emailVariables[row.key].map((name) => `{{${name}}}`).join(' · ')}
+                          </p>
+                          <label
+                            class="mt-5 block text-sm font-semibold text-[#17130d]"
+                            for={`email-subject-${row.key}`}
+                          >
+                            Assunto
+                          </label>
+                          <input
+                            id={`email-subject-${row.key}`}
+                            class="input input-bordered mt-2 w-full"
+                            name="subject"
+                            type="text"
+                            maxlength="180"
+                            value={row.subject}
+                            required
+                          />
+                          <label
+                            class="mt-5 block text-sm font-semibold text-[#17130d]"
+                            for={`email-html-${row.key}`}
+                          >
+                            HTML do e-mail
+                          </label>
+                          <textarea
+                            id={`email-html-${row.key}`}
+                            class="textarea textarea-bordered mt-2 min-h-52 w-full font-mono text-xs leading-relaxed"
+                            name="html"
+                            maxlength="32000"
+                            spellcheck="false"
+                            required
+                          >{row.html}</textarea>
+                          <div class="mt-4 flex flex-wrap items-center gap-3">
+                            <button class="btn btn-primary" type="submit">
+                              Salvar modelo
+                            </button>
+                            <button class="btn btn-outline" type="button" data-email-preview-button>
+                              Editor interativo
+                            </button>
+                          </div>
+                          <div
+                            class="mt-5 hidden border border-[#d8ae73] bg-white p-3"
+                            data-email-preview-container
+                          >
+                            <p class="mb-2 font-mono text-[11px] uppercase tracking-wider text-[#9b6823]">
+                              Prévia isolada
+                            </p>
+                            <iframe
+                              title={`Prévia: ${emailLabels[row.key]}`}
+                              class="h-80 w-full bg-white"
+                              sandbox=""
+                              data-email-preview
+                            ></iframe>
+                          </div>
+                        </form>
+                      </td>
+                    </tr>
+                  </>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div class="mt-8">
+            <h3 class="font-[Outfit] text-xl text-[#17130d]">Últimos envios</h3>
+            <p class="mt-1 text-sm text-[#625a51]">Histórico mantido por 30 dias.</p>
+            <div class="mt-4 overflow-x-auto">
+              <table class="table w-full">
+                <thead>
+                  <tr>
+                    <th>Mensagem</th>
+                    <th>Destinatário</th>
+                    <th>Estado</th>
+                    <th>Criado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {emailOutbox.map((item) => (
+                    <tr>
+                      <td>{emailLabels[item.template_key] ?? item.template_key}</td>
+                      <td>{item.recipient}</td>
+                      <td title={item.last_error ?? ''}>
+                        {deliveryStatus[item.status] ?? item.status}
+                      </td>
+                      <td>{date(item.created_at)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {emailOutbox.length === 0 && (
+                <p class="py-3 text-sm text-[#625a51]">Nenhum envio registrado.</p>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
+      {section === 'clientes' && (
+        <section id="clientes" class="mb-16 scroll-mt-24">
+          <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#17130d] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#625a51]">
+            <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#9b6823]">
+              Contas
+            </span>
+            <h2>Clientes e assinaturas</h2>
+            <p>
+              Busque por e-mail ou endereço da página. Os planos mudam apenas pelos eventos de
+              cobrança da Stripe.
+            </p>
+          </div>
+          <form
+            class="mb-3.5 flex gap-2 [&_input]:w-full [&_input]:max-w-[360px]"
+            action="/admin/clientes"
+            method="get"
+          >
+            <input
+              class="input input-bordered w-full"
+              name="q"
+              type="search"
+              value={search}
+              placeholder="E-mail ou endereço da página"
+              maxlength="80"
+            />
+            <button class="btn btn-primary" type="submit">
+              Buscar
+            </button>
+          </form>
+          <div class="overflow-x-auto border-y border-[#d8ae73] [&_td]:whitespace-nowrap [&_td_small]:block [&_td_small]:text-[#625a51]">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>E-mail</th>
+                  <th>Plano</th>
+                  <th>Acesso até</th>
+                  <th>Cadastro</th>
+                  <th>Página</th>
+                  <th>Assinatura</th>
+                </tr>
+              </thead>
+              <tbody>
+                {customers.map((row) => (
+                  <tr>
+                    <td>{row.email ?? 'Conta antiga'}</td>
+                    <td>{row.plan}</td>
+                    <td>
+                      {date(row.access_until ?? (row.plan === 'trial' ? row.trial_ends_at : null))}
+                    </td>
+                    <td>{date(row.created_at)}</td>
+                    <td>
+                      <a
+                        href={`https://${row.slug}.${domain}/`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {row.slug}
+                      </a>
+                      <small>{row.published_at ? 'Publicada' : 'Rascunho'}</small>
+                    </td>
+                    <td>
+                      <code>{row.stripe_subscription_id ?? '—'}</code>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {customers.length === 0 && (
+              <p class="my-2 text-[#625a51]">
+                {search
+                  ? 'Nenhuma conta corresponde à busca.'
+                  : 'Nenhum cliente ainda. As contas aparecerão aqui após o primeiro cadastro.'}
+              </p>
+            )}
+          </div>
+        </section>
+      )}
+      {section === 'dominios' && (
+        <section id="dominios" class="mb-16 scroll-mt-24">
+          <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#17130d] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#625a51]">
+            <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#9b6823]">
+              Publicação
+            </span>
+            <h2>Domínios dos clientes</h2>
+            <p>Acompanhe a ativação do hostname e do certificado TLS.</p>
+          </div>
+          <div class="overflow-x-auto border-y border-[#d8ae73] [&_td]:whitespace-nowrap">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Domínio</th>
+                  <th>Cliente</th>
+                  <th>Hostname</th>
+                  <th>TLS</th>
+                  <th>Adicionado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {domains.map((row) => (
+                  <tr>
+                    <td>{row.hostname}</td>
+                    <td>{row.email ?? 'Conta antiga'}</td>
+                    <td>{row.status}</td>
+                    <td>{row.ssl_status}</td>
+                    <td>{date(row.created_at)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {domains.length === 0 && (
+              <p class="my-2 text-[#625a51]">Nenhum domínio de cliente conectado ainda.</p>
+            )}
+          </div>
+        </section>
+      )}
+      {section === 'atividade' && (
+        <section id="atividade" class="mb-16 scroll-mt-24">
+          <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#17130d] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#625a51]">
+            <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#9b6823]">
+              Segurança
+            </span>
+            <h2>Atividade administrativa</h2>
+          </div>
+          <div class="overflow-x-auto border-y border-[#d8ae73]">
+            <table class="table w-full min-w-[540px]">
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Alteração</th>
+                  <th>Item</th>
+                </tr>
+              </thead>
+              <tbody>
+                {audit.map((item) => (
+                  <tr>
+                    <td>{date(item.created_at)}</td>
+                    <td>
+                      {item.action === 'update_price'
+                        ? 'Preço alterado'
+                        : item.action === 'update_email_template'
+                          ? 'Modelo de e-mail alterado'
+                          : item.action === 'update_profile'
+                            ? 'Nome da conta alterado'
+                            : item.action === 'clear_setting'
+                              ? 'Configuração limpa'
+                              : 'Configuração alterada'}
+                    </td>
+                    <td>
+                      <code>{item.target}</code>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {audit.length === 0 && (
+              <p class="py-4 text-sm text-[#625a51]">Nenhuma alteração registrada ainda.</p>
+            )}
+          </div>
+        </section>
+      )}
+    </main>
+  </div>
+  <ResponsiveTables />
+  <PreviewStudio id="email-studio" title="Editor interativo de e-mails" />
+  <script>
+    import '@frontend/pages/_scripts/account-menu';
+    import { previewStudio } from '@frontend/pages/_scripts/preview-studio';
+    import { updateSetting } from '@frontend/api/admin/update-setting';
+    import { updatePrice } from '@frontend/api/admin/update-price';
+    import { updateEmailTemplate } from '@frontend/api/admin/update-email-template';
+    import { reportError } from '@frontend/components/toast';
+    document.querySelectorAll<HTMLFormElement>('[data-api-setting-form]').forEach((form) =>
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const button = form.closest('tr')!.querySelector<HTMLButtonElement>('button[type=submit]')!;
+        button.disabled = true;
+        try {
+          const field = form.elements.namedItem('value') as HTMLInputElement;
+          const value = field.value;
+          if (!value.trim()) throw new Error('Informe um valor.');
+          await updateSetting(form.dataset.key || '', value);
+          if (form.dataset.secret === 'true') field.value = '';
+          const badge = form.closest('tr')!.querySelector<HTMLElement>('[data-api-config-state]')!;
+          badge.className = 'badge badge-sm badge-outline border-[#d8ae73] text-[#6f4716]';
+          badge.textContent = 'Configurado';
+        } catch (error) {
+          reportError(error, 'Falha ao salvar');
+        } finally {
+          button.disabled = false;
+        }
+      }),
+    );
+    document.querySelectorAll<HTMLFormElement>('[data-api-price-form]').forEach((form) =>
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const button = form.closest('tr')!.querySelector<HTMLButtonElement>('button[type=submit]')!;
+        button.disabled = true;
+        try {
+          const input = form.elements.namedItem('amount') as HTMLInputElement;
+          const amount = Number(input.value);
+          if (!Number.isFinite(amount) || !Number.isInteger(amount * 100))
+            throw new Error('Informe um valor com até duas casas decimais.');
+          const body = {
+            plan: form.dataset.plan,
+            currency: form.dataset.currency,
+            amount_minor: Math.round(amount * 100),
+            stripe_price_id: (
+              form.elements.namedItem('stripe_price_id') as HTMLInputElement
+            ).value.trim(),
+            active: (form.elements.namedItem('active') as HTMLInputElement).checked,
+          };
+          await updatePrice(body);
+        } catch (error) {
+          reportError(error, 'Falha ao salvar');
+        } finally {
+          button.disabled = false;
+        }
+      }),
+    );
+    document.querySelectorAll<HTMLButtonElement>('[data-email-toggle]').forEach((button) =>
+      button.addEventListener('click', () => {
+        const row = document.getElementById(button.getAttribute('aria-controls') || '');
+        if (!row) return;
+        const opening = row.classList.contains('hidden');
+        document
+          .querySelectorAll<HTMLElement>('[data-email-editor-row]')
+          .forEach((item) => item.classList.add('hidden'));
+        document.querySelectorAll<HTMLButtonElement>('[data-email-toggle]').forEach((item) => {
+          item.setAttribute('aria-expanded', 'false');
+          item.textContent = 'Editar';
+        });
+        if (opening) {
+          row.classList.remove('hidden');
+          button.setAttribute('aria-expanded', 'true');
+          button.textContent = 'Fechar';
+        }
+      }),
+    );
+    const emailStudio = previewStudio('email-studio');
+    document.querySelectorAll<HTMLFormElement>('[data-api-email-template-form]').forEach((form) => {
+      const frame = form.querySelector<HTMLIFrameElement>('[data-email-preview]')!;
+      const originalRow = form.closest('tr');
+      const renderPreview = () => {
+        const html = form.querySelector<HTMLTextAreaElement>('[name=html]')!.value;
+        const samples: Record<string, string> = {
+          login_code: '123456',
+          dashboard_url: 'https://vira.ia.br/app',
+          site_url: 'https://meu-site.vira.ia.br',
+          end_date: '27 de setembro de 2026',
+          end_date_pt: '27 de setembro de 2026',
+          end_date_en: 'September 27, 2026',
+          plan: 'mensal',
+          plan_pt: 'mensal',
+          plan_en: 'monthly',
+          email: 'cliente@exemplo.com',
+        };
+        const preview = html.replace(
+          /{{\s*([a-z_]+)\s*}}/g,
+          (_, name: string) => samples[name] ?? '',
+        );
+        frame.srcdoc = preview;
+      };
+      form.querySelector('[data-email-preview-button]')?.addEventListener('click', () => {
+        renderPreview();
+        emailStudio.open(frame, form);
+      });
+      let previewTimer: ReturnType<typeof setTimeout>;
+      form.addEventListener('input', () => {
+        clearTimeout(previewTimer);
+        previewTimer = setTimeout(renderPreview, 250);
+      });
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const button = form.querySelector<HTMLButtonElement>('button[type=submit]')!;
+        button.disabled = true;
+        try {
+          await updateEmailTemplate({
+            key: form.dataset.key || '',
+            enabled: form.querySelector<HTMLInputElement>('[name=enabled]')!.checked,
+            subject: form.querySelector<HTMLInputElement>('[name=subject]')!.value,
+            html: form.querySelector<HTMLTextAreaElement>('[name=html]')!.value,
+          });
+          const badge = originalRow?.previousElementSibling?.querySelector<HTMLElement>('.badge');
+          if (badge) {
+            const enabled = form.querySelector<HTMLInputElement>('[name=enabled]')!.checked;
+            badge.className = `badge badge-sm badge-outline ${enabled ? 'border-[#d8ae73] text-[#6f4716]' : 'border-[#c8c4bd] text-[#625a51]'}`;
+            badge.textContent = enabled ? 'Ativo' : 'Desativado';
+          }
+          const subject =
+            originalRow?.previousElementSibling?.querySelector<HTMLElement>('[data-email-subject]');
+          if (subject) {
+            subject.textContent = form.querySelector<HTMLInputElement>('[name=subject]')!.value;
+            subject.title = subject.textContent;
+          }
+        } catch (error) {
+          reportError(error, 'Falha ao salvar');
+        } finally {
+          button.disabled = false;
+        }
+      });
+    });
+  </script>
+</Base>

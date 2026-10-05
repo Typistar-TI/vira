@@ -1,0 +1,52 @@
+---
+interface Props {
+  id: string;
+  title: string;
+  en?: boolean;
+}
+const { id, title, en = false } = Astro.props;
+---
+
+<dialog
+  id={id}
+  data-preview-studio
+  aria-label={title}
+  class="m-0 h-[100dvh] max-h-none w-screen max-w-none overflow-hidden border-0 bg-[#f8f7f4] p-0 text-[#17130d]"
+>
+  <div
+    data-studio-stage
+    class="absolute inset-0 flex items-start justify-center overflow-auto"
+  ></div>
+  <div class="absolute right-4 top-4 z-30 flex gap-2 rounded-full border border-[#d8ae73] bg-white p-2 shadow-lg">
+    <button type="button" data-studio-toggle class="btn btn-sm rounded-full">
+      {en ? 'Controls' : 'Controles'}
+    </button>
+    <button type="button" data-studio-close class="btn btn-sm rounded-full">
+      {en ? 'Exit editor' : 'Sair do editor'} ×
+    </button>
+  </div>
+  <aside
+    data-studio-controls
+    aria-label={en ? 'Editor controls' : 'Controles do editor'}
+    class="absolute bottom-4 left-4 top-20 z-20 w-[min(420px,calc(100vw-2rem))] overflow-y-auto rounded-2xl border border-[#d8ae73] bg-white/95 p-5 shadow-2xl backdrop-blur-sm"
+  ></aside>
+</dialog>
+<style>
+  [data-preview-studio]::backdrop {
+    background: #17130d;
+  }
+  [data-studio-stage] :global(iframe) {
+    display: block;
+    height: 100dvh;
+    width: 100%;
+    border: 0;
+    background: white;
+  }
+  [data-studio-controls] :global(.card) {
+    border: 0;
+    padding: 0;
+  }
+  [data-studio-controls][hidden] {
+    display: none;
+  }
+</style>

@@ -1,7 +1,7 @@
 import { handle } from '@astrojs/cloudflare/handler';
 import type { ExecutionContext, ScheduledEvent } from '@cloudflare/workers-types';
 import { cleanExpired, type WorkerEnv } from './jobs/cleanup';
-import { flushEmailOutbox } from './features/emails/service';
+import { deliverQueuedEmails } from './features/emails/controller/delivery';
 import { queueEndingReminders } from './jobs/email-reminders';
 import { api } from './app';
 
@@ -14,7 +14,7 @@ export default {
         response.status < 400 &&
         ['/api/auth/google', '/api/auth/email/verify', '/api/billing/webhook'].includes(path)
       )
-        context.waitUntil(flushEmailOutbox());
+        context.waitUntil(deliverQueuedEmails());
       return response;
     }
     return handle(request, environment, context);
@@ -23,7 +23,7 @@ export default {
     context.waitUntil(
       (async () => {
         await queueEndingReminders();
-        await flushEmailOutbox(50);
+        await deliverQueuedEmails(50);
         if (event.cron === '0 3 * * *') await cleanExpired(environment);
       })(),
     );

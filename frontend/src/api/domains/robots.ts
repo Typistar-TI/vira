@@ -1,3 +1,3 @@
 import type { APIRoute } from 'astro';
-import { publicRobots } from '@backend/features/domains/public-robots';
+import { publicRobots } from '@backend/features/domains/controller/robots';
 export const GET: APIRoute = ({ request }) => publicRobots(request);

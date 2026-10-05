@@ -1,12 +1,33 @@
 ---
-import SitePreview from '@frontend/components/SitePreview.astro';
+import SitePreview from '@frontend/pages/_views/SitePreview.astro';
 import { sessionAdmin } from '@frontend/api/auth/session-admin';
 import { sessionUser } from '@frontend/api/auth/session-user';
 import { siteForUser } from '@frontend/api/sites/site-for-user';
+import { parseSiteContent } from '@frontend/api/sites/parse-site';
+import { readJson } from '@backend/platform/http';
+import { sameOrigin } from '@backend/features/auth/service/session';
+import { consumeLimit } from '@backend/features/auth/repository/users';
 const user = await sessionUser(Astro.request);
 if (!user) return Astro.redirect((await sessionAdmin(Astro.request)) ? '/admin' : '/login');
 const site = await siteForUser(user.id);
 if (!site) return Astro.rewrite('/404');
+Astro.response.headers.set('Cache-Control', 'no-store');
+if (!['GET', 'POST'].includes(Astro.request.method))
+  return new Response('Método inválido', { status: 405, headers: { Allow: 'GET, POST' } });
+let liveContent;
+if (Astro.request.method === 'POST') {
+  if (!sameOrigin(Astro.request)) return new Response('Origem inválida', { status: 403 });
+  if (!(await consumeLimit(`preview:${user.id}`, 120, 60)))
+    return new Response('Muitas prévias. Aguarde um minuto.', {
+      status: 429,
+      headers: { 'Retry-After': '60' },
+    });
+  try {
+    liveContent = parseSiteContent(await readJson(Astro.request, 131072));
+  } catch {
+    return new Response('Conteúdo inválido', { status: 400 });
+  }
+}
 ---
 
-<SitePreview site={site} />
+<SitePreview site={site} liveContent={liveContent} />

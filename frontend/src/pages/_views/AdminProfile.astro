@@ -1,0 +1,99 @@
+---
+import Base from '@frontend/components/Base.astro';
+import AdminHeader from '@frontend/components/AdminHeader.astro';
+import AdminTransitions from '@frontend/components/AdminTransitions.astro';
+
+const { admin } = Astro.props;
+---
+
+<Base title="Meus dados · Vira" noindex appearance="light" manifest="/admin/manifest.webmanifest">
+  <AdminTransitions slot="head" />
+  <div class="min-h-screen bg-white text-[#17130d]">
+    <AdminHeader section="conta" admin={admin} />
+    <main class="mx-auto max-w-[1380px] px-5 pt-8 pb-24 sm:px-8">
+      <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#9b6823]">
+        Conta administrativa
+      </span>
+      <h1 class="mt-2 font-[Outfit] text-[clamp(2rem,4vw,3rem)] font-medium leading-none tracking-[-0.04em]">
+        Meus dados
+      </h1>
+      <p class="mt-4 max-w-[56ch] text-[#625a51]">
+        Escolha o nome que aparece no menu. Seu e-mail é usado para entrar no Vira.
+      </p>
+      <form id="admin-profile-form" class="mt-9 max-w-lg space-y-5">
+        <div>
+          <label class="mb-2 block text-sm font-semibold" for="admin-display-name">
+            Nome de exibição
+          </label>
+          <input
+            id="admin-display-name"
+            class="input input-bordered w-full"
+            name="displayName"
+            value={admin.displayName}
+            maxlength="80"
+            autocomplete="name"
+            required
+          />
+        </div>
+        <div>
+          <label class="mb-2 block text-sm font-semibold" for="admin-email">
+            E-mail de acesso
+          </label>
+          <input
+            id="admin-email"
+            class="input input-bordered w-full bg-[#fff9ef]"
+            type="email"
+            value={admin.email}
+            readonly
+          />
+          <p class="mt-2 text-xs text-[#625a51]">
+            O e-mail de acesso permanece vinculado à sua identidade verificada.
+          </p>
+        </div>
+        <div class="flex flex-wrap items-center gap-4">
+          <button class="btn btn-primary" type="submit">
+            Salvar nome
+          </button>
+          <a href="/admin" class="text-sm text-[#6f4716] hover:underline">
+            Voltar ao painel
+          </a>
+        </div>
+      </form>
+    </main>
+  </div>
+  <script>
+    import '@frontend/pages/_scripts/account-menu';
+    import { updateProfile } from '@frontend/api/admin/update-profile';
+    import { reportError } from '@frontend/components/toast';
+
+    document
+      .querySelector<HTMLFormElement>('#admin-profile-form')
+      ?.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const form = event.currentTarget as HTMLFormElement;
+        const button = form.querySelector<HTMLButtonElement>('button[type=submit]')!;
+        button.disabled = true;
+        try {
+          const name = (form.elements.namedItem('displayName') as HTMLInputElement).value;
+          await updateProfile(name);
+          const normalized = name.trim().replace(/\s+/g, ' ');
+          document.querySelectorAll<HTMLElement>('[data-account-label]').forEach((label) => {
+            label.textContent = normalized;
+          });
+          const initials = normalized
+            .split(/[^\p{L}\p{N}]+/u)
+            .filter(Boolean)
+            .slice(0, 2)
+            .map((part) => part[0].toLocaleUpperCase('pt-BR'))
+            .join('');
+          document.querySelectorAll<HTMLElement>('[data-account-initials]').forEach((node) => {
+            node.textContent = initials;
+          });
+        } catch (error) {
+          reportError(error, 'Falha ao salvar o nome.');
+        } finally {
+          button.disabled = false;
+        }
+      });
+  </script>
+</Base>

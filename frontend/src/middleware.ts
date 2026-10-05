@@ -54,7 +54,10 @@ export const onRequest = defineMiddleware(async (context, next) => {
   response.headers.set('referrer-policy', 'no-referrer');
   response.headers.set('permissions-policy', 'camera=(), microphone=(), geolocation=()');
   response.headers.set('x-frame-options', 'SAMEORIGIN');
-  response.headers.set('content-security-policy', "frame-ancestors 'self'");
+  response.headers.set(
+    'content-security-policy',
+    "base-uri 'self'; object-src 'none'; frame-ancestors 'self'",
+  );
   if (context.url.protocol === 'https:')
     response.headers.set('strict-transport-security', 'max-age=31536000; includeSubDomains');
   if (

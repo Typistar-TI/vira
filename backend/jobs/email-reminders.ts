@@ -6,7 +6,7 @@ import {
   planNames,
   queueEmail,
   siteUrl,
-} from '@backend/features/emails/service';
+} from '@backend/features/emails/service/emails';
 
 export async function queueEndingReminders() {
   const now = Math.floor(Date.now() / 1000);

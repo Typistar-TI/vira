@@ -5,7 +5,7 @@ O Vira é uma plataforma para criar e publicar páginas de vendas. O mesmo proje
 ## O que a aplicação oferece
 
 - Página de apresentação em português e inglês.
-- Acesso por link enviado ao e-mail ou com uma conta Google, sem senha própria.
+- Acesso por código de seis dígitos enviado ao e-mail, e-mail e senha, ou conta Google.
 - Edição, prévia e publicação de uma página de vendas por conta, com cinco opções de layout (Guardião, Central, Perfil, Estúdio e Clássico) e tipografia configurável (Outfit, Bricolage Grotesque, Inter, Instrument Serif e Gilda Display).
 - Assistente de IA em cada página publicada: responde perguntas simples dos visitantes com base no conteúdo cadastrado no banco de dados, em português ou inglês.
 - Teste gratuito de um dia e planos mensal, anual e vitalício.
@@ -58,7 +58,15 @@ A guarda contra perguntas fora do escopo é feita **só por prompt**: o modelo d
 
 Nos sites publicados, o histórico da conversa é salvo em `assistant_messages` e retomado quando o visitante volta (identificado por um id anônimo aleatório guardado no navegador). A limpeza diária remove conversas com mais de 30 dias. O histórico do exemplo da landing page não é persistido.
 
-O servidor valida as operações dos painéis e mantém a sessão em cookie `HttpOnly`, `Secure` e `SameSite=Lax`. No login com Google, verifica a assinatura e as declarações do token. No login por e-mail, gera um link aleatório de uso único, armazena apenas seu hash e exige confirmação por POST para evitar que prévias automáticas de e-mail consumam o link. O acesso administrativo exige que o e-mail esteja autorizado em `admin_accounts` no D1. As rotas administrativas verificam a permissão em cada requisição e registram mudanças em `admin_audit`.
+O servidor valida as operações dos painéis e mantém a sessão em cookie `HttpOnly`, `Secure` e `SameSite=Lax`. No login com Google, verifica a assinatura e as declarações do token. O login por e-mail usa um código de seis dígitos, válido por dez minutos, com uso único e no máximo cinco tentativas; o banco guarda apenas um HMAC do código, vinculado ao e-mail e à finalidade (entrada ou redefinição de senha). Não há link nem tela intermediária de confirmação.
+
+Senhas têm de 12 a 128 caracteres e são armazenadas com salt aleatório e PBKDF2-SHA256 (100.000 iterações, limite nativo do Workers Web Crypto). Criar ou redefinir uma senha exige um código do e-mail e revoga as sessões anteriores. Quem já usa Google ou código pode criar uma senha pelo painel, em Conta. E-mails e senhas incorretos retornam a mesma mensagem, sem indicar se a conta existe.
+
+Envios são limitados a um por minuto e três por hora por endereço, dez por hora por IP e noventa por dia no total. Verificação de código e login por senha têm limites independentes de dez tentativas por endereço e vinte por IP a cada quinze minutos. Bloqueios retornam HTTP 429 com `Retry-After`. Os painéis têm limite agregado de 120 chamadas por minuto por conta, além dos limites por rota; a prévia tem limite próprio de 120 por minuto. Contadores e reservas de quota de mídia são atômicos.
+
+Execute `npm test` para os testes comportamentais com **Vitest e Cloudflare Workers Pool**, no runtime workerd, com D1/R2 locais e migrações reais. Não há conexão com produção nem entrega de e-mails. A suíte cobre autenticação, sessões, CSRF, concorrência, isolamento entre clientes, publicação, uploads, exportação/exclusão, pagamentos assinados e quotas/histórico de IA. `npm run test:watch` acompanha alterações; `npm run test:auth` filtra autenticação. O deploy executa a suíte inteira antes de migrar o banco ou publicar o Worker. Consulte [SECURITY.md](SECURITY.md) para a revisão e limites das proteções.
+
+O acesso administrativo exige que o e-mail esteja autorizado em `admin_accounts` no D1. As rotas administrativas verificam a permissão em cada requisição e registram mudanças em `admin_audit`.
 
 Os cookies de acesso duram até 30 dias e pertencem ao hostname principal. Os endereços `www` e `app` da plataforma redirecionam para esse hostname antes de exibir páginas; a landing identifica a sessão ativa e oferece retorno direto ao painel correspondente. Os domínios dos sites dos clientes não recebem o cookie da plataforma.
 
@@ -68,20 +76,22 @@ Cada cadastro cria e publica a página inicial e inicia o teste de um dia na mes
 
 ## Organização do projeto
 
-| Caminho                      | Responsabilidade                                                |
-| ---------------------------- | --------------------------------------------------------------- |
-| `frontend/src/pages/`        | Rotas Astro e verificação inicial de acesso.                    |
-| `frontend/src/components/`   | Toda a interface, inclusive os painéis e as páginas publicadas. |
-| `frontend/src/api/`          | Uma chamada por arquivo, agrupada por funcionalidade.           |
-| `frontend/src/styles/`       | Entrada do Tailwind e configuração do tema daisyUI.             |
-| `backend/app.ts`             | Middleware da API e montagem das rotas Hono.                    |
-| `backend/features/`          | Rotas, regras e consultas de cada funcionalidade.               |
-| `backend/platform/`          | Configuração e utilitários HTTP comuns.                         |
-| `backend/jobs/`              | Tarefas agendadas pelo Worker.                                  |
-| `backend/worker.ts`          | Entrada única do Worker para Hono, Astro e tarefas agendadas.   |
-| `backend/migrations/`        | Evolução do esquema do D1.                                      |
-| `frontend/src/middleware.ts` | Roteamento por hostname.                                        |
-| `frontend/wrangler.jsonc`    | Configuração do Worker e dos serviços Cloudflare.               |
+| Caminho                        | Responsabilidade                                                  |
+| ------------------------------ | ----------------------------------------------------------------- |
+| `frontend/src/pages/`          | Rotas Astro e verificação inicial de acesso.                      |
+| `frontend/src/components/`     | Componentes visuais reutilizáveis, sem consultas ou autenticação. |
+| `frontend/src/pages/_views/`   | Renderização e lógica específica das telas.                       |
+| `frontend/src/pages/_scripts/` | Comportamento e chamadas de API das páginas.                      |
+| `frontend/src/api/`            | Uma chamada por arquivo, agrupada por funcionalidade.             |
+| `frontend/src/styles/`         | Entrada do Tailwind e configuração do tema daisyUI.               |
+| `backend/app.ts`               | Middleware da API e montagem das rotas Hono.                      |
+| `backend/features/`            | Rotas, regras e consultas de cada funcionalidade.                 |
+| `backend/platform/`            | Configuração e utilitários HTTP comuns.                           |
+| `backend/jobs/`                | Tarefas agendadas pelo Worker.                                    |
+| `backend/worker.ts`            | Entrada única do Worker para Hono, Astro e tarefas agendadas.     |
+| `backend/migrations/`          | Evolução do esquema do D1.                                        |
+| `frontend/src/middleware.ts`   | Roteamento por hostname.                                          |
+| `frontend/wrangler.jsonc`      | Configuração do Worker e dos serviços Cloudflare.                 |
 
 ## Desenvolvimento local
 
@@ -97,6 +107,7 @@ Use `npm run astro -- dev status`, `npm run astro -- dev logs` e `npm run astro 
 
 ```sh
 npm run check
+npm test
 npm run build
 npm run format:check
 ```
