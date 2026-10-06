@@ -8,13 +8,13 @@ const { href, compact = false, tone = 'dark' } = Astro.props;
 const homeHref = href ?? '/';
 ---
 
-<a href={homeHref} class="inline-flex items-center gap-1.5 no-underline" aria-label="Vira">
+<a href={homeHref} class="inline-flex min-w-0 items-center gap-1.5 no-underline" aria-label="Vira">
   <img
     src={tone === 'light' ? '/vira-mark-amber.png' : '/vira-mark.png'}
     width="40"
     height="40"
     alt=""
-    class="h-9 w-9 object-contain sm:h-10 sm:w-10"
+    class="h-9 w-9 shrink-0 object-contain sm:h-10 sm:w-10"
   />
   {!compact && (
     <img
@@ -22,7 +22,7 @@ const homeHref = href ?? '/';
       width="122"
       height="50"
       alt=""
-      class="h-[38px] w-[93px] object-contain sm:h-[45px] sm:w-[110px]"
+      class="h-9 w-auto max-w-full object-contain sm:h-[45px]"
     />
   )}
 </a>

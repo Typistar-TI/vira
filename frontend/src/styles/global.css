@@ -34,6 +34,8 @@
   --animate-showcase-left: showcase-slide 68s linear infinite;
   --animate-showcase-right: showcase-slide 82s linear infinite reverse;
   --animate-bubble: bubble-in 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-panel-forward: panel-forward 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-panel-back: panel-back 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
 
   @keyframes showcase-slide {
     to {
@@ -49,6 +51,28 @@
     to {
       opacity: 1;
       transform: translateY(0) scale(1);
+    }
+  }
+
+  @keyframes panel-forward {
+    from {
+      opacity: 0;
+      transform: translateX(44px) scale(0.97);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes panel-back {
+    from {
+      opacity: 0;
+      transform: translateX(-44px) scale(0.97);
+    }
+    to {
+      opacity: 1;
+      transform: none;
     }
   }
 }

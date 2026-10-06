@@ -16,10 +16,10 @@ const links = [
 ];
 ---
 
-<header class="relative z-20 mx-auto grid w-full max-w-[1380px] shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-4 px-5 pt-5 sm:px-8 sm:pt-7">
-  <div class="flex flex-col justify-center justify-self-start">
+<header class="relative z-20 mx-auto flex w-full max-w-[1380px] shrink-0 items-center justify-between gap-4 px-5 pt-5 sm:px-8 sm:pt-7 md:grid md:grid-cols-[1fr_auto_1fr]">
+  <div class="flex min-w-0 flex-col justify-center md:justify-self-start">
     <Brand href={signedIn ? dashboardHref : en ? '/en' : '/'} tone="light" />
-    <span class="mt-1 hidden text-xs leading-tight text-[#8b5b1e] lg:block">
+    <span class="mt-0.5 text-[11px] leading-tight text-[#8b5b1e] sm:mt-1 sm:text-xs">
       {en ? 'Vira your idea out there.' : 'Vira sua ideia no mundo.'}
     </span>
   </div>
@@ -33,7 +33,7 @@ const links = [
       </a>
     ))}
   </nav>
-  <div class="flex items-center justify-self-end gap-2 sm:gap-4">
+  <div class="flex shrink-0 items-center gap-2 sm:gap-4 md:justify-self-end">
     <div class="md:hidden">
       <MobileNavigation
         label={en ? 'Navigation' : 'Navegação'}

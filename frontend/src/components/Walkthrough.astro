@@ -93,7 +93,7 @@ const captions = en
               <span data-step-counter>01</span> / 0{steps.length}
             </span>
           </div>
-          <div class="relative">
+          <div class="relative rounded-2xl" data-step-stage>
             {steps.map((_, index) => (
               <div data-step-panel={index} class={index === 0 ? '' : 'hidden'}>
                 <WalkthroughVisual index={index} lang={lang} />
@@ -171,14 +171,38 @@ const captions = en
     const badges = [...root.querySelectorAll<HTMLElement>('[data-step-badge]')];
     const counter = root.querySelector<HTMLElement>('[data-step-counter]');
     const caption = root.querySelector<HTMLElement>('[data-step-caption]');
+    const stage = root.querySelector<HTMLElement>('[data-step-stage]');
     let captions: string[] = [];
     try {
       captions = JSON.parse(root.dataset.captions || '[]');
     } catch {
       captions = [];
     }
-    const activePanel = (index: number) => {
-      panels.forEach((panel, i) => panel.classList.toggle('hidden', i !== index));
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let current = 0;
+    const replay = (el: HTMLElement, cls: string) => {
+      el.classList.remove(cls);
+      void el.offsetWidth;
+      el.classList.add(cls);
+    };
+    const activePanel = (index: number, animateChange = true) => {
+      const forward = index >= current;
+      current = index;
+      panels.forEach((panel, i) => {
+        panel.classList.remove('animate-panel-forward', 'animate-panel-back');
+        if (i === index) {
+          panel.classList.remove('hidden');
+          if (animateChange && !reduced) {
+            replay(panel, forward ? 'animate-panel-forward' : 'animate-panel-back');
+          }
+        } else {
+          panel.classList.add('hidden');
+        }
+      });
+      if (animateChange && !reduced && stage) {
+        stage.classList.add('ring-2', 'ring-[#b88333]/50');
+        window.setTimeout(() => stage.classList.remove('ring-2', 'ring-[#b88333]/50'), 650);
+      }
       dots.forEach((dot, i) => {
         dot.classList.toggle('w-8', i === index);
         dot.classList.toggle('bg-[#b88333]', i === index);
@@ -197,9 +221,12 @@ const captions = en
         badge.classList.toggle('text-[#8b8174]', i !== index);
       });
       if (counter) counter.textContent = String(index + 1).padStart(2, '0');
-      if (caption) caption.textContent = captions[index] ?? '';
+      if (caption) {
+        caption.textContent = captions[index] ?? '';
+        if (animateChange && !reduced) replay(caption, 'animate-bubble');
+      }
     };
-    activePanel(0);
+    activePanel(0, false);
     if ('IntersectionObserver' in window && items.length) {
       const observer = new IntersectionObserver(
         (entries) => {
