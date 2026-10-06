@@ -61,10 +61,10 @@ function initAssistant(root: HTMLElement) {
   const hideSuggestions = () =>
     root.querySelector('[data-assistant-suggestions]')?.classList.add('hidden');
   const streamText = async (node: HTMLElement, text: string) => {
-    for (let i = 0; i < text.length; i += 2) {
-      node.textContent = text.slice(0, i + 2);
+    for (let i = 0; i < text.length; i += 6) {
+      node.textContent = text.slice(0, i + 6);
       scroll();
-      await wait(20);
+      await wait(10);
     }
     node.textContent = text;
     scroll();
@@ -84,15 +84,15 @@ function initAssistant(root: HTMLElement) {
     for (const message of script) {
       if (message.role === 'user') {
         bubble('user', message.text);
-        await wait(reduced ? 0 : 350);
+        await wait(reduced ? 0 : 220);
       } else {
         const pending = bubble('assistant', '');
         if (!reduced) {
           pending.append(dots());
-          await wait(220);
+          await wait(140);
           pending.textContent = '';
           await streamText(pending, message.text);
-          await wait(250);
+          await wait(120);
         } else {
           pending.textContent = message.text;
           scroll();

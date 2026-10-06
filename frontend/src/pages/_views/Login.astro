@@ -37,33 +37,9 @@ const error = url.searchParams.get('error')?.slice(0, 150);
         <div class="flex justify-center">
           <Brand tone="light" />
         </div>
-        <p class="mt-10 font-mono text-xs uppercase tracking-wider text-[#8b5b1e] lg:mt-14">
-          {scope === 'admin'
-            ? en
-              ? 'Administration'
-              : 'Administração'
-            : en
-              ? 'Your business, connected.'
-              : 'Seu negócio, conectado.'}
-        </p>
-        <h1 class="mt-4 font-[Outfit] text-4xl leading-[1.08] tracking-tight sm:text-5xl lg:text-6xl">
-          {scope === 'admin'
-            ? en
-              ? 'Everything in your hands.'
-              : 'Tudo nas suas mãos.'
-            : en
-              ? 'Your next chapter starts here.'
-              : 'Seu próximo capítulo começa aqui.'}
+        <h1 class="mt-10 font-[Outfit] text-3xl leading-tight tracking-tight sm:text-4xl lg:mt-14">
+          {en ? 'Your page and your AI assistant.' : 'Sua página e sua assistente de IA.'}
         </h1>
-        <p class="mx-auto mt-5 max-w-[440px] text-base leading-relaxed text-[#625a51] sm:text-lg">
-          {scope === 'admin'
-            ? en
-              ? 'Manage Vira with clarity, in one place.'
-              : 'Gerencie o Vira com clareza, em um só lugar.'
-            : en
-              ? 'Bring your business to life online. A website with your identity and AI to welcome your customers.'
-              : 'Dê vida ao seu negócio na internet. Um site com a sua identidade e inteligência artificial para receber seus clientes.'}
-        </p>
       </div>
     </section>
     <div class="flex items-center justify-center bg-white px-6 py-12 sm:px-12 lg:min-h-dvh lg:py-20">
