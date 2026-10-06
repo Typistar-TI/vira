@@ -1,14 +1,22 @@
 ---
 import Base from '@frontend/components/Base.astro';
-import Brand from '@frontend/components/Brand.astro';
+import SiteHeader from '@frontend/components/SiteHeader.astro';
 import CookieNotice from '@frontend/components/CookieNotice.astro';
 import SiteFooter from '@frontend/components/SiteFooter.astro';
 import { getSetting } from '@frontend/api/config/setting';
+import { sessionAdmin } from '@frontend/api/auth/session-admin';
+import { sessionUser } from '@frontend/api/auth/session-user';
 interface Props {
   lang: 'pt' | 'en';
 }
 const { lang } = Astro.props;
 const en = lang === 'en';
+const dashboardHref = (await sessionAdmin(Astro.request))
+  ? '/admin'
+  : (await sessionUser(Astro.request))
+    ? '/app'
+    : '/login';
+const signedIn = dashboardHref !== '/login';
 const [controller, contact, email, policy] = await Promise.all([
   getSetting('PRIVACY_CONTROLLER_NAME'),
   getSetting('CONTACT_EMAIL'),
@@ -32,15 +40,8 @@ const body = policy.trim() ? policy.trim().split(/\n{2,}/) : defaultText;
 
 <Base title={en ? 'Terms of Use · Vira' : 'Termos de Uso · Vira'} lang={lang} appearance="light">
   <div class="min-h-screen bg-white text-[#17130d]">
-    <header class="mx-auto flex max-w-[1380px] items-center justify-between gap-5 border-b border-[#d8ae73] px-5 py-4 sm:px-8">
-      <Brand tone="light" />
-      <nav class="flex gap-5 text-sm">
-        <a class="hover:text-[#9b6823]" href={en ? '/en/privacy' : '/privacidade'}>
-          {en ? 'Privacy' : 'Privacidade'}
-        </a>
-      </nav>
-    </header>
-    <main class="mx-auto max-w-[1380px] px-5 py-12 sm:px-8">
+    <SiteHeader lang={lang} signedIn={signedIn} dashboardHref={dashboardHref} />
+    <main class="mx-auto max-w-[1380px] px-5 pb-16 pt-10 sm:px-8">
       <article class="max-w-3xl break-words">
         <span class="text-xs font-extrabold uppercase tracking-[0.15em] text-[#17130d]">Vira</span>
         <h1 class="mt-2 mb-6 text-4xl">{en ? 'Terms of Use' : 'Termos de Uso'}</h1>
