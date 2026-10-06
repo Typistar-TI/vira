@@ -204,7 +204,7 @@ const t = en
   <link slot="head" rel="alternate" hreflang="pt-BR" href={'https://' + domain + '/'} />
   <link slot="head" rel="alternate" hreflang="en-US" href={'https://' + domain + '/en/'} />
   <link slot="head" rel="alternate" hreflang="x-default" href={'https://' + domain + '/'} />
-  <div class="min-h-screen overflow-x-clip bg-white text-[#17130d]">
+  <div class="marketing-page min-h-screen overflow-x-clip bg-white text-[#17130d]">
     <main>
       <div class="marketing-first-screen">
         <header class="relative z-20 mx-auto flex w-full max-w-[1380px] shrink-0 items-center justify-between gap-4 px-5 pt-5 sm:px-8 sm:pt-7">
@@ -424,16 +424,83 @@ const t = en
   }
   .hero-conversation {
     display: flex;
-    align-items: center;
+    align-items: stretch;
   }
   .hero-conversation :global(.assistant-demo) {
     width: 100%;
-    height: min(100%, 440px);
+    height: 100%;
   }
-  @media (max-width: 699px) {
-    .hero-conversation :global(.assistant-demo) {
-      height: 100%;
-      max-height: 620px;
+  .marketing-first-screen,
+  .marketing-page main > :global(section) {
+    height: 100svh;
+    box-sizing: border-box;
+    border-bottom: 1px solid #d8ae73;
+  }
+  .marketing-page main > :global(section) {
+    overflow: auto;
+  }
+  #planos {
+    max-width: none;
+    display: flex;
+    flex-direction: column;
+    padding: clamp(20px, 4svh, 40px) max(20px, calc((100% - 1316px) / 2));
+  }
+  #planos > div:first-child {
+    flex-shrink: 0;
+    margin-bottom: 24px;
+  }
+  #planos h2 {
+    font-size: clamp(1.9rem, 4svh, 3rem);
+    margin-top: 12px;
+  }
+  #planos > div:first-child > p:last-child {
+    margin-top: 12px;
+    font-size: 14px;
+  }
+  #planos > div:last-child {
+    flex: 1;
+    min-height: 0;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  #planos article {
+    overflow: auto;
+    padding: clamp(16px, 3svh, 28px);
+    border-radius: 20px;
+  }
+  #planos article h3 {
+    margin-top: 20px;
+    font-size: clamp(1.5rem, 3svh, 2rem);
+  }
+  #planos article > p:first-of-type {
+    min-height: 0;
+    font-size: 14px;
+    line-height: 1.6;
+    margin-top: 12px;
+  }
+  #planos article > p:nth-of-type(2) {
+    margin-top: 20px;
+    padding-bottom: 16px;
+    font-size: clamp(1.6rem, 3.5svh, 2.5rem);
+  }
+  #planos article ul {
+    margin-block: 20px;
+    font-size: 13px;
+  }
+  #planos article .btn {
+    min-height: 44px;
+    flex-shrink: 0;
+  }
+  @media (max-width: 767px) {
+    #planos > div:last-child {
+      display: flex;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      gap: 12px;
+      padding-bottom: 8px;
+    }
+    #planos article {
+      flex: 0 0 100%;
+      scroll-snap-align: start;
     }
   }
   @media (max-height: 640px) {
