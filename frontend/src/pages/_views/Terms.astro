@@ -42,7 +42,7 @@ const body = policy.trim() ? policy.trim().split(/\n{2,}/) : defaultText;
   <div class="min-h-screen bg-white text-[#17130d]">
     <SiteHeader lang={lang} signedIn={signedIn} dashboardHref={dashboardHref} />
     <main class="mx-auto max-w-[1380px] px-5 pb-16 pt-10 sm:px-8">
-      <article class="max-w-3xl break-words">
+      <article class="w-full break-words">
         <span class="text-xs font-extrabold uppercase tracking-[0.15em] text-[#17130d]">Vira</span>
         <h1 class="mt-2 mb-6 text-4xl">{en ? 'Terms of Use' : 'Termos de Uso'}</h1>
         {mail && (
@@ -58,11 +58,6 @@ const body = policy.trim() ? policy.trim().split(/\n{2,}/) : defaultText;
             {en ? 'Provider' : 'Responsável'}: <strong>{controller}</strong>.
           </p>
         )}
-        <p class="mt-8">
-          <a class="btn btn-primary rounded-xl border-0 font-bold shadow-none" href="/app">
-            {en ? 'Go to dashboard' : 'Ir ao painel'}
-          </a>
-        </p>
       </article>
     </main>
     <SiteFooter lang={lang} />

@@ -17,7 +17,12 @@ const links = [
 ---
 
 <header class="relative z-20 mx-auto flex w-full max-w-[1380px] shrink-0 items-center justify-between gap-4 px-5 pt-5 sm:px-8 sm:pt-7">
-  <Brand href={signedIn ? dashboardHref : en ? '/en' : '/'} tone="light" />
+  <div class="flex items-center gap-3">
+    <Brand href={signedIn ? dashboardHref : en ? '/en' : '/'} tone="light" />
+    <span class="hidden max-w-[20ch] text-xs leading-tight text-[#8b5b1e] lg:block">
+      {en ? 'A clear place for what you do.' : 'Um lugar claro para mostrar o que você faz.'}
+    </span>
+  </div>
   <nav
     class="hidden items-center gap-7 rounded-full border border-[#d8ae73] bg-white/95 px-7 py-3 text-sm text-[#605448] shadow-[0_8px_30px_-22px_rgba(131,85,21,0.35)] backdrop-blur-md md:flex"
     aria-label={en ? 'Main navigation' : 'Navegação principal'}

@@ -37,7 +37,7 @@ const custom = policy.trim();
   <div class="min-h-screen bg-white text-[#17130d]">
     <SiteHeader lang={lang} signedIn={signedIn} dashboardHref={dashboardHref} />
     <main class="mx-auto max-w-[1380px] px-5 pb-16 pt-10 sm:px-8">
-      <article class="max-w-3xl break-words">
+      <article class="w-full break-words">
         <span class="text-xs font-extrabold uppercase tracking-[0.15em] text-[#17130d]">Vira</span>
         <h1 class="text-4xl mt-2 mb-6">
           {en ? 'Privacy and your data' : 'Privacidade e seus dados'}
@@ -94,11 +94,6 @@ const custom = policy.trim();
             </p>
           </>
         )}
-        <p class="mt-8">
-          <a class="btn btn-primary rounded-xl border-0 font-bold shadow-none" href="/app">
-            {en ? 'Go to dashboard' : 'Ir ao painel'}
-          </a>
-        </p>
       </article>
     </main>
     <SiteFooter lang={lang} />
