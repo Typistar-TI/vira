@@ -5,17 +5,17 @@ interface Props {
 }
 const { index, lang } = Astro.props;
 const en = lang === 'en';
-const mockBlocks = [
-  en ? 'Hero' : 'Herói',
-  en ? 'About' : 'Sobre',
-  en ? 'Services' : 'Serviços',
-  en ? 'Gallery' : 'Galeria',
-  en ? 'Contact' : 'Contato',
-];
 const label = (pt: string, ingl: string) => (en ? ingl : pt);
+const mockBlocks = [
+  { label: label('Herói', 'Hero'), hint: label('Título e chamada', 'Title and call') },
+  { label: label('Sobre', 'About'), hint: label('Sua história', 'Your story') },
+  { label: label('Serviços', 'Services'), hint: label('O que você oferece', 'What you offer') },
+  { label: label('Galeria', 'Gallery'), hint: label('Suas imagens', 'Your images') },
+  { label: label('Contato', 'Contact'), hint: label('Como falar com você', 'How to reach you') },
+];
 ---
 
-<div class="overflow-hidden rounded-2xl border border-[#eee7dc] bg-white">
+<div class="overflow-hidden rounded-2xl border border-[#eee7dc] bg-white shadow-[0_30px_70px_-55px_#80531888]">
   <div class="flex items-center gap-2 border-b border-[#eee7dc] px-4 py-2.5">
     <span class="flex gap-1.5" aria-hidden="true">
       <span class="h-2.5 w-2.5 rounded-full bg-[#e5ded2]" />
@@ -33,12 +33,15 @@ const label = (pt: string, ingl: string) => (en ? ingl : pt);
           {label('Adicione blocos', 'Add blocks')}
         </p>
         <div class="flex flex-col gap-2">
-          {mockBlocks.map((item) => (
+          {mockBlocks.map((block) => (
             <div class="flex items-center gap-3 rounded-xl border border-[#e5ded2] bg-white px-3 py-2.5">
-              <span class="grid h-7 w-7 place-items-center rounded-lg bg-[#f5f2eb] text-[11px] text-[#8b8174]">
+              <span class="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-[#f5f2eb] text-[11px] text-[#8b8174]">
                 ≡
               </span>
-              <span class="text-sm font-medium">{item}</span>
+              <span class="min-w-0">
+                <span class="block text-sm font-medium leading-tight">{block.label}</span>
+                <span class="block truncate text-[11px] text-[#8b8174]">{block.hint}</span>
+              </span>
               <span class="ml-auto text-[#b88333]">＋</span>
             </div>
           ))}
@@ -47,9 +50,17 @@ const label = (pt: string, ingl: string) => (en ? ingl : pt);
     )}
     {index === 1 && (
       <>
-        <p class="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#9b6823]">
-          {label('Edite o conteúdo', 'Edit the content')}
-        </p>
+        <div class="mb-3 flex items-center justify-between">
+          <p class="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#9b6823]">
+            {label('Edite o conteúdo', 'Edit the content')}
+          </p>
+          <span class="flex rounded-full bg-[#f0ebe1] p-0.5 text-[10px] font-medium text-[#8b8174]">
+            <span class="rounded-full bg-white px-2 py-0.5 text-[#4a4238] shadow-sm">
+              {label('Computador', 'Desktop')}
+            </span>
+            <span class="px-2 py-0.5">{label('Celular', 'Mobile')}</span>
+          </span>
+        </div>
         <div class="flex flex-col gap-3 rounded-2xl border border-[#e5ded2] bg-white p-4">
           <span class="text-xs font-bold text-[#4a4238]">{label('Título', 'Headline')}</span>
           <span class="rounded-lg border border-[#e5ded2] px-3 py-2 text-sm">
@@ -63,6 +74,28 @@ const label = (pt: string, ingl: string) => (en ? ingl : pt);
               'Present your work in a clear, simple page.',
             )}
           </span>
+          <div class="flex items-center gap-3">
+            <span class="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-[#f5f2eb] text-[#8b8174]">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+                class="h-5 w-5"
+              >
+                <rect x="3" y="4" width="18" height="16" rx="2" />
+                <circle cx="8.5" cy="9.5" r="1.5" />
+                <path d="m21 16-5-5L5 20" />
+              </svg>
+            </span>
+            <span class="min-w-0">
+              <span class="block text-xs font-bold text-[#4a4238]">{label('Imagem', 'Image')}</span>
+              <span class="block truncate text-[11px] text-[#8b8174]">logo.png · 240 KB</span>
+            </span>
+            <span class="ml-auto text-xs font-semibold text-[#9b6823]">
+              {label('Trocar', 'Change')}
+            </span>
+          </div>
         </div>
       </>
     )}
@@ -81,6 +114,18 @@ const label = (pt: string, ingl: string) => (en ? ingl : pt);
           <span class="rounded-lg bg-[#f5f2eb] px-3 py-2 font-mono text-xs text-[#8b8174]">
             {label('sua-pagina', 'your-page')}.vira.ia.br
           </span>
+          <ul class="mt-1 space-y-1.5 text-xs text-[#4f473e]">
+            {[
+              label('Página no ar para qualquer visitante', 'Page live for any visitor'),
+              label('Endereço Vira pronto para compartilhar', 'Vira address ready to share'),
+              label('Domínio próprio é opcional', 'Your own domain is optional'),
+            ].map((item) => (
+              <li class="flex items-start gap-2">
+                <span class="text-[#b88333]">✓</span>
+                {item}
+              </li>
+            ))}
+          </ul>
           <div class="mt-1 rounded-xl border border-[#eee7dc] p-3">
             <span class="block text-base font-medium">
               {label('Sua ideia, no ar.', 'Your idea, online.')}

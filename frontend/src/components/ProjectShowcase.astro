@@ -23,7 +23,7 @@ const cardClass =
 
 <section
   id="vitrine"
-  class="border-b border-[#d8ae73] bg-white px-0 py-16 sm:py-24"
+  class="border-b border-[#d8ae73] bg-white px-0 pt-10 pb-14 sm:pt-14 sm:pb-20"
   aria-labelledby="showcase-heading"
 >
   <div class="mx-auto w-full max-w-[1380px] px-5 sm:px-8" data-reveal>
@@ -43,7 +43,7 @@ const cardClass =
     </p>
   </div>
   {moving ? (
-    <div class="mt-10 space-y-3 overflow-hidden sm:mt-14 sm:space-y-4 [mask-image:linear-gradient(to_right,transparent,black_7%,black_93%,transparent)]">
+    <div class="mt-8 space-y-3 overflow-hidden sm:mt-10 sm:space-y-4 [mask-image:linear-gradient(to_right,transparent,black_7%,black_93%,transparent)]">
       {rows.map((row, rowIndex) => (
         <div
           class="overflow-hidden"
@@ -93,7 +93,7 @@ const cardClass =
       ))}
     </div>
   ) : projects.length > 0 ? (
-    <div class="mx-auto mt-10 flex w-full max-w-[1380px] flex-wrap justify-center gap-3 px-5 sm:mt-14 sm:gap-4 sm:px-8">
+    <div class="mx-auto mt-8 flex w-full max-w-[1380px] flex-wrap justify-center gap-3 px-5 sm:mt-10 sm:gap-4 sm:px-8">
       {projects.map((project) => (
         <a href={project.url} target="_blank" rel="noopener noreferrer" class={cardClass}>
           <img
@@ -108,7 +108,7 @@ const cardClass =
       ))}
     </div>
   ) : (
-    <div class="mx-auto mt-10 w-full max-w-[1380px] px-5 sm:mt-14 sm:px-8">
+    <div class="mx-auto mt-8 w-full max-w-[1380px] px-5 sm:mt-10 sm:px-8">
       <p class="rounded-[1.5rem] border border-[#d8ae73] bg-white px-6 py-12 text-center text-[#625a51]">
         {en
           ? 'The first projects will appear here as their owners share them.'

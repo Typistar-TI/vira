@@ -8,16 +8,64 @@ interface Props {
 }
 const { lang, heading, intro, steps } = Astro.props;
 const en = lang === 'en';
+
+const details = en
+  ? [
+      [
+        'Email and password, access code or Google',
+        'Your workspace is created right away',
+        'No credit card to get started',
+      ],
+      [
+        'Text, images and logo in editable blocks',
+        'Live preview on desktop and mobile',
+        'AI assistant included from the start',
+      ],
+      [
+        'Vira address ready as soon as you publish',
+        'Connect your own domain later',
+        'Update the content whenever you want',
+      ],
+    ]
+  : [
+      [
+        'E-mail e senha, código de acesso ou Google',
+        'Sua área de trabalho é criada na hora',
+        'Sem cartão de crédito para começar',
+      ],
+      [
+        'Textos, imagens e logo em blocos editáveis',
+        'Prévia ao vivo no computador e no celular',
+        'Assistente de IA incluída desde o início',
+      ],
+      [
+        'Endereço Vira pronto ao publicar',
+        'Conecte seu domínio próprio depois',
+        'Atualize o conteúdo quando quiser',
+      ],
+    ];
+const captions = en
+  ? [
+      'Pick the blocks that fit your business and put them in order.',
+      'Change the words and images and watch the page update as you type.',
+      'One click puts your page online with a shareable address.',
+    ]
+  : [
+      'Escolha os blocos que combinam com o seu negócio e organize a ordem.',
+      'Mude textos e imagens e veja a página se atualizar enquanto digita.',
+      'Um clique coloca sua página no ar com um endereço para compartilhar.',
+    ];
 ---
 
 <section
   id="como-funciona"
   data-walkthrough
-  class="border-b border-[#d8ae73] bg-[#fcfaf6] px-5 py-16 text-[#17130d] sm:px-8 sm:py-24"
+  data-captions={JSON.stringify(captions)}
+  class="border-b border-[#d8ae73] bg-[#fcfaf6] px-5 pt-10 pb-14 text-[#17130d] sm:px-8 sm:pt-14 sm:pb-20"
   aria-labelledby="walkthrough-heading"
 >
   <div class="mx-auto w-full max-w-[1240px]">
-    <header class="mb-12 flex items-end justify-between gap-10 max-md:block" data-reveal>
+    <header class="mb-8 flex items-end justify-between gap-10 max-md:block sm:mb-10" data-reveal>
       <div>
         <p class="mb-3.5 font-mono text-[10px] uppercase tracking-[0.14em] text-[#9b6823]">
           {en ? 'How it works' : 'Como funciona'}
@@ -37,6 +85,14 @@ const en = lang === 'en';
     <div class="grid gap-12 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1fr)] lg:gap-16">
       <div class="hidden lg:block">
         <div class="sticky top-28">
+          <div class="mb-4 flex items-center justify-between gap-3">
+            <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-[#9b6823]">
+              {en ? 'Inside your panel' : 'Por dentro do painel'}
+            </span>
+            <span class="rounded-full border border-[#e5ded2] bg-white px-3 py-1 font-mono text-[10px] text-[#8b8174]">
+              <span data-step-counter>01</span> / 0{steps.length}
+            </span>
+          </div>
           <div class="relative">
             {steps.map((_, index) => (
               <div data-step-panel={index} class={index === 0 ? '' : 'hidden'}>
@@ -44,7 +100,7 @@ const en = lang === 'en';
               </div>
             ))}
           </div>
-          <div class="mt-6 flex items-center justify-center gap-2" aria-hidden="true">
+          <div class="mt-5 flex items-center gap-2" aria-hidden="true">
             {steps.map((_, index) => (
               <span
                 data-step-dot={index}
@@ -54,31 +110,49 @@ const en = lang === 'en';
               />
             ))}
           </div>
+          <p data-step-caption class="mt-3 max-w-[46ch] text-xs leading-relaxed text-[#766c60]">
+            {captions[0]}
+          </p>
         </div>
       </div>
 
       <ol class="flex flex-col gap-12 sm:gap-16 lg:gap-0">
         {steps.map((step, index) => (
           <li data-step-item={index} class="lg:flex lg:min-h-[58svh] lg:flex-col lg:justify-center">
-            <span
-              data-step-badge={index}
-              class={`mb-4 grid h-11 w-11 place-items-center rounded-full border font-mono text-sm font-semibold transition-colors duration-300 ${
-                index === 0
-                  ? 'border-[#b88333] bg-[#17130d] text-white'
-                  : 'border-[#e5ded2] bg-white text-[#b88333]'
-              }`}
-            >
-              0{index + 1}
-            </span>
+            <div class="flex items-center gap-3">
+              <span
+                data-step-badge={index}
+                class={`grid h-12 w-12 place-items-center rounded-full border font-['Outfit',sans-serif] text-lg font-semibold transition-all duration-300 ${
+                  index === 0
+                    ? 'border-[#17130d] bg-[#17130d] text-white shadow-[0_14px_30px_-14px_#17130d] ring-4 ring-[#b88333]/25'
+                    : 'border-[#e5ded2] bg-[#f5f2eb] text-[#8b8174]'
+                }`}
+              >
+                0{index + 1}
+              </span>
+              <span class="font-mono text-[11px] uppercase tracking-[0.18em] text-[#9b6823]">
+                {en ? 'Step' : 'Passo'} 0{index + 1}
+              </span>
+            </div>
             <h3
               id={`walkthrough-step-${index + 1}`}
-              class="text-[clamp(1.6rem,3vw,2.6rem)] font-medium leading-tight tracking-[-0.03em] font-['Outfit',sans-serif]"
+              class="mt-5 text-[clamp(1.6rem,3vw,2.6rem)] font-medium leading-tight tracking-[-0.03em] font-['Outfit',sans-serif]"
             >
               {step.title}
             </h3>
             <p class="mt-3 max-w-[42ch] text-sm leading-relaxed text-[#625a51] sm:text-base">
               {step.text}
             </p>
+            <ul class="mt-5 max-w-[42ch] space-y-2 text-sm text-[#4f473e]">
+              {(details[index] ?? []).map((item) => (
+                <li class="flex items-start gap-2.5">
+                  <span class="mt-0.5 text-[#b88333]" aria-hidden="true">
+                    ✓
+                  </span>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
             <div class="mt-6 lg:hidden">
               <WalkthroughVisual index={index} lang={lang} />
             </div>
@@ -95,6 +169,14 @@ const en = lang === 'en';
     const panels = [...root.querySelectorAll<HTMLElement>('[data-step-panel]')];
     const dots = [...root.querySelectorAll<HTMLElement>('[data-step-dot]')];
     const badges = [...root.querySelectorAll<HTMLElement>('[data-step-badge]')];
+    const counter = root.querySelector<HTMLElement>('[data-step-counter]');
+    const caption = root.querySelector<HTMLElement>('[data-step-caption]');
+    let captions: string[] = [];
+    try {
+      captions = JSON.parse(root.dataset.captions || '[]');
+    } catch {
+      captions = [];
+    }
     const activePanel = (index: number) => {
       panels.forEach((panel, i) => panel.classList.toggle('hidden', i !== index));
       dots.forEach((dot, i) => {
@@ -104,13 +186,18 @@ const en = lang === 'en';
         dot.classList.toggle('bg-[#e5ded2]', i !== index);
       });
       badges.forEach((badge, i) => {
-        badge.classList.toggle('border-[#b88333]', i === index);
+        badge.classList.toggle('border-[#17130d]', i === index);
         badge.classList.toggle('bg-[#17130d]', i === index);
         badge.classList.toggle('text-white', i === index);
+        badge.classList.toggle('shadow-[0_14px_30px_-14px_#17130d]', i === index);
+        badge.classList.toggle('ring-4', i === index);
+        badge.classList.toggle('ring-[#b88333]/25', i === index);
         badge.classList.toggle('border-[#e5ded2]', i !== index);
-        badge.classList.toggle('bg-white', i !== index);
-        badge.classList.toggle('text-[#b88333]', i !== index);
+        badge.classList.toggle('bg-[#f5f2eb]', i !== index);
+        badge.classList.toggle('text-[#8b8174]', i !== index);
       });
+      if (counter) counter.textContent = String(index + 1).padStart(2, '0');
+      if (caption) caption.textContent = captions[index] ?? '';
     };
     activePanel(0);
     if ('IntersectionObserver' in window && items.length) {

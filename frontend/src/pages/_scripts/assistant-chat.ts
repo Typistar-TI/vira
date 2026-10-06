@@ -70,7 +70,7 @@ function initAssistant(root: HTMLElement) {
     scroll();
   };
   const playScript = async () => {
-    let script: { role: ChatMessage['role']; text: string }[] = [];
+    let script: { role: ChatMessage['role']; text: string; html?: string }[] = [];
     try {
       script = JSON.parse(root.dataset.script || '[]');
     } catch {
@@ -91,6 +91,12 @@ function initAssistant(root: HTMLElement) {
           pending.append(dots());
           await wait(140);
           pending.textContent = '';
+        }
+        if (message.html) {
+          pending.innerHTML = message.html;
+          scroll();
+          await wait(reduced ? 0 : 160);
+        } else if (!reduced) {
           await streamText(pending, message.text);
           await wait(120);
         } else {
