@@ -5,8 +5,9 @@ export const verifyEmail = (
   purpose: 'login' | 'password' = 'login',
   password?: string,
   scope: 'app' | 'admin' = 'app',
+  acceptTerms = false,
 ) =>
   apiMutation<{ redirect: string }>(`/api/auth/email/verify?next=${scope}`, {
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ email, code, purpose, password }),
+    body: JSON.stringify({ email, code, purpose, password, acceptTerms }),
   });

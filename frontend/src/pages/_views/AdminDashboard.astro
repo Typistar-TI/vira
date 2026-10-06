@@ -36,6 +36,21 @@ const groups = [
   { title: 'Domínios e métricas', keys: ['CLOUDFLARE_API_TOKEN', 'CLOUDFLARE_ANALYTICS_TOKEN'] },
   { title: 'Inteligência artificial', keys: ['AI_MODEL'] },
   { title: 'Privacidade', keys: ['PRIVACY_CONTROLLER_NAME', 'PRIVACY_CONTACT_EMAIL'] },
+  {
+    title: 'Legal, contato e redes',
+    keys: [
+      'PRIVACY_POLICY',
+      'TERMS_OF_USE',
+      'CONTACT_EMAIL',
+      'SOCIAL_INSTAGRAM',
+      'SOCIAL_X',
+      'SOCIAL_FACEBOOK',
+      'SOCIAL_YOUTUBE',
+      'SOCIAL_LINKEDIN',
+      'SOCIAL_TIKTOK',
+      'SOCIAL_WHATSAPP',
+    ],
+  },
 ];
 const labels: Record<string, string> = {
   GOOGLE_CLIENT_ID: 'Client ID do Google',
@@ -48,7 +63,18 @@ const labels: Record<string, string> = {
   AI_MODEL: 'Modelo do Workers AI (opcional)',
   PRIVACY_CONTROLLER_NAME: 'Responsável pelo Vira',
   PRIVACY_CONTACT_EMAIL: 'E-mail de privacidade',
+  PRIVACY_POLICY: 'Política de Privacidade (texto; deixe vazio para o padrão)',
+  TERMS_OF_USE: 'Termos de Uso (texto; deixe vazio para o padrão)',
+  CONTACT_EMAIL: 'E-mail de contato',
+  SOCIAL_INSTAGRAM: 'Instagram (link ou @usuario)',
+  SOCIAL_X: 'X / Twitter (link ou @usuario)',
+  SOCIAL_FACEBOOK: 'Facebook (link ou página)',
+  SOCIAL_YOUTUBE: 'YouTube (link ou @canal)',
+  SOCIAL_LINKEDIN: 'LinkedIn (link ou empresa)',
+  SOCIAL_TIKTOK: 'TikTok (link ou @usuario)',
+  SOCIAL_WHATSAPP: 'WhatsApp (link ou número)',
 };
+const longTextKeys = new Set(['PRIVACY_POLICY', 'TERMS_OF_USE']);
 const planName: Record<string, string> = {
   monthly: 'Mensal',
   yearly: 'Anual',
@@ -375,24 +401,35 @@ const deliveryStatus: Record<string, string> = {
                           </span>
                         </td>
                         <td>
-                          <input
-                            class="input input-bordered w-full min-w-56"
-                            form={formId}
-                            id={`setting-${key}`}
-                            name="value"
-                            type={
-                              row.encrypted
-                                ? 'password'
-                                : key === 'PRIVACY_CONTACT_EMAIL'
-                                  ? 'email'
-                                  : 'text'
-                            }
-                            value={row.encrypted ? '' : row.value}
-                            placeholder={
-                              row.encrypted && row.value ? 'Novo valor para substituir' : ''
-                            }
-                            autocomplete="off"
-                          />
+                          {longTextKeys.has(key) ? (
+                            <textarea
+                              class="textarea textarea-bordered w-full min-w-56"
+                              form={formId}
+                              id={`setting-${key}`}
+                              name="value"
+                              rows="5"
+                              placeholder="Deixe vazio para usar o texto padrão"
+                            >{row.value}</textarea>
+                          ) : (
+                            <input
+                              class="input input-bordered w-full min-w-56"
+                              form={formId}
+                              id={`setting-${key}`}
+                              name="value"
+                              type={
+                                row.encrypted
+                                  ? 'password'
+                                  : key === 'PRIVACY_CONTACT_EMAIL' || key === 'CONTACT_EMAIL'
+                                    ? 'email'
+                                    : 'text'
+                              }
+                              value={row.encrypted ? '' : row.value}
+                              placeholder={
+                                row.encrypted && row.value ? 'Novo valor para substituir' : ''
+                              }
+                              autocomplete="off"
+                            />
+                          )}
                         </td>
                         <td>
                           <button class="btn btn-outline btn-sm" form={formId} type="submit">

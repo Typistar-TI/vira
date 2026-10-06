@@ -9,13 +9,19 @@ import {
 } from '@backend/features/emails/service/emails';
 
 import type { UserRow } from '../entities/user';
+import { recordTermsAcceptance } from '@backend/features/consent/repository/consents';
 export type { UserRow } from '../entities/user';
 
 export async function getUser(id: string) {
   return env.DB.prepare('SELECT * FROM users WHERE id = ?').bind(id).first<UserRow>();
 }
 
-export async function getOrCreateGoogleUser(sub: string, email: string, language: 'pt' | 'en') {
+export async function getOrCreateGoogleUser(
+  sub: string,
+  email: string,
+  language: 'pt' | 'en',
+  accepted = true,
+) {
   let user = await env.DB.prepare('SELECT * FROM users WHERE google_sub = ?')
     .bind(sub)
     .first<UserRow>();
@@ -31,7 +37,7 @@ export async function getOrCreateGoogleUser(sub: string, email: string, language
     return { ...user, google_sub: sub };
   }
   try {
-    return await createUser(email, sub, language);
+    return await createUser(email, sub, language, accepted);
   } catch (error) {
     const concurrent = await env.DB.prepare('SELECT * FROM users WHERE email = ? OR google_sub = ?')
       .bind(email, sub)
@@ -45,13 +51,14 @@ export async function getOrCreateGoogleUser(sub: string, email: string, language
   }
 }
 
-export async function getOrCreateEmailUser(email: string, language: 'pt' | 'en') {
+export async function getOrCreateEmailUser(email: string, language: 'pt' | 'en', accepted = false) {
   const user = await env.DB.prepare('SELECT * FROM users WHERE email = ?')
     .bind(email)
     .first<UserRow>();
   if (user) return user;
+  if (!accepted) throw new Error('consent_required');
   try {
-    return await createUser(email, null, language);
+    return await createUser(email, null, language, true);
   } catch (error) {
     const concurrent = await env.DB.prepare('SELECT * FROM users WHERE email = ?')
       .bind(email)
@@ -61,7 +68,12 @@ export async function getOrCreateEmailUser(email: string, language: 'pt' | 'en')
   }
 }
 
-async function createUser(email: string, sub: string | null, language: 'pt' | 'en') {
+async function createUser(
+  email: string,
+  sub: string | null,
+  language: 'pt' | 'en',
+  accepted = true,
+) {
   const id = crypto.randomUUID();
   const now = Math.floor(Date.now() / 1000);
   const slug = `site-${id.slice(0, 12)}`;
@@ -87,6 +99,7 @@ async function createUser(email: string, sub: string | null, language: 'pt' | 'e
   ]);
   const user = await getUser(id);
   if (!user) throw new Error('Falha ao criar a conta');
+  if (accepted) await recordTermsAcceptance(id, email);
   return user;
 }
 

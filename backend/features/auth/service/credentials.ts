@@ -122,6 +122,7 @@ export async function establishLogin(
   email: string,
   request: Request,
   password?: Awaited<ReturnType<typeof passwordRecord>>,
+  accepted = false,
 ): Promise<Response> {
   const [admin, existing, controller, contact] = await Promise.all([
     env.DB.prepare('SELECT email FROM admin_accounts WHERE email = ?').bind(email).first(),
@@ -133,7 +134,23 @@ export async function establishLogin(
   if (adminLogin && !admin) return json({ error: 'Acesso administrativo não autorizado' }, 403);
   if (!existing && !adminLogin && (!controller || !contact))
     return json({ error: 'Cadastro temporariamente indisponível' }, 403);
-  const user = adminLogin ? null : await getOrCreateEmailUser(email, languageFromRequest(request));
+  let user: { id: string } | null = null;
+  try {
+    user = adminLogin
+      ? null
+      : await getOrCreateEmailUser(email, languageFromRequest(request), accepted);
+  } catch (error) {
+    if (error instanceof Error && error.message === 'consent_required')
+      return json(
+        {
+          error:
+            'Você precisa aceitar os Termos de Uso e a Política de Privacidade para criar a conta.',
+          consent: true,
+        },
+        400,
+      );
+    throw error;
+  }
   if (password) {
     // Reset invalidates existing sessions, including sessions from other login methods.
     await env.DB.batch([

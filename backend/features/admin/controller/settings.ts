@@ -12,8 +12,21 @@ const editable = new Set([
   'CLOUDFLARE_ANALYTICS_TOKEN',
   'PRIVACY_CONTROLLER_NAME',
   'PRIVACY_CONTACT_EMAIL',
+  'PRIVACY_POLICY',
+  'TERMS_OF_USE',
+  'CONTACT_EMAIL',
+  'SOCIAL_INSTAGRAM',
+  'SOCIAL_X',
+  'SOCIAL_FACEBOOK',
+  'SOCIAL_YOUTUBE',
+  'SOCIAL_LINKEDIN',
+  'SOCIAL_TIKTOK',
+  'SOCIAL_WHATSAPP',
   'AI_MODEL',
 ]);
+
+const longText = new Set(['PRIVACY_POLICY', 'TERMS_OF_USE']);
+const emailKeys = new Set(['PRIVACY_CONTACT_EMAIL', 'CONTACT_EMAIL']);
 
 export const GET = async (request: Request): Promise<Response> => {
   const admin = await requireAdmin(request);
@@ -36,7 +49,7 @@ export const POST = async (request: Request): Promise<Response> => {
   const admin = await requireAdmin(request);
   if (isResponse(admin)) return admin;
   try {
-    const body = await readJson(request, 8192);
+    const body = await readJson(request, 81920);
     const key = String(body.key || '');
     if (!editable.has(key)) return json({ error: 'Configuração não editável' }, 400);
     const row = await env.DB.prepare('SELECT encrypted FROM app_settings WHERE key = ?')
@@ -44,10 +57,11 @@ export const POST = async (request: Request): Promise<Response> => {
       .first<{ encrypted: number }>();
     if (!row) return json({ error: 'Configuração desconhecida' }, 404);
     const value = String(body.value ?? '').trim();
-    if (value.length > 4096) return json({ error: 'Valor muito longo' }, 400);
+    if (value.length > (longText.has(key) ? 20000 : 4096))
+      return json({ error: 'Valor muito longo' }, 400);
     if (row.encrypted && !value && !body.clear)
       return json({ error: 'Informe um valor ou selecione limpar' }, 400);
-    if (key === 'PRIVACY_CONTACT_EMAIL' && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
+    if (emailKeys.has(key) && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
       return json({ error: 'E-mail inválido' }, 400);
     if (
       key === 'GOOGLE_CLIENT_ID' &&

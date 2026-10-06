@@ -37,7 +37,9 @@ describe('Email authentication and password lifecycle', () => {
     expect(stored.code_hash).not.toBe(code);
     expect(stored.expires_at).toBeGreaterThan(Math.floor(Date.now() / 1000));
     expect(stored.expires_at).toBeLessThanOrEqual(Math.floor(Date.now() / 1000) + 600);
-    const response = await verify(request('/api/auth/email/verify', { email, code }));
+    const response = await verify(
+      request('/api/auth/email/verify', { email, code, acceptTerms: true }),
+    );
     expect(response.status).toBe(200);
     expect(response.headers.get('set-cookie')).toMatch(
       /^__Host-vira_session=[a-f0-9]{64}; Path=\/; HttpOnly; Secure; SameSite=Lax;/,
@@ -79,7 +81,9 @@ describe('Email authentication and password lifecycle', () => {
     const email = `${crypto.randomUUID()}@example.test`,
       code = await issue(email);
     const responses = await Promise.all(
-      Array.from({ length: 4 }, () => verify(request('/api/auth/email/verify', { email, code }))),
+      Array.from({ length: 4 }, () =>
+        verify(request('/api/auth/email/verify', { email, code, acceptTerms: true })),
+      ),
     );
     expect(responses.filter((response) => response.status === 200)).toHaveLength(1);
   });

@@ -1,0 +1,64 @@
+---
+interface Props {
+  lang?: 'pt' | 'en';
+}
+const { lang = 'pt' } = Astro.props;
+const en = lang === 'en';
+---
+
+<div
+  data-cookie-notice
+  hidden
+  class="fixed inset-x-3 bottom-3 z-[70] mx-auto flex max-w-[1100px] flex-col gap-3 rounded-2xl border border-[#d8ae73] bg-white/95 p-4 shadow-2xl backdrop-blur sm:flex-row sm:items-center sm:justify-between sm:gap-6"
+>
+  <p class="text-sm leading-relaxed text-[#625a51]">
+    {en
+      ? 'We use an essential session cookie to keep you signed in. By continuing you accept the '
+      : 'Usamos um cookie essencial de sessão para manter você conectado. Ao continuar, você aceita a '}
+    <a class="font-semibold text-[#8b5b1e] underline" href={en ? '/en/privacy' : '/privacidade'}>
+      {en ? 'Privacy Policy' : 'Política de Privacidade'}
+    </a>
+    {en ? ' and the ' : ' e os '}
+    <a class="font-semibold text-[#8b5b1e] underline" href={en ? '/en/terms' : '/termos'}>
+      {en ? 'Terms of Use' : 'Termos de Uso'}
+    </a>
+    .
+  </p>
+  <button
+    type="button"
+    data-cookie-accept
+    class="btn shrink-0 rounded-full border-0 bg-[#b88333] px-6 text-white hover:bg-[#9b6823]"
+  >
+    {en ? 'Accept and continue' : 'Aceitar e continuar'}
+  </button>
+</div>
+<script>
+  const notice = document.querySelector<HTMLElement>('[data-cookie-notice]');
+  if (notice) {
+    let stored = '';
+    try {
+      stored = localStorage.getItem('vira-cookie-consent') || '';
+    } catch {
+      /* private browser */
+    }
+    if (!stored) notice.hidden = false;
+    notice.querySelector('[data-cookie-accept]')?.addEventListener('click', async () => {
+      notice.hidden = true;
+      try {
+        localStorage.setItem('vira-cookie-consent', '1');
+      } catch {
+        /* private browser */
+      }
+      try {
+        await fetch('/api/consent', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ kind: 'cookies', version: '1' }),
+        });
+      } catch {
+        /* recorded later */
+      }
+    });
+  }
+</script>

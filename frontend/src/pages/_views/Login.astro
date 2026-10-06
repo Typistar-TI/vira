@@ -129,6 +129,27 @@ const error = url.searchParams.get('error')?.slice(0, 150);
               required={!reset}
             />
           </div>
+          <label class="mt-1 flex items-start gap-2 text-left text-xs leading-relaxed text-[#625a51]">
+            <input
+              id="accept-terms"
+              type="checkbox"
+              class="checkbox checkbox-sm mt-0.5 shrink-0 border border-[#b88333]"
+            />
+            <span>
+              {en ? 'I accept the ' : 'Aceito os '}
+              <a class="font-semibold text-[#8b5b1e] underline" href={en ? '/en/terms' : '/termos'}>
+                {en ? 'Terms of Use' : 'Termos de Uso'}
+              </a>
+              {en ? ' and the ' : ' e a '}
+              <a
+                class="font-semibold text-[#8b5b1e] underline"
+                href={en ? '/en/privacy' : '/privacidade'}
+              >
+                {en ? 'Privacy Policy' : 'Política de Privacidade'}
+              </a>
+              .
+            </span>
+          </label>
           <button
             data-start-button
             type="submit"
@@ -427,6 +448,16 @@ const error = url.searchParams.get('error')?.slice(0, 150);
     codes.addEventListener('submit', async (event) => {
       event.preventDefault();
       if (busy) return;
+      const accepted = root.querySelector<HTMLInputElement>('#accept-terms')?.checked ?? false;
+      if (!accepted) {
+        showToast(
+          en
+            ? 'Accept the Terms of Use and the Privacy Policy to continue.'
+            : 'Aceite os Termos de Uso e a Política de Privacidade para continuar.',
+          'error',
+        );
+        return;
+      }
       if (purpose === 'password' && newPassword.value !== confirmPassword.value) {
         showToast(en ? 'Passwords do not match.' : 'As senhas não coincidem.', 'error');
         return;
@@ -439,6 +470,7 @@ const error = url.searchParams.get('error')?.slice(0, 150);
           purpose,
           purpose === 'password' ? newPassword.value : undefined,
           scope,
+          accepted,
         );
         location.assign(result.redirect);
       } catch (error) {

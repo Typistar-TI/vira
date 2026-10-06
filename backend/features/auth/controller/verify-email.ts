@@ -39,5 +39,6 @@ export const POST = async (request: Request): Promise<Response> => {
     );
   const password =
     purpose === 'password' ? await passwordRecord(body.password as string) : undefined;
-  return establishLogin(email, request, password);
+  const accepted = body.acceptTerms === true || body.acceptTerms === 'true';
+  return establishLogin(email, request, password, accepted);
 };

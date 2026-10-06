@@ -25,7 +25,7 @@ export function request(
 }
 export async function customer(plan = 'trial') {
   const email = `${crypto.randomUUID()}@example.test`;
-  const user = await getOrCreateEmailUser(email, 'pt');
+  const user = await getOrCreateEmailUser(email, 'pt', true);
   await env.DB.prepare('UPDATE users SET plan = ? WHERE id = ?').bind(plan, user.id).run();
   const cookie = (await createSession(user.id)).split(';')[0];
   return { user, email, cookie };

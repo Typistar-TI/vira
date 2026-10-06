@@ -9,6 +9,7 @@ import { routes as mediaRoutes } from './features/media/routes';
 import { routes as analyticsRoutes } from './features/analytics/routes';
 import { routes as sitesRoutes } from './features/sites/routes';
 import { routes as showcaseRoutes } from './features/showcase/routes';
+import { routes as consentRoutes } from './features/consent/routes';
 import {
   publicRoutes as publicAssistantRoutes,
   routes as assistantRoutes,
@@ -59,4 +60,5 @@ api.route('/api', analyticsRoutes);
 api.route('/api/site', sitesRoutes);
 api.route('/api/showcase', showcaseRoutes);
 api.route('/api/assistant', assistantRoutes);
+api.route('/api/consent', consentRoutes);
 api.route('/api/public/assistant', publicAssistantRoutes);
