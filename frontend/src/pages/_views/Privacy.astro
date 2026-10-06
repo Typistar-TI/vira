@@ -2,6 +2,7 @@
 import Base from '@frontend/components/Base.astro';
 import Brand from '@frontend/components/Brand.astro';
 import CookieNotice from '@frontend/components/CookieNotice.astro';
+import SiteFooter from '@frontend/components/SiteFooter.astro';
 import { getSetting } from '@frontend/api/config/setting';
 interface Props {
   lang: 'pt' | 'en';
@@ -99,6 +100,7 @@ const custom = policy.trim();
         </p>
       </article>
     </main>
+    <SiteFooter lang={lang} />
   </div>
   <CookieNotice lang={lang} />
 </Base>

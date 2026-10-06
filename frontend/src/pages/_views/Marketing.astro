@@ -6,7 +6,7 @@ import MobileNavigation from '@frontend/components/MobileNavigation.astro';
 import ProjectShowcase from '@frontend/components/ProjectShowcase.astro';
 import AssistantChat from '@frontend/components/AssistantChat.astro';
 import CookieNotice from '@frontend/components/CookieNotice.astro';
-import { getSetting } from '@frontend/api/config/setting';
+import SiteFooter from '@frontend/components/SiteFooter.astro';
 import { getPublicPrices, type Plan } from '@frontend/api/billing/public-prices';
 import { getPublicShowcase } from '@frontend/api/showcase/public-showcase';
 import { getRootDomain } from '@frontend/api/config/root-domain';
@@ -18,27 +18,6 @@ interface Props {
 const { lang } = Astro.props;
 const en = lang === 'en';
 const domain = await getRootDomain();
-const [contactEmail, ig, xs, fb, yt, li, tk, wa] = await Promise.all([
-  getSetting('CONTACT_EMAIL'),
-  getSetting('SOCIAL_INSTAGRAM'),
-  getSetting('SOCIAL_X'),
-  getSetting('SOCIAL_FACEBOOK'),
-  getSetting('SOCIAL_YOUTUBE'),
-  getSetting('SOCIAL_LINKEDIN'),
-  getSetting('SOCIAL_TIKTOK'),
-  getSetting('SOCIAL_WHATSAPP'),
-]);
-const socialUrl = (value: string, make: (handle: string) => string) =>
-  !value ? '' : /^https?:\/\//.test(value) ? value : make(value.replace(/^@/, ''));
-const socials = [
-  { label: 'Instagram', href: socialUrl(ig, (h) => `https://instagram.com/${h}`) },
-  { label: 'X', href: socialUrl(xs, (h) => `https://x.com/${h}`) },
-  { label: 'Facebook', href: socialUrl(fb, (h) => `https://facebook.com/${h}`) },
-  { label: 'YouTube', href: socialUrl(yt, (h) => `https://youtube.com/@${h}`) },
-  { label: 'LinkedIn', href: socialUrl(li, (h) => `https://linkedin.com/company/${h}`) },
-  { label: 'TikTok', href: socialUrl(tk, (h) => `https://tiktok.com/@${h}`) },
-  { label: 'WhatsApp', href: socialUrl(wa, (h) => `https://wa.me/${h.replace(/\D/g, '')}`) },
-].filter((item) => item.href);
 const dashboardHref = (await sessionAdmin(Astro.request))
   ? '/admin'
   : (await sessionUser(Astro.request))
@@ -412,51 +391,7 @@ const heroScript = [
         </div>
       </section>
     </main>
-    <footer class="border-t border-[#d8ae73] bg-white">
-      <div class="mx-auto flex max-w-[1380px] flex-col items-center gap-8 px-5 py-12 text-center sm:px-8 md:flex-row md:items-end md:justify-between md:text-left">
-        <div class="flex flex-col items-center md:items-start">
-          <Brand href={signedIn ? dashboardHref : en ? '/en' : '/'} tone="light" />
-          <p class="mt-5 max-w-[30ch] text-sm leading-relaxed text-[#625a51]">{t.footer}</p>
-          {contactEmail && (
-            <a
-              class="mt-3 text-sm text-[#625a51] hover:text-[#9b6823]"
-              href={`mailto:${contactEmail}`}
-            >
-              {contactEmail}
-            </a>
-          )}
-        </div>
-        {socials.length > 0 && (
-          <nav
-            class="flex flex-wrap justify-center gap-4 text-sm text-[#625a51]"
-            aria-label={en ? 'Social networks' : 'Redes sociais'}
-          >
-            {socials.map((social) => (
-              <a
-                class="hover:text-[#9b6823]"
-                href={social.href}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {social.label}
-              </a>
-            ))}
-          </nav>
-        )}
-        <div class="flex flex-wrap justify-center gap-6 text-sm text-[#625a51] md:justify-end">
-          <a class="hover:text-[#9b6823]" href={en ? '/en/terms' : '/termos'}>
-            {en ? 'Terms of Use' : 'Termos de Uso'}
-          </a>
-          <a class="hover:text-[#9b6823]" href={en ? '/en/privacy' : '/privacidade'}>
-            {en ? 'Privacy' : 'Privacidade'}
-          </a>
-        </div>
-      </div>
-      <div class="mx-auto flex max-w-[1380px] flex-col items-center justify-between gap-2 border-t border-[#d8ae73] px-5 py-5 text-center font-mono text-[10px] uppercase tracking-[0.14em] text-[#766e63] sm:px-8 md:flex-row md:text-left">
-        <span>© {new Date().getFullYear()} Vira</span>
-        <span>vira.ia.br</span>
-      </div>
-    </footer>
+    <SiteFooter lang={lang} text={t.footer} />
   </div>
   <CookieNotice lang={lang} />
 </Base>

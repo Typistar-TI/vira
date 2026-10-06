@@ -22,6 +22,8 @@ const editable = new Set([
   'SOCIAL_LINKEDIN',
   'SOCIAL_TIKTOK',
   'SOCIAL_WHATSAPP',
+  'FOOTER_COPYRIGHT',
+  'FOOTER_CREATOR',
   'AI_MODEL',
 ]);
 

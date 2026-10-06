@@ -1,0 +1,82 @@
+---
+import Brand from '@frontend/components/Brand.astro';
+import { getSetting } from '@frontend/api/config/setting';
+
+interface Props {
+  lang: 'pt' | 'en';
+  text?: string;
+}
+const { lang, text } = Astro.props;
+const en = lang === 'en';
+const [contactEmail, ig, xs, fb, yt, li, tk, wa, copyright, creator] = await Promise.all([
+  getSetting('CONTACT_EMAIL'),
+  getSetting('SOCIAL_INSTAGRAM'),
+  getSetting('SOCIAL_X'),
+  getSetting('SOCIAL_FACEBOOK'),
+  getSetting('SOCIAL_YOUTUBE'),
+  getSetting('SOCIAL_LINKEDIN'),
+  getSetting('SOCIAL_TIKTOK'),
+  getSetting('SOCIAL_WHATSAPP'),
+  getSetting('FOOTER_COPYRIGHT'),
+  getSetting('FOOTER_CREATOR'),
+]);
+const socialUrl = (value: string, make: (handle: string) => string) =>
+  !value ? '' : /^https?:\/\//.test(value) ? value : make(value.replace(/^@/, ''));
+const socials = [
+  { label: 'Instagram', href: socialUrl(ig, (h) => `https://instagram.com/${h}`) },
+  { label: 'X', href: socialUrl(xs, (h) => `https://x.com/${h}`) },
+  { label: 'Facebook', href: socialUrl(fb, (h) => `https://facebook.com/${h}`) },
+  { label: 'YouTube', href: socialUrl(yt, (h) => `https://youtube.com/@${h}`) },
+  { label: 'LinkedIn', href: socialUrl(li, (h) => `https://linkedin.com/company/${h}`) },
+  { label: 'TikTok', href: socialUrl(tk, (h) => `https://tiktok.com/@${h}`) },
+  { label: 'WhatsApp', href: socialUrl(wa, (h) => `https://wa.me/${h.replace(/\D/g, '')}`) },
+].filter((item) => item.href);
+const year = new Date().getFullYear();
+const copyrightText = (
+  copyright.trim() || (en ? 'All rights reserved.' : 'Todos os direitos reservados.')
+).replace(/\{year\}/g, String(year));
+---
+
+<footer class="border-t border-[#d8ae73] bg-white">
+  <div class="mx-auto flex max-w-[1380px] flex-col items-center gap-8 px-5 py-12 text-center sm:px-8 md:flex-row md:items-start md:justify-between md:text-left">
+    <div class="flex flex-col items-center md:items-start">
+      <Brand href={en ? '/en' : '/'} tone="light" />
+      {creator && <p class="mt-3 text-sm text-[#625a51]">{creator}</p>}
+      <p class="mt-1 text-sm text-[#625a51]">{copyrightText}</p>
+      {text && <p class="mt-3 max-w-[30ch] text-sm leading-relaxed text-[#625a51]">{text}</p>}
+      {contactEmail && (
+        <a class="mt-3 text-sm text-[#625a51] hover:text-[#9b6823]" href={`mailto:${contactEmail}`}>
+          {contactEmail}
+        </a>
+      )}
+    </div>
+    {socials.length > 0 && (
+      <nav
+        class="flex flex-wrap justify-center gap-4 text-sm text-[#625a51]"
+        aria-label={en ? 'Social networks' : 'Redes sociais'}
+      >
+        {socials.map((social) => (
+          <a
+            class="hover:text-[#9b6823]"
+            href={social.href}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {social.label}
+          </a>
+        ))}
+      </nav>
+    )}
+    <div class="flex flex-wrap justify-center gap-6 text-sm text-[#625a51] md:justify-end">
+      <a class="hover:text-[#9b6823]" href={en ? '/en/terms' : '/termos'}>
+        {en ? 'Terms of Use' : 'Termos de Uso'}
+      </a>
+      <a class="hover:text-[#9b6823]" href={en ? '/en/privacy' : '/privacidade'}>
+        {en ? 'Privacy' : 'Privacidade'}
+      </a>
+    </div>
+  </div>
+  <div class="mx-auto flex max-w-[1380px] items-center justify-center border-t border-[#d8ae73] px-5 py-5 font-mono text-[10px] uppercase tracking-[0.14em] text-[#766e63] sm:px-8">
+    <span>vira.ia.br</span>
+  </div>
+</footer>
