@@ -37,11 +37,10 @@ const en = lang === 'en';
       <ol class="m-0 flex list-none flex-col gap-3 p-0">
         {steps.map((step, index) => (
           <li class="m-0">
-            <button
-              type="button"
+            <div
               data-flow-step={index}
               aria-current={index === 0 ? 'step' : 'false'}
-              class="group flex w-full items-start gap-4 rounded-2xl border border-transparent px-4 py-3 text-left transition-colors hover:bg-white aria-[current=step]:border-[#e5ded2] aria-[current=step]:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b88333]"
+              class="group flex w-full items-start gap-4 rounded-2xl border border-transparent px-4 py-3 text-left transition-colors aria-[current=step]:border-[#e5ded2] aria-[current=step]:bg-white"
             >
               <span class="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-full border border-[#d8c4a0] font-mono text-xs text-[#9b6823] group-aria-[current=step]:border-[#b88333] group-aria-[current=step]:bg-[#b88333] group-aria-[current=step]:text-white">
                 {String(index + 1).padStart(2, '0')}
@@ -52,7 +51,7 @@ const en = lang === 'en';
                 </span>
                 <span class="text-[13px] leading-relaxed text-[#766c60]">{step.text}</span>
               </span>
-            </button>
+            </div>
           </li>
         ))}
       </ol>
@@ -168,12 +167,11 @@ const en = lang === 'en';
 </section>
 <script>
   document.querySelectorAll<HTMLElement>('[data-flow]').forEach((root) => {
-    const steps = [...root.querySelectorAll<HTMLButtonElement>('[data-flow-step]')];
+    const steps = [...root.querySelectorAll<HTMLElement>('[data-flow-step]')];
     const panels = [...root.querySelectorAll<HTMLElement>('[data-flow-panel]')];
     const dots = [...root.querySelectorAll<HTMLElement>('[data-flow-dot]')];
     const reduced = matchMedia('(prefers-reduced-motion: reduce)');
     let active = 0;
-    let timer: ReturnType<typeof setInterval> | undefined;
     const show = (index: number, animate = true) => {
       active = index;
       steps.forEach((step, i) => step.setAttribute('aria-current', i === index ? 'step' : 'false'));
@@ -192,26 +190,8 @@ const en = lang === 'en';
           );
       });
     };
-    const stop = () => {
-      if (timer) clearInterval(timer);
-      timer = undefined;
-    };
-    const start = () => {
-      stop();
-      if (reduced.matches) return;
-      timer = setInterval(() => show((active + 1) % steps.length), 3400);
-    };
-    steps.forEach((step, index) =>
-      step.addEventListener('click', () => {
-        show(index);
-        start();
-      }),
-    );
-    root.addEventListener('pointerenter', stop);
-    root.addEventListener('pointerleave', start);
-    root.addEventListener('focusin', stop);
-    root.addEventListener('focusout', start);
     show(0, false);
-    start();
+    // Purely automatic: no clicks, no interaction required from the visitor.
+    if (!reduced.matches) setInterval(() => show((active + 1) % steps.length), 3400);
   });
 </script>

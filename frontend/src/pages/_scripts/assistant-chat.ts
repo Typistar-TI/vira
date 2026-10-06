@@ -1,4 +1,5 @@
 import { loadHistory, streamAssistant, type ChatMessage } from '@frontend/api/assistant/chat';
+
 function initAssistant(root: HTMLElement) {
   const panel = root.querySelector<HTMLElement>('[data-assistant-panel]');
   const log = root.querySelector<HTMLElement>('[data-assistant-log]');
@@ -10,8 +11,10 @@ function initAssistant(root: HTMLElement) {
   const endpoint = root.dataset.endpoint || '/api/assistant/chat';
   const lang = root.dataset.lang === 'en' ? 'en' : 'pt';
   const persist = root.dataset.persist === 'true';
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const messages: ChatMessage[] = [];
   let busy = false;
+  let playing = false;
   let started = false;
   const storageKey = `vira-assistant:${location.hostname}`;
   let conversation = '';
@@ -28,15 +31,27 @@ function initAssistant(root: HTMLElement) {
       /* private browser */
     }
   }
+  const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
   const scroll = () => {
     log.scrollTop = log.scrollHeight;
+  };
+  const dots = () => {
+    const node = document.createElement('span');
+    node.className = 'inline-flex gap-1';
+    for (let i = 0; i < 3; i++) {
+      const dot = document.createElement('span');
+      dot.className = 'h-1.5 w-1.5 animate-bounce rounded-full bg-current opacity-50';
+      dot.style.animationDelay = `${i * 0.15}s`;
+      node.append(dot);
+    }
+    return node;
   };
   const bubble = (role: ChatMessage['role'], text: string) => {
     const node = document.createElement('div');
     node.className =
       role === 'user'
-        ? 'ml-auto max-w-[85%] rounded-2xl rounded-br-md px-4 py-2.5 text-sm leading-relaxed text-white'
-        : 'mr-auto max-w-[85%] rounded-2xl rounded-bl-md px-4 py-2.5 text-sm leading-relaxed';
+        ? 'ml-auto rounded-2xl rounded-br-md px-4 py-2.5 text-sm leading-relaxed text-white'
+        : 'mr-auto rounded-2xl rounded-bl-md px-4 py-2.5 text-sm leading-relaxed';
     node.style.background = role === 'user' ? 'var(--a-accent)' : 'var(--a-soft)';
     node.textContent = text;
     log.append(node);
@@ -45,52 +60,39 @@ function initAssistant(root: HTMLElement) {
   };
   const hideSuggestions = () =>
     root.querySelector('[data-assistant-suggestions]')?.classList.add('hidden');
-  const engage = async () => {
-    if (
-      root.dataset.engaged === 'true' ||
-      root.dataset.engaging === 'true' ||
-      !root.classList.contains('assistant-demo')
-    )
-      return;
-    const intro = root.querySelector<HTMLElement>('[data-hero-intro]');
-    if (!intro) return;
-    root.dataset.engaging = 'true';
-    intro.inert = true;
-    intro.setAttribute('aria-hidden', 'true');
-    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    // Fade out at the original width, change layout while invisible, then reveal.
-    // Animating grid widths rewraps every line on every frame and stalls typing.
-    if (!reduced) {
-      const outgoing = [intro, log]
-        .filter((node): node is HTMLElement => Boolean(node))
-        .map((node) =>
-          node.animate(
-            [
-              { opacity: 1, transform: 'translateY(0)' },
-              { opacity: 0, transform: 'translateY(-8px)' },
-            ],
-            { duration: 180, easing: 'ease-out', fill: 'forwards' },
-          ),
-        );
-      await Promise.all(outgoing.map((animation) => animation.finished));
-      root.dataset.engaged = 'true';
-      const incoming = log.animate(
-        [
-          { opacity: 0, transform: 'translateY(12px)' },
-          { opacity: 1, transform: 'translateY(0)' },
-        ],
-        { duration: 360, easing: 'cubic-bezier(.22,1,.36,1)' },
-      );
-      outgoing.forEach((animation) => animation.cancel());
-      await incoming.finished;
+  const playScript = async () => {
+    let script: { role: ChatMessage['role']; text: string }[] = [];
+    try {
+      script = JSON.parse(root.dataset.script || '[]');
+    } catch {
+      script = [];
     }
-    root.dataset.engaged = 'true';
-    delete root.dataset.engaging;
+    if (!script.length) return;
+    playing = true;
+    started = true;
+    log.replaceChildren();
+    input.disabled = send.disabled = true;
+    for (const message of script) {
+      if (message.role === 'user') {
+        bubble('user', message.text);
+        await wait(reduced ? 0 : 950);
+      } else {
+        const pending = bubble('assistant', '');
+        if (!reduced) {
+          pending.append(dots());
+          await wait(650);
+        }
+        pending.textContent = message.text;
+        scroll();
+        await wait(reduced ? 0 : 950);
+      }
+    }
+    playing = false;
+    input.disabled = send.disabled = false;
   };
   const submit = async (question: string) => {
     const clean = question.trim().slice(0, 500);
-    if (!clean || busy) return;
-    void engage();
+    if (!clean || busy || playing) return;
     started = true;
     bubble('user', clean);
     if (!persist) messages.push({ role: 'user', content: clean });
@@ -100,15 +102,7 @@ function initAssistant(root: HTMLElement) {
     input.disabled = send.disabled = true;
     hideSuggestions();
     const pending = bubble('assistant', '');
-    const dots = document.createElement('span');
-    dots.className = 'inline-flex gap-1';
-    for (let i = 0; i < 3; i++) {
-      const dot = document.createElement('span');
-      dot.className = 'h-1.5 w-1.5 animate-bounce rounded-full bg-current opacity-50';
-      dot.style.animationDelay = `${i * 0.15}s`;
-      dots.append(dot);
-    }
-    pending.append(dots);
+    pending.append(dots());
     try {
       const answer = await streamAssistant({
         endpoint,
@@ -140,7 +134,6 @@ function initAssistant(root: HTMLElement) {
     }
   });
   input.addEventListener('input', () => {
-    if (input.value.trim()) void engage();
     input.style.height = 'auto';
     input.style.height = `${Math.min(input.scrollHeight, 112)}px`;
   });
@@ -156,6 +149,7 @@ function initAssistant(root: HTMLElement) {
   };
   toggle?.addEventListener('click', () => open(panel.classList.contains('hidden')));
   root.querySelector('[data-assistant-close]')?.addEventListener('click', () => open(false));
+  if (!persist && root.dataset.script) void playScript();
   if (persist)
     void loadHistory(endpoint.replace(/\/chat$/, '/history'), conversation)
       .then((history) => {

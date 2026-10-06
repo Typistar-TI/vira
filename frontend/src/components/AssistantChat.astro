@@ -6,6 +6,10 @@ interface Colors {
   line?: string;
   soft?: string;
 }
+interface ScriptMessage {
+  role: 'user' | 'assistant';
+  text: string;
+}
 
 interface Props {
   endpoint: string;
@@ -16,7 +20,8 @@ interface Props {
   suggestions?: string[];
   colors?: Colors;
   persist?: boolean;
-  introQuestion?: string;
+  script?: ScriptMessage[];
+  meta?: string;
 }
 
 const {
@@ -28,7 +33,8 @@ const {
   suggestions = [],
   colors = {},
   persist = false,
-  introQuestion,
+  script = [],
+  meta,
 } = Astro.props;
 const en = lang === 'en';
 const floating = variant === 'floating';
@@ -40,7 +46,7 @@ const hints = suggestions.length
   ? suggestions
   : en
     ? ['What do you offer?', 'How does it work?', 'How much does it cost?']
-    : ['O que vocês oferecem?', 'Como funciona?', 'Quanto custa?'];
+    : ['O que você oferece?', 'Como funciona?', 'Quanto custa?'];
 const palette = {
   accent: colors.accent || '#b88333',
   surface: colors.surface || '#ffffff',
@@ -50,11 +56,13 @@ const palette = {
 };
 const panelClass = floating
   ? 'hidden fixed bottom-24 right-5 z-50 flex h-[min(560px,calc(100svh-8rem))] w-[min(390px,calc(100vw-2.5rem))] flex-col overflow-hidden rounded-[1.5rem] border bg-[var(--a-surface)] shadow-[0_30px_80px_-40px_rgba(0,0,0,0.55)]'
-  : `assistant-demo-panel h-full min-h-0 grid grid-cols-1 grid-rows-[auto_minmax(0,1fr)_auto_auto_auto] items-start rounded-none border-0 shadow-none group-data-[engaged=true]:[&_[data-hero-intro]]:hidden [@media(min-width:1024px)]:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] [@media(min-width:700px)and(max-height:500px)]:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] [@media(min-width:1024px)]:grid-rows-[minmax(0,1fr)_auto_auto_auto] [@media(min-width:700px)and(max-height:500px)]:grid-rows-[minmax(0,1fr)_auto_auto_auto] [@media(min-width:1024px)]:gap-x-8 [@media(min-width:700px)and(max-height:500px)]:gap-x-8 group-data-[engaged=true]:grid-rows-[minmax(0,1fr)_auto_auto_auto] [@media(min-width:1024px)]:group-data-[engaged=true]:grid-cols-1 [@media(min-width:700px)and(max-height:500px)]:group-data-[engaged=true]:grid-cols-1 [@media(min-width:1024px)]:group-data-[engaged=true]:gap-x-0 [@media(min-width:700px)and(max-height:500px)]:group-data-[engaged=true]:gap-x-0`;
-const logClass = `min-h-0 flex-1 space-y-3 self-stretch overflow-y-auto px-5 py-3 [@media(min-width:1024px)]:col-start-2 [@media(min-width:1024px)]:row-start-1 [@media(min-width:700px)and(max-height:500px)]:col-start-2 [@media(min-width:700px)and(max-height:500px)]:row-start-1 [@media(min-width:1024px)]:group-data-[engaged=true]:col-start-1 [@media(min-width:700px)and(max-height:500px)]:group-data-[engaged=true]:col-start-1 [&>div]:w-fit [&>div]:max-w-[min(85%,48rem)] [&>div]:whitespace-pre-wrap [&>div]:break-words`;
+  : 'assistant-demo-panel flex h-full min-h-0 flex-col rounded-none border-0 shadow-none';
+const logClass = floating
+  ? 'min-h-0 flex-1 space-y-3 overflow-y-auto px-5 py-4'
+  : 'min-h-0 flex-1 space-y-3 overflow-y-auto px-2 py-3 [&>div]:w-fit [&>div]:max-w-[min(85%,48rem)] [&>div]:whitespace-pre-wrap [&>div]:break-words';
 const formClass = floating
   ? 'flex items-end gap-2 border-t px-4 py-3'
-  : 'col-span-full mt-3 mb-1 flex items-end gap-2 rounded-3xl border bg-white/95 px-2 py-1.5 shadow-[0_8px_30px_-18px_rgb(70_45_15_/_25%)]';
+  : 'mt-3 mb-1 flex items-end gap-2 rounded-3xl border bg-white/95 px-2 py-1.5 shadow-[0_8px_30px_-18px_rgb(70_45_15_/_25%)]';
 const textareaClass = floating
   ? 'max-h-28 min-h-11 flex-1 resize-none rounded-2xl border px-4 py-2.5 text-sm outline-none'
   : 'min-h-9 min-w-0 flex-1 resize-none border-0 bg-transparent py-2 text-sm outline-none';
@@ -71,11 +79,8 @@ const suggestionClass = floating
   data-endpoint={endpoint}
   data-lang={lang}
   data-persist={persist ? 'true' : undefined}
-  class:list={[
-    floating
-      ? 'fixed bottom-5 right-5 z-50'
-      : `assistant-demo group h-full min-h-0 [&_[data-hero-intro]]:min-w-0 [@media(min-width:1024px)]:[&_[data-hero-intro]]:col-start-1 [@media(min-width:1024px)]:[&_[data-hero-intro]]:row-start-1 [@media(min-width:1024px)]:[&_[data-hero-intro]]:self-start [@media(min-width:700px)and(max-height:500px)]:[&_[data-hero-intro]]:col-start-1 [@media(min-width:700px)and(max-height:500px)]:[&_[data-hero-intro]]:row-start-1 [&_[data-hero-footer]]:col-span-full`,
-  ]}
+  data-script={script.length ? JSON.stringify(script) : undefined}
+  class:list={[floating ? 'fixed bottom-5 right-5 z-50' : 'assistant-demo h-full min-h-0']}
 >
   {floating && (
     <button
@@ -125,40 +130,24 @@ const suggestionClass = floating
         </button>
       </header>
     )}
-    <slot name="intro" />
+    {!floating && meta && (
+      <p class="mb-1 text-center text-[10px] font-semibold uppercase tracking-[0.18em] text-[var(--a-accent)]">
+        {meta}
+      </p>
+    )}
     <div data-assistant-log aria-live="polite" class={logClass}>
-      {!floating && (
-        <p class="chat-invitation mb-[18px] flex items-center gap-2 text-xs font-semibold text-[var(--a-accent)]">
-          <span
-            class="grid h-[26px] w-[26px] place-items-center rounded-full border border-[var(--a-line)]"
-            aria-hidden="true"
-          >
-            ✦
-          </span>{' '}
-          {en ? 'Live AI chat · Ask a question below' : 'Chat com IA ao vivo · Pergunte abaixo'}
-        </p>
-      )}
-      {!floating && (
+      {!floating && script.length === 0 && (
         <div
-          class="ml-auto max-w-[85%] rounded-2xl rounded-br-md px-4 py-2.5 text-sm leading-relaxed text-white"
-          style={`background:${palette.accent}`}
+          class="mr-auto max-w-[85%] rounded-2xl rounded-bl-md px-4 py-2.5 text-sm leading-relaxed"
+          style={`background:${palette.soft}`}
         >
-          {introQuestion || (en ? 'What can I create with Vira?' : 'O que posso criar com o Vira?')}
+          {hello}
         </div>
       )}
-      <div
-        class="mr-auto max-w-[85%] rounded-2xl rounded-bl-md px-4 py-2.5 text-sm leading-relaxed"
-        style={`background:${palette.soft}`}
-      >
-        {hello}
-      </div>
     </div>
     <div
       data-assistant-prompts
-      class:list={[
-        'px-5 pb-2',
-        !floating ? 'col-span-full px-0 [@media(max-height:640px)]:hidden' : '',
-      ]}
+      class:list={['px-5 pb-2', !floating ? 'px-0 [@media(max-height:640px)]:hidden' : '']}
     >
       <div data-assistant-suggestions class="flex flex-wrap gap-2">
         {hints.map((hint) => (

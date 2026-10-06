@@ -193,6 +193,12 @@ const t = en
       select: 'Escolher plano',
       footer: 'Um lugar claro para mostrar o que você faz.',
     };
+const heroScript = [
+  { role: 'assistant' as const, text: `${t.titleA} ${t.titleB}` },
+  { role: 'assistant' as const, text: t.intro },
+  { role: 'user' as const, text: t.assistantSuggestions[2] },
+  { role: 'assistant' as const, text: t.assistantGreeting },
+];
 ---
 
 <Base
@@ -265,6 +271,9 @@ const t = en
             fetchpriority="high"
             class="pointer-events-none absolute inset-0 -z-20 h-full w-full select-none object-cover object-center opacity-[0.07]"
           />
+          <h1 id="hero-title" class="sr-only">
+            {t.titleA} {t.titleB}
+          </h1>
           <div class="hero-conversation relative z-10 flex min-h-0 w-full flex-1 items-stretch [&_.assistant-demo]:h-full [&_.assistant-demo]:w-full">
             <AssistantChat
               endpoint="/api/assistant/chat"
@@ -276,26 +285,9 @@ const t = en
                   : 'Você cria seu site, personaliza o visual e o conteúdo e conta com uma assistente de IA que responde aos visitantes usando as informações publicadas.'
               }
               suggestions={t.assistantSuggestions}
+              script={heroScript}
+              meta={createdLabel}
             >
-              <div slot="intro" data-hero-intro class="py-3 text-left lg:pr-12">
-                <p class="font-mono text-[9px] uppercase tracking-[0.12em] text-[#8b5b1e]">
-                  {createdLabel}
-                </p>
-                <h1
-                  id="hero-title"
-                  class="mt-4 max-w-[18ch] font-['Outfit',sans-serif] text-[clamp(2rem,3.5vw,3.4rem)] font-medium leading-[1.1] tracking-[-0.05em] [@media(max-height:640px)]:mt-2 [@media(max-height:640px)]:text-[1.65rem]"
-                >
-                  {en ? 'Your page ready.' : 'Sua página pronta.'}
-                  <span class="text-[#a66f27]">
-                    {en ? ' Your AI assisting.' : ' Sua IA atendendo.'}
-                  </span>
-                </h1>
-                <p class="mt-4 max-w-[44ch] text-sm leading-relaxed text-[#625a51] [@media(max-height:640px)]:hidden">
-                  {en
-                    ? 'Create your site with an AI assistant. Try a conversation below.'
-                    : 'Crie seu site com uma assistente de IA. Experimente uma conversa abaixo.'}
-                </p>
-              </div>
               <div
                 slot="footer"
                 data-hero-footer
@@ -335,11 +327,11 @@ const t = en
           </h2>
           <p class="mt-2.5 text-sm text-[#625a51]">{t.plansText}</p>
         </div>
-        <div class="grid min-h-0 flex-1 gap-4 lg:grid-cols-3 max-lg:block max-lg:overflow-y-auto">
+        <div class="grid min-h-0 flex-1 content-center gap-4 lg:grid-cols-3 max-lg:block max-lg:overflow-y-auto">
           {[t.monthly, t.yearly, t.lifetime].map((name, i) => (
             <article
               data-reveal
-              class="flex h-full min-w-0 flex-col rounded-[22px] border border-[#d8ae73] bg-white px-[clamp(20px,2.6vw,32px)] py-[clamp(24px,4svh,52px)] max-lg:mb-3.5 max-lg:h-auto"
+              class="flex min-w-0 flex-col rounded-[22px] border border-[#d8ae73] bg-white px-[clamp(20px,2.6vw,32px)] py-[clamp(24px,4svh,52px)] max-lg:mb-3.5"
             >
               <div class="flex items-center justify-between">
                 <span class="font-mono text-[11px] uppercase tracking-[0.16em] text-[#9b6823]">
@@ -382,7 +374,7 @@ const t = en
                         : '/login'
                   }
                   class:list={[
-                    'btn mt-auto h-12 min-h-[clamp(44px,5.4svh,54px)] w-full rounded-full font-semibold shadow-none',
+                    'btn mt-6 h-12 min-h-[clamp(44px,5.4svh,54px)] w-full rounded-full font-semibold shadow-none',
                     i === 1
                       ? 'border border-[#a66f27] bg-[#b88333] text-white hover:bg-[#9b6823]'
                       : 'border border-[#b88333] bg-white text-[#6f4716] hover:border-[#9b6823] hover:bg-[#fff9ef]',
