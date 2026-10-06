@@ -5,22 +5,18 @@ import { defaultSite, hasAccess, parseSite } from '../../backend/features/sites/
 import { getSiteForUser } from '../../backend/features/sites/repository/sites';
 import { readMedia } from '../../backend/features/media/controller/read';
 import { customer, request } from './helpers';
-import { templatePreset } from '../../backend/features/sites/entities/template-presets';
+import { starterSite } from '../../backend/features/sites/entities/starters';
 
-it.each(['guardiao', 'central', 'perfil', 'estudio', 'classico'])(
-  'loads a complete generic editable %s preset without publishing',
-  async (layout) => {
+it.each(['guardiao', 'central', 'perfil', 'estudio', 'classico', 'blank'])(
+  'loads a complete generic editable %s starting point without publishing',
+  async (key) => {
     const { user, cookie } = await customer();
     const before = await getSiteForUser(user.id);
     for (const language of ['pt', 'en']) {
-      const preset = templatePreset(layout, language);
+      const preset = starterSite(key, language);
       expect(parseSite(preset)).toEqual(preset);
-      expect(preset.layout).toBe(layout);
       expect(preset.language).toBe(language);
-      expect(preset.benefits.length).toBeGreaterThan(0);
-      expect(preset.steps.length).toBe(3);
-      expect(preset.products.length).toBeGreaterThan(0);
-      expect(preset.faq.length).toBeGreaterThan(0);
+      expect(preset.sections.length).toBeGreaterThan(0);
       expect(JSON.stringify(preset)).not.toMatch(
         /Valkyris|DashLab|Fertec|Forastieri|Miriam|\/templates\/assets/,
       );
@@ -32,11 +28,37 @@ it.each(['guardiao', 'central', 'perfil', 'estudio', 'classico'])(
   },
 );
 
-it('returns independent template content and keeps image ownership restrictions', async () => {
-  const first = templatePreset('perfil');
-  first.products[0].title = 'Edited';
-  expect(templatePreset('perfil').products[0].title).not.toBe('Edited');
-  expect(() => parseSite({ ...first, heroImage: '/templates/assets/imported.png' })).toThrow();
+it('returns independent starting points and keeps image ownership restrictions', async () => {
+  const first = starterSite('perfil', 'pt');
+  const services = first.sections.find((section) => section.type === 'services');
+  services.items[0].title = 'Edited';
+  const second = starterSite('perfil', 'pt');
+  expect(second.sections.find((section) => section.type === 'services').items[0].title).not.toBe(
+    'Edited',
+  );
+  expect(() => parseSite({ ...first, logo: '/templates/assets/imported.png' })).toThrow();
+});
+
+it('migrates legacy flat content into editable sections', () => {
+  const migrated = parseSite({
+    ...defaultSite,
+    layout: 'classico',
+    title: 'Legacy page',
+    subtitle: 'Old intro',
+    about: 'Old about',
+    products: [{ title: 'P1', description: 'D1', image: '', url: '' }],
+    faq: [{ question: 'Q1', answer: 'A1' }],
+    footerText: 'Old footer',
+    links: [{ label: 'Site', url: 'https://example.com' }],
+  });
+  const types = migrated.sections.map((section) => section.type);
+  expect(types).toContain('hero');
+  expect(types).toContain('about');
+  expect(types).toContain('services');
+  expect(types).toContain('faq');
+  expect(types).toContain('footer');
+  expect(migrated.sections.find((s) => s.type === 'hero').title).toBe('Legacy page');
+  expect(migrated.sections.find((s) => s.type === 'faq').items[0].question).toBe('Q1');
 });
 
 it('saves only the authenticated customer draft and rejects foreign images', async () => {
@@ -85,9 +107,20 @@ it.each([
 it.each(['javascript:alert(1)', 'data:text/html,hi', 'https://valid.test'])(
   'validates site links: %s',
   (url) => {
+    const section = {
+      id: 'hero',
+      type: 'hero',
+      variant: 'left',
+      eyebrow: '',
+      title: 'Hi',
+      subtitle: '',
+      image: '',
+      primaryLabel: 'Go',
+      primaryUrl: url,
+    };
     if (url.startsWith('https:'))
-      expect(parseSite({ ...defaultSite, primaryUrl: url }).primaryUrl).toBe(url);
-    else expect(() => parseSite({ ...defaultSite, primaryUrl: url })).toThrow();
+      expect(parseSite({ ...defaultSite, sections: [section] }).sections[0].primaryUrl).toBe(url);
+    else expect(() => parseSite({ ...defaultSite, sections: [section] })).toThrow();
   },
 );
 

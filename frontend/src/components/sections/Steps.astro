@@ -1,0 +1,66 @@
+---
+import SectionHeading from './SectionHeading.astro';
+import type { Section } from '@frontend/api/sites/parse-site';
+
+interface Props {
+  section: Extract<Section, { type: 'steps' }>;
+  preview: boolean;
+}
+const { section } = Astro.props;
+const items = section.items.filter((item) => item.title || item.description);
+---
+
+{items.length > 0 && (
+  <section class:list={['vs-steps', `vs-steps-${section.variant}`]} data-vs-section="steps">
+    <div class="steps-inner">
+      <SectionHeading title={section.title} />
+      <div class="steps-grid">
+        {items.map((item, index) => (
+          <article class="vs-step">
+            <span class="vs-step-index">{String(index + 1).padStart(2, '0')}</span>
+            {item.title && <h3 class="step-title">{item.title}</h3>}
+            {item.description && <p class="step-text">{item.description}</p>}
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+)}
+<style>
+  .vs-steps {
+    padding: clamp(56px, 9vw, 120px) clamp(20px, 5vw, 40px);
+  }
+  .steps-inner {
+    max-width: 1180px;
+    margin-inline: auto;
+  }
+  .steps-grid {
+    display: grid;
+    gap: clamp(18px, 3vw, 36px);
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+  .vs-steps-cards .vs-step {
+    padding: clamp(18px, 2.4vw, 28px);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: var(--surface);
+  }
+  .vs-step-index {
+    display: block;
+    margin-bottom: 0.8rem;
+    font: 600 0.85rem/1 var(--font-mono);
+    letter-spacing: 0.1em;
+    color: var(--accent);
+  }
+  .step-title {
+    margin: 0 0 0.6rem;
+    font: 500 1.2rem/1.3 var(--font-display);
+    color: var(--fg);
+  }
+  .step-text {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.65;
+    font-size: 0.95rem;
+  }
+</style>

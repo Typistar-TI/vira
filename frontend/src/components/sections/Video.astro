@@ -1,0 +1,70 @@
+---
+import SectionHeading from './SectionHeading.astro';
+import { embedUrl } from '@frontend/api/sites/parse-site';
+import type { Section } from '@frontend/api/sites/parse-site';
+
+interface Props {
+  section: Extract<Section, { type: 'video' }>;
+  preview: boolean;
+}
+const { section } = Astro.props;
+const source = embedUrl(section.url);
+---
+
+{(section.title || source) && (
+  <section class:list={['video', `video-${section.variant}`]} data-vs-section="video">
+    <div class="video-inner">
+      <SectionHeading title={section.title} />
+      {source ? (
+        <div class="video-frame">
+          <iframe
+            src={source}
+            title={section.title || 'Vídeo'}
+            loading="lazy"
+            referrerpolicy="strict-origin-when-cross-origin"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen
+          />
+        </div>
+      ) : (
+        <p class="video-empty">Adicione um link do YouTube ou Vimeo.</p>
+      )}
+      {section.caption && <p class="video-caption">{section.caption}</p>}
+    </div>
+  </section>
+)}
+<style>
+  .video {
+    padding: clamp(56px, 9vw, 120px) clamp(20px, 5vw, 40px);
+  }
+  .video-inner {
+    max-width: 1000px;
+    margin-inline: auto;
+  }
+  .video-boxed .video-inner {
+    max-width: 760px;
+  }
+  .video-frame {
+    position: relative;
+    aspect-ratio: 16/9;
+    overflow: hidden;
+    border-radius: 18px;
+    box-shadow: 0 30px 70px -45px rgb(0 0 0 / 40%);
+  }
+  .video-frame iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+  .video-caption {
+    margin: 1rem 0 0;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+  .video-empty {
+    color: var(--muted);
+  }
+</style>

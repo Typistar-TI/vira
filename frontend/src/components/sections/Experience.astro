@@ -1,0 +1,96 @@
+---
+import SectionHeading from './SectionHeading.astro';
+import type { Section } from '@frontend/api/sites/parse-site';
+
+interface Props {
+  section: Extract<Section, { type: 'experience' }>;
+  preview: boolean;
+}
+const { section } = Astro.props;
+const items = section.items.filter((item) => item.role || item.company);
+---
+
+{items.length > 0 && (
+  <section
+    class:list={['experience', `experience-${section.variant}`]}
+    data-vs-section="experience"
+  >
+    <div class="experience-inner">
+      <SectionHeading title={section.title} />
+      <ol class="experience-list">
+        {items.map((item) => (
+          <li class="experience-item">
+            <div class="experience-when">
+              {item.period && <span class="experience-period">{item.period}</span>}
+              {item.location && <span class="experience-location">{item.location}</span>}
+            </div>
+            <div class="experience-body">
+              <h3 class="experience-role">
+                {item.role}
+                {item.company && <span class="experience-company"> · {item.company}</span>}
+              </h3>
+              {item.summary && <p class="experience-text">{item.summary}</p>}
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+)}
+<style>
+  .experience {
+    padding: clamp(56px, 9vw, 120px) clamp(20px, 5vw, 40px);
+  }
+  .experience-inner {
+    max-width: 900px;
+    margin-inline: auto;
+  }
+  .experience-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: clamp(20px, 3vw, 32px);
+  }
+  .experience-item {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    gap: clamp(16px, 2.5vw, 32px);
+  }
+  .experience-timeline .experience-item {
+    padding-left: 1.4rem;
+    border-left: 1px solid var(--line);
+  }
+  .experience-when {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .experience-period {
+    font-family: var(--font-mono);
+    letter-spacing: 0.02em;
+  }
+  .experience-role {
+    margin: 0 0 0.5rem;
+    font: 500 1.2rem/1.35 var(--font-display);
+    color: var(--fg);
+  }
+  .experience-company {
+    color: var(--muted);
+    font-weight: 400;
+  }
+  .experience-text {
+    margin: 0;
+    color: var(--muted);
+    line-height: 1.7;
+    font-size: 0.95rem;
+  }
+  @media (max-width: 620px) {
+    .experience-item {
+      grid-template-columns: 1fr;
+      gap: 0.5rem;
+    }
+  }
+</style>

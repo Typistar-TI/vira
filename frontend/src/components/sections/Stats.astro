@@ -1,0 +1,63 @@
+---
+import SectionHeading from './SectionHeading.astro';
+import type { Section } from '@frontend/api/sites/parse-site';
+
+interface Props {
+  section: Extract<Section, { type: 'stats' }>;
+  preview: boolean;
+}
+const { section } = Astro.props;
+const items = section.items.filter((item) => item.value || item.label);
+---
+
+{items.length > 0 && (
+  <section class:list={['vs-stats', `vs-stats-${section.variant}`]} data-vs-section="stats">
+    <div class="stats-inner">
+      <SectionHeading title={section.title} />
+      <dl class="stats-grid">
+        {items.map((item) => (
+          <div class="vs-stat">
+            <dt class="vs-stat-value">{item.value}</dt>
+            <dd class="vs-stat-label">{item.label}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  </section>
+)}
+<style>
+  .vs-stats {
+    padding: clamp(48px, 7vw, 90px) clamp(20px, 5vw, 40px);
+  }
+  .stats-inner {
+    max-width: 1180px;
+    margin-inline: auto;
+  }
+  .stats-grid {
+    display: grid;
+    gap: clamp(20px, 4vw, 48px);
+    margin: 0;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  }
+  .vs-stats-row .stats-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: clamp(24px, 6vw, 72px);
+  }
+  .vs-stat {
+    border-left: 1px solid var(--line);
+    padding-left: 1rem;
+  }
+  .vs-stat-value {
+    margin: 0;
+    font: 600 clamp(1.8rem, 4vw, 2.8rem) / 1.1 var(--font-display);
+    color: var(--fg);
+  }
+  .vs-stat-label {
+    margin: 0.4rem 0 0;
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+</style>

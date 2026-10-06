@@ -64,11 +64,13 @@ export const tenantManifest: APIRoute = async ({ url }) => {
     return new Response('Not found', { status: 404, headers: { 'cache-control': 'no-store' } });
   const content = parseSiteContent(JSON.parse(tenant.site.published_json));
   const name = content.appName || content.title;
+  const hero = content.sections.find((section) => section.type === 'hero');
+  const description = hero && hero.type === 'hero' ? hero.subtitle : '';
   return manifestResponse({
     id: '/',
     name,
     short_name: name.slice(0, 32),
-    description: content.subtitle,
+    description,
     start_url: '/',
     scope: '/',
     display: 'standalone',

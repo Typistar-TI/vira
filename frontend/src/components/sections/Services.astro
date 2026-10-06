@@ -1,0 +1,131 @@
+---
+import SectionHeading from './SectionHeading.astro';
+import { productHref } from './shared';
+import type { Section } from '@frontend/api/sites/parse-site';
+
+interface Props {
+  section: Extract<Section, { type: 'services' }>;
+  preview: boolean;
+  productOffset?: number;
+}
+const { section, preview, productOffset = 0 } = Astro.props;
+const items = section.items.filter((item) => item.title || item.description || item.image);
+const globalIndex = (index: number) => productOffset + index;
+---
+
+{items.length > 0 && (
+  <section class:list={['services', `services-${section.variant}`]} data-vs-section="services">
+    <div class="services-inner">
+      <SectionHeading title={section.title} />
+      <div class="services-grid">
+        {items.map((item, index) => {
+          const linked = Boolean(item.url);
+          const Tag = linked ? 'a' : 'div';
+          return (
+            <Tag
+              class="service"
+              href={linked ? productHref(item.url, preview, globalIndex(index)) : undefined}
+            >
+              {item.image && (
+                <span class="service-media">
+                  <img src={item.image} alt={item.title} loading="lazy" />
+                </span>
+              )}
+              <span class="service-body">
+                {item.title && <span class="service-title">{item.title}</span>}
+                {item.description && <span class="service-text">{item.description}</span>}
+                {linked && (
+                  <span class="service-link" aria-hidden="true">
+                    ↗
+                  </span>
+                )}
+              </span>
+            </Tag>
+          );
+        })}
+      </div>
+    </div>
+  </section>
+)}
+<style>
+  .services {
+    padding: clamp(56px, 9vw, 120px) clamp(20px, 5vw, 40px);
+  }
+  .services-inner {
+    max-width: 1180px;
+    margin-inline: auto;
+  }
+  .services-grid {
+    display: grid;
+    gap: clamp(16px, 2vw, 24px);
+  }
+  .services-cards .services-grid {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  }
+  .services-list .services-grid {
+    grid-template-columns: 1fr;
+  }
+  .service {
+    display: flex;
+    gap: 1rem;
+    padding: clamp(18px, 2.4vw, 28px);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: var(--surface);
+    color: inherit;
+    text-decoration: none;
+    transition:
+      transform 0.25s ease,
+      border-color 0.25s ease;
+  }
+  .services-cards .service {
+    flex-direction: column;
+  }
+  a.service:hover {
+    transform: translateY(-3px);
+    border-color: var(--accent);
+  }
+  .service-media {
+    display: block;
+    overflow: hidden;
+    border-radius: 12px;
+    aspect-ratio: 4/3;
+  }
+  .services-list .service-media {
+    width: 140px;
+    flex-shrink: 0;
+  }
+  .service-media img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .service-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .service-title {
+    font: 500 1.15rem/1.3 var(--font-display);
+    letter-spacing: -0.01em;
+  }
+  .service-text {
+    color: var(--muted);
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+  .service-link {
+    margin-top: auto;
+    color: var(--accent);
+    font-size: 0.9rem;
+  }
+  @media (max-width: 560px) {
+    .services-list .service {
+      flex-direction: column;
+    }
+    .services-list .service-media {
+      width: 100%;
+    }
+  }
+</style>

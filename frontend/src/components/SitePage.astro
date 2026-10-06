@@ -1,25 +1,12 @@
 ---
 import { fontStacks, type SiteContent } from '@frontend/api/sites/parse-site';
-import Guardiao from '@frontend/components/templates/Guardiao.astro';
-import Central from '@frontend/components/templates/Central.astro';
-import Perfil from '@frontend/components/templates/Perfil.astro';
-import Estudio from '@frontend/components/templates/Estudio.astro';
-import Classico from '@frontend/components/templates/Classico.astro';
+import Section from '@frontend/components/sections/Section.astro';
 
 interface Props {
   content: SiteContent;
   preview?: boolean;
 }
 const { content, preview = false } = Astro.props;
-
-const templates = {
-  guardiao: Guardiao,
-  central: Central,
-  perfil: Perfil,
-  estudio: Estudio,
-  classico: Classico,
-};
-const Template = templates[content.layout];
 
 function luminance(hex: string): number {
   const value = hex.replace('#', '');
@@ -31,18 +18,54 @@ function luminance(hex: string): number {
 }
 const tone = luminance(content.backgroundColor) < 0.42 ? 'dark' : 'light';
 const fonts = fontStacks[content.font];
+const brand = (content.appName || content.title).trim();
+
+let productIndex = 0;
+const rendered = content.sections.map((section) => {
+  const offset = productIndex;
+  if (section.type === 'services') productIndex += section.items.length;
+  return { section, offset };
+});
 ---
 
 <div
-  class="vira-template"
+  class="vira-site"
   data-tone={tone}
-  style={`--bg:${content.backgroundColor};--fg:${content.textColor};--accent:${content.accentColor};--surface:color-mix(in srgb, var(--bg) 93%, var(--fg));--soft:color-mix(in srgb, var(--bg) 86%, var(--accent));--line:color-mix(in srgb, var(--fg) 16%, transparent);--muted:color-mix(in srgb, var(--fg) 62%, transparent);--font-display:${fonts.display};--font-body:${fonts.body};--font-mono:${fonts.mono};--sans:var(--font-body);--serif:var(--font-display);--mono:var(--font-mono);font-family:var(--font-body)`}
+  style={`--bg:${content.backgroundColor};--fg:${content.textColor};--accent:${content.accentColor};--surface:color-mix(in srgb, var(--bg) 93%, var(--fg));--soft:color-mix(in srgb, var(--bg) 86%, var(--accent));--line:color-mix(in srgb, var(--fg) 16%, transparent);--muted:color-mix(in srgb, var(--fg) 62%, transparent);--font-display:${fonts.display};--font-body:${fonts.body};--font-mono:${fonts.mono};font-family:var(--font-body)`}
 >
-  <Template content={content} preview={preview} />
+  {rendered.map(({ section, offset }) => (
+    <Section section={section} preview={preview} productOffset={offset} brand={brand} />
+  ))}
+  {content.sections.length === 0 && (
+    <section class="empty">
+      <h1>{content.title}</h1>
+      <p>Adicione blocos para montar sua página.</p>
+    </section>
+  )}
 </div>
 <style>
-  /* Templates own their grids, not DaisyUI's overlapping .hero cells. */
-  .vira-template :global(.hero > *) {
-    grid-area: auto;
+  .vira-site {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--fg);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .vira-site *,
+  .vira-site *::before,
+  .vira-site *::after {
+    box-sizing: border-box;
+  }
+  .vira-site a {
+    color: inherit;
+  }
+  .vira-site img {
+    max-width: 100%;
+  }
+  .empty {
+    padding: clamp(64px, 12vw, 160px) 24px;
+    text-align: center;
   }
 </style>

@@ -1,0 +1,534 @@
+---
+import ItemFields from './ItemFields.astro';
+import type { Section, SectionType } from '@frontend/api/sites/parse-site';
+
+interface Props {
+  section: Section;
+  en: boolean;
+  template?: boolean;
+}
+const { section, en, template = false } = Astro.props;
+
+const L = en
+  ? {
+      moveUp: 'Move up',
+      moveDown: 'Move down',
+      remove: 'Remove block',
+      variant: 'Style',
+      title: 'Heading',
+      eyebrow: 'Small label',
+      subtitle: 'Introduction',
+      body: 'Text',
+      buttonText: 'Button text',
+      buttonUrl: 'Button link',
+      image: 'Image',
+      caption: 'Caption',
+      videoUrl: 'YouTube or Vimeo link',
+      address: 'Address',
+      text: 'Footer text',
+      addItem: 'Add item',
+      item: 'Item',
+      types: {
+        hero: 'Hero',
+        about: 'About',
+        services: 'Services',
+        gallery: 'Gallery',
+        stats: 'Numbers',
+        steps: 'Steps',
+        experience: 'Experience',
+        testimonials: 'Testimonials',
+        faq: 'FAQ',
+        video: 'Video',
+        map: 'Map',
+        contact: 'Contact',
+        footer: 'Footer',
+      } as Record<SectionType, string>,
+    }
+  : {
+      moveUp: 'Mover para cima',
+      moveDown: 'Mover para baixo',
+      remove: 'Remover bloco',
+      variant: 'Estilo',
+      title: 'Título',
+      eyebrow: 'Etiqueta curta',
+      subtitle: 'Apresentação',
+      body: 'Texto',
+      buttonText: 'Texto do botão',
+      buttonUrl: 'Link do botão',
+      image: 'Imagem',
+      caption: 'Legenda',
+      videoUrl: 'Link do YouTube ou Vimeo',
+      address: 'Endereço',
+      text: 'Texto do rodapé',
+      addItem: 'Adicionar item',
+      item: 'Item',
+      types: {
+        hero: 'Herói',
+        about: 'Sobre',
+        services: 'Serviços',
+        gallery: 'Galeria',
+        stats: 'Números',
+        steps: 'Passos',
+        experience: 'Experiência',
+        testimonials: 'Depoimentos',
+        faq: 'Perguntas frequentes',
+        video: 'Vídeo',
+        map: 'Mapa',
+        contact: 'Contato',
+        footer: 'Rodapé',
+      } as Record<SectionType, string>,
+    };
+
+const variantLabels: Record<string, { value: string; pt: string; en: string }[]> = {
+  hero: [
+    { value: 'left', pt: 'Texto com imagem ao lado', en: 'Text with image beside' },
+    { value: 'center', pt: 'Centralizado', en: 'Centered' },
+    { value: 'background', pt: 'Imagem de fundo', en: 'Background image' },
+  ],
+  about: [
+    { value: 'text', pt: 'Somente texto', en: 'Text only' },
+    { value: 'image-left', pt: 'Imagem à esquerda', en: 'Image on the left' },
+    { value: 'image-right', pt: 'Imagem à direita', en: 'Image on the right' },
+  ],
+  services: [
+    { value: 'cards', pt: 'Cartões', en: 'Cards' },
+    { value: 'list', pt: 'Lista', en: 'List' },
+  ],
+  gallery: [
+    { value: 'grid', pt: 'Grade', en: 'Grid' },
+    { value: 'masonry', pt: 'Mosaico', en: 'Masonry' },
+  ],
+  stats: [
+    { value: 'row', pt: 'Em linha', en: 'In a row' },
+    { value: 'grid', pt: 'Grade', en: 'Grid' },
+  ],
+  steps: [
+    { value: 'numbered', pt: 'Numerado', en: 'Numbered' },
+    { value: 'cards', pt: 'Cartões', en: 'Cards' },
+  ],
+  experience: [
+    { value: 'timeline', pt: 'Linha do tempo', en: 'Timeline' },
+    { value: 'list', pt: 'Lista', en: 'List' },
+  ],
+  testimonials: [
+    { value: 'cards', pt: 'Cartões', en: 'Cards' },
+    { value: 'single', pt: 'Destaque único', en: 'Single highlight' },
+  ],
+  faq: [
+    { value: 'accordion', pt: 'Acordeão', en: 'Accordion' },
+    { value: 'list', pt: 'Lista', en: 'List' },
+  ],
+  video: [
+    { value: 'wide', pt: 'Largo', en: 'Wide' },
+    { value: 'boxed', pt: 'Caixa', en: 'Boxed' },
+  ],
+  map: [
+    { value: 'wide', pt: 'Largo', en: 'Wide' },
+    { value: 'boxed', pt: 'Caixa', en: 'Boxed' },
+  ],
+  contact: [
+    { value: 'simple', pt: 'Simples', en: 'Simple' },
+    { value: 'cards', pt: 'Cartão', en: 'Card' },
+  ],
+  footer: [{ value: 'simple', pt: 'Simples', en: 'Simple' }],
+};
+
+const itemTypes: SectionType[] = [
+  'services',
+  'gallery',
+  'stats',
+  'steps',
+  'experience',
+  'testimonials',
+  'faq',
+  'contact',
+  'footer',
+];
+const itemLimits: Record<string, number> = {
+  services: 12,
+  gallery: 12,
+  stats: 4,
+  steps: 6,
+  experience: 10,
+  testimonials: 6,
+  faq: 10,
+  contact: 8,
+  footer: 8,
+};
+const hasItems = itemTypes.includes(section.type);
+const itemList =
+  section.type === 'services'
+    ? section.items
+    : section.type === 'gallery'
+      ? section.images
+      : section.type === 'stats' || section.type === 'steps' || section.type === 'testimonials'
+        ? section.items
+        : section.type === 'experience'
+          ? section.items
+          : section.type === 'faq'
+            ? section.items
+            : section.type === 'contact' || section.type === 'footer'
+              ? section.links
+              : [];
+const variants = variantLabels[section.type];
+---
+
+<div
+  class="sec"
+  data-section
+  data-type={section.type}
+  data-template={template ? 'true' : undefined}
+>
+  <div class="sec-head">
+    <strong class="sec-name">{L.types[section.type]}</strong>
+    <span class="sec-tools">
+      <button type="button" data-move="up" aria-label={L.moveUp} title={L.moveUp}>
+        ↑
+      </button>
+      <button type="button" data-move="down" aria-label={L.moveDown} title={L.moveDown}>
+        ↓
+      </button>
+      <button type="button" data-remove-section aria-label={L.remove} title={L.remove}>
+        ✕
+      </button>
+    </span>
+  </div>
+  <div class="sec-body">
+    <input type="hidden" name="field-id" value={section.id} />
+    {variants.length > 0 && (
+      <label class="sec-row">
+        <span>{L.variant}</span>
+        <select class="select select-bordered" name="field-variant">
+          {variants.map((option) => (
+            <option value={option.value} selected={section.variant === option.value}>
+              {en ? option.en : option.pt}
+            </option>
+          ))}
+        </select>
+      </label>
+    )}
+
+    {section.type === 'hero' && (
+      <>
+        <label class="sec-row">
+          <span>{L.eyebrow}</span>
+          <input
+            class="input input-bordered"
+            name="field-eyebrow"
+            value={section.eyebrow}
+            maxlength="60"
+          />
+        </label>
+        <label class="sec-row">
+          <span>{L.title}</span>
+          <input
+            class="input input-bordered"
+            name="field-title"
+            value={section.title}
+            maxlength="120"
+          />
+        </label>
+        <label class="sec-row">
+          <span>{L.subtitle}</span>
+          <textarea
+            class="textarea textarea-bordered"
+            name="field-subtitle"
+            maxlength="400"
+          >{section.subtitle}</textarea>
+        </label>
+        <label class="sec-row">
+          <span>{L.buttonText}</span>
+          <input
+            class="input input-bordered"
+            name="field-primaryLabel"
+            value={section.primaryLabel}
+            maxlength="40"
+          />
+        </label>
+        <label class="sec-row">
+          <span>{L.buttonUrl}</span>
+          <input
+            class="input input-bordered"
+            name="field-primaryUrl"
+            type="url"
+            value={section.primaryUrl}
+            placeholder="https://"
+          />
+        </label>
+        <label class="sec-row">
+          <span>{L.image}</span>
+          <input
+            class="file-input file-input-bordered w-full"
+            name="field-file"
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+          />
+          <input type="hidden" name="field-image" value={section.image} />
+        </label>
+        {section.image && (
+          <img class="sec-thumb" src={section.image} alt="" width="120" height="80" />
+        )}
+      </>
+    )}
+
+    {section.type === 'about' && (
+      <>
+        <label class="sec-row">
+          <span>{L.title}</span>
+          <input
+            class="input input-bordered"
+            name="field-title"
+            value={section.title}
+            maxlength="120"
+          />
+        </label>
+        <label class="sec-row">
+          <span>{L.body}</span>
+          <textarea
+            class="textarea textarea-bordered"
+            name="field-body"
+            maxlength="1500"
+          >{section.body}</textarea>
+        </label>
+        <label class="sec-row">
+          <span>{L.image}</span>
+          <input
+            class="file-input file-input-bordered w-full"
+            name="field-file"
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+          />
+          <input type="hidden" name="field-image" value={section.image} />
+        </label>
+        {section.image && (
+          <img class="sec-thumb" src={section.image} alt="" width="120" height="80" />
+        )}
+      </>
+    )}
+
+    {(section.type === 'services' ||
+      section.type === 'gallery' ||
+      section.type === 'stats' ||
+      section.type === 'steps' ||
+      section.type === 'experience' ||
+      section.type === 'testimonials' ||
+      section.type === 'faq') && (
+      <label class="sec-row">
+        <span>{L.title}</span>
+        <input
+          class="input input-bordered"
+          name="field-title"
+          value={section.title}
+          maxlength="120"
+        />
+      </label>
+    )}
+
+    {section.type === 'video' && (
+      <>
+        <label class="sec-row">
+          <span>{L.title}</span>
+          <input
+            class="input input-bordered"
+            name="field-title"
+            value={section.title}
+            maxlength="120"
+          />
+        </label>
+        <label class="sec-row">
+          <span>{L.videoUrl}</span>
+          <input
+            class="input input-bordered"
+            name="field-url"
+            type="url"
+            value={section.url}
+            placeholder="https://youtu.be/..."
+          />
+        </label>
+        <label class="sec-row">
+          <span>{L.caption}</span>
+          <input
+            class="input input-bordered"
+            name="field-caption"
+            value={section.caption}
+            maxlength="200"
+          />
+        </label>
+      </>
+    )}
+
+    {section.type === 'map' && (
+      <>
+        <label class="sec-row">
+          <span>{L.title}</span>
+          <input
+            class="input input-bordered"
+            name="field-title"
+            value={section.title}
+            maxlength="120"
+          />
+        </label>
+        <label class="sec-row">
+          <span>{L.address}</span>
+          <input
+            class="input input-bordered"
+            name="field-address"
+            value={section.address}
+            maxlength="200"
+          />
+        </label>
+      </>
+    )}
+
+    {section.type === 'contact' && (
+      <>
+        <label class="sec-row">
+          <span>{L.title}</span>
+          <input
+            class="input input-bordered"
+            name="field-title"
+            value={section.title}
+            maxlength="120"
+          />
+        </label>
+        <label class="sec-row">
+          <span>{L.body}</span>
+          <textarea
+            class="textarea textarea-bordered"
+            name="field-body"
+            maxlength="600"
+          >{section.body}</textarea>
+        </label>
+        <label class="sec-row">
+          <span>{L.buttonText}</span>
+          <input
+            class="input input-bordered"
+            name="field-primaryLabel"
+            value={section.primaryLabel}
+            maxlength="40"
+          />
+        </label>
+        <label class="sec-row">
+          <span>{L.buttonUrl}</span>
+          <input
+            class="input input-bordered"
+            name="field-primaryUrl"
+            type="url"
+            value={section.primaryUrl}
+            placeholder="https://"
+          />
+        </label>
+      </>
+    )}
+
+    {section.type === 'footer' && (
+      <label class="sec-row">
+        <span>{L.text}</span>
+        <input
+          class="input input-bordered"
+          name="field-text"
+          value={section.text}
+          maxlength="200"
+        />
+      </label>
+    )}
+
+    {hasItems && itemLimits[section.type] > 0 && (
+      <div class="sec-items" data-items>
+        {itemList.map((item: Record<string, unknown>) => (
+          <fieldset class="sec-item" data-item>
+            <ItemFields kind={section.type} en={en} item={item as Record<string, string>} />
+            <button type="button" class="btn btn-ghost btn-sm mt-2" data-remove>
+              {en ? 'Remove' : 'Remover'}
+            </button>
+          </fieldset>
+        ))}
+      </div>
+    )}
+    {hasItems && itemLimits[section.type] > 0 && (
+      <button type="button" class="btn btn-outline btn-sm" data-add-item>
+        + {L.addItem}
+      </button>
+    )}
+  </div>
+  {hasItems && (
+    <template data-item-template>
+      <fieldset class="sec-item" data-item>
+        <ItemFields kind={section.type} en={en} />
+        <button type="button" class="btn btn-ghost btn-sm mt-2" data-remove>
+          {en ? 'Remove' : 'Remover'}
+        </button>
+      </fieldset>
+    </template>
+  )}
+</div>
+<style>
+  .sec {
+    border: 1px solid #e2d8c6;
+    border-radius: 14px;
+    background: #fff;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .sec-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 10px 12px;
+    background: #fbf6ec;
+    border-bottom: 1px solid #e2d8c6;
+  }
+  .sec-name {
+    font-size: 0.95rem;
+  }
+  .sec-tools {
+    display: flex;
+    gap: 4px;
+  }
+  .sec-tools button {
+    width: 30px;
+    height: 30px;
+    border: 1px solid #e2d8c6;
+    border-radius: 8px;
+    background: #fff;
+    cursor: pointer;
+    line-height: 1;
+  }
+  .sec-tools button:hover {
+    border-color: #b88333;
+  }
+  .sec-body {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .sec-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #4a4238;
+  }
+  .sec-row > span {
+    margin: 0;
+  }
+  .sec-item {
+    border: 1px solid #e2d8c6;
+    border-radius: 10px;
+    padding: 10px;
+    margin-bottom: 8px;
+  }
+  .sec-thumb {
+    height: 64px;
+    width: auto;
+    border-radius: 8px;
+    border: 1px solid #e2d8c6;
+    object-fit: contain;
+  }
+  [data-template='true'] {
+    display: none;
+  }
+</style>

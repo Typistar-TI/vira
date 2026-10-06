@@ -1,0 +1,40 @@
+---
+import type { Section as SectionData } from '@frontend/api/sites/parse-site';
+import Hero from './Hero.astro';
+import About from './About.astro';
+import Services from './Services.astro';
+import Gallery from './Gallery.astro';
+import Stats from './Stats.astro';
+import Steps from './Steps.astro';
+import Experience from './Experience.astro';
+import Testimonials from './Testimonials.astro';
+import Faq from './Faq.astro';
+import Video from './Video.astro';
+import Map from './Map.astro';
+import Contact from './Contact.astro';
+import Footer from './Footer.astro';
+
+interface Props {
+  section: SectionData;
+  preview: boolean;
+  productOffset?: number;
+  brand: string;
+}
+const { section, preview, productOffset = 0, brand } = Astro.props;
+---
+
+{section.type === 'hero' && <Hero section={section} preview={preview} />}
+{section.type === 'about' && <About section={section} preview={preview} />}
+{section.type === 'services' && (
+  <Services section={section} preview={preview} productOffset={productOffset} />
+)}
+{section.type === 'gallery' && <Gallery section={section} preview={preview} />}
+{section.type === 'stats' && <Stats section={section} preview={preview} />}
+{section.type === 'steps' && <Steps section={section} preview={preview} />}
+{section.type === 'experience' && <Experience section={section} preview={preview} />}
+{section.type === 'testimonials' && <Testimonials section={section} preview={preview} />}
+{section.type === 'faq' && <Faq section={section} preview={preview} />}
+{section.type === 'video' && <Video section={section} preview={preview} />}
+{section.type === 'map' && <Map section={section} preview={preview} />}
+{section.type === 'contact' && <Contact section={section} preview={preview} />}
+{section.type === 'footer' && <Footer section={section} preview={preview} brand={brand} />}

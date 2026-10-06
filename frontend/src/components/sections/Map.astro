@@ -1,0 +1,63 @@
+---
+import SectionHeading from './SectionHeading.astro';
+import { mapLink, mapSrc } from './shared';
+import type { Section } from '@frontend/api/sites/parse-site';
+
+interface Props {
+  section: Extract<Section, { type: 'map' }>;
+  preview: boolean;
+}
+const { section } = Astro.props;
+---
+
+{(section.title || section.address) && (
+  <section class:list={['map', `map-${section.variant}`]} data-vs-section="map">
+    <div class="map-inner">
+      <SectionHeading title={section.title} />
+      {section.address ? (
+        <div class="map-frame">
+          <iframe src={mapSrc(section.address)} title={section.address} loading="lazy" />
+          <a class="map-link" href={mapLink(section.address)} target="_blank" rel="noopener">
+            {section.address} ↗
+          </a>
+        </div>
+      ) : (
+        <p class="map-empty">Adicione um endereço.</p>
+      )}
+    </div>
+  </section>
+)}
+<style>
+  .map {
+    padding: clamp(56px, 9vw, 120px) clamp(20px, 5vw, 40px);
+  }
+  .map-inner {
+    max-width: 1000px;
+    margin-inline: auto;
+  }
+  .map-boxed .map-inner {
+    max-width: 760px;
+  }
+  .map-frame {
+    position: relative;
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+  }
+  .map-frame iframe {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16/9;
+    border: 0;
+  }
+  .map-link {
+    display: inline-block;
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .map-empty {
+    color: var(--muted);
+  }
+</style>

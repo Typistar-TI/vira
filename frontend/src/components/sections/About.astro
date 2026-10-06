@@ -1,0 +1,83 @@
+---
+import SectionHeading from './SectionHeading.astro';
+import type { Section } from '@frontend/api/sites/parse-site';
+
+interface Props {
+  section: Extract<Section, { type: 'about' }>;
+  preview: boolean;
+}
+const { section } = Astro.props;
+const hasImage = section.variant !== 'text' && Boolean(section.image);
+---
+
+<section
+  class:list={['about', `about-${section.variant}`, { 'about-plain': !hasImage }]}
+  data-vs-section="about"
+>
+  <div class="about-inner">
+    <div class="about-copy">
+      <SectionHeading title={section.title} />
+      {section.body && <p class="about-body">{section.body}</p>}
+    </div>
+    {hasImage && (
+      <figure class="about-media">
+        <img src={section.image} alt={section.title} loading="lazy" />
+      </figure>
+    )}
+  </div>
+</section>
+<style>
+  .about {
+    padding: clamp(56px, 9vw, 120px) clamp(20px, 5vw, 40px);
+  }
+  .about-inner {
+    display: grid;
+    gap: clamp(28px, 5vw, 64px);
+    align-items: center;
+    max-width: 1180px;
+    margin-inline: auto;
+  }
+  .about-image-left .about-inner,
+  .about-image-right .about-inner {
+    grid-template-columns: 1fr 1fr;
+  }
+  .about-image-left .about-copy {
+    order: 2;
+  }
+  .about-body {
+    margin: 0;
+    font-size: clamp(1rem, 1.7vw, 1.14rem);
+    line-height: 1.75;
+    color: var(--muted);
+    white-space: pre-line;
+  }
+  .about-plain .about-inner {
+    max-width: 780px;
+    text-align: center;
+  }
+  .about-plain .about-body {
+    margin-inline: auto;
+  }
+  .about-media {
+    margin: 0;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 30px 70px -45px rgb(0 0 0 / 40%);
+  }
+  .about-media img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4/3;
+    object-fit: cover;
+  }
+  @media (max-width: 767px) {
+    .about-image-left .about-inner,
+    .about-image-right .about-inner {
+      grid-template-columns: 1fr;
+    }
+    .about-image-left .about-copy {
+      order: 0;
+    }
+  }
+</style>

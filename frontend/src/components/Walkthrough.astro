@@ -61,7 +61,7 @@ const templates = [
       <div
         class="template-tabs"
         role="tablist"
-        aria-label={en ? 'Explore templates' : 'Explore os templates'}
+        aria-label={en ? 'Explore starting points' : 'Explore os pontos de partida'}
       >
         {templates.map((template, index) => (
           <button
@@ -79,7 +79,9 @@ const templates = [
         ))}
       </div>
       <span class="template-count">
-        {en ? '5 templates. Endless possibilities.' : '5 templates. Infinitas possibilidades.'}
+        {en
+          ? '5 starting points. Endless possibilities.'
+          : '5 pontos de partida. Infinitas possibilidades.'}
       </span>
     </div>
 
@@ -114,8 +116,8 @@ const templates = [
                 loading="lazy"
                 alt={
                   en
-                    ? `${template.name}: actual Vira template with editable sample content`
-                    : `${template.name}: template real do Vira com conteúdo genérico editável`
+                    ? `${template.name}: Vira starting point with editable sample content`
+                    : `${template.name}: ponto de partida do Vira com conteúdo editável`
                 }
               />
             </picture>

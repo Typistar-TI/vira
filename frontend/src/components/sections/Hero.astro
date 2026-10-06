@@ -1,0 +1,150 @@
+---
+import { primaryHref } from './shared';
+import type { Section } from '@frontend/api/sites/parse-site';
+
+interface Props {
+  section: Extract<Section, { type: 'hero' }>;
+  preview: boolean;
+}
+const { section, preview } = Astro.props;
+const href = primaryHref(section.primaryUrl, preview);
+---
+
+<section class:list={['vs-hero', `vs-hero-${section.variant}`]} data-vs-section="hero">
+  {section.variant === 'background' && section.image && (
+    <img class="hero-bg" src={section.image} alt="" loading="eager" />
+  )}
+  <div class="hero-inner">
+    <div class="hero-copy">
+      {section.eyebrow && <p class="hero-eyebrow">{section.eyebrow}</p>}
+      {section.title && <h1 class="hero-title">{section.title}</h1>}
+      {section.subtitle && <p class="hero-sub">{section.subtitle}</p>}
+      {section.primaryLabel && (
+        <a class="hero-cta" href={href}>
+          {section.primaryLabel}
+          <span aria-hidden="true">↗</span>
+        </a>
+      )}
+    </div>
+    {section.variant !== 'background' && section.image && (
+      <figure class="hero-media">
+        <img src={section.image} alt={section.title} loading="eager" />
+      </figure>
+    )}
+  </div>
+</section>
+<style>
+  .hero {
+    position: relative;
+    isolation: isolate;
+    padding: clamp(64px, 11vw, 140px) clamp(20px, 5vw, 40px) clamp(56px, 9vw, 120px);
+    overflow: hidden;
+  }
+  .hero-inner {
+    display: grid;
+    gap: clamp(28px, 5vw, 64px);
+    align-items: center;
+    max-width: 1180px;
+    margin-inline: auto;
+  }
+  .vs-hero-left .hero-inner {
+    grid-template-columns: 1.05fr 0.95fr;
+  }
+  .vs-hero-center .hero-inner {
+    grid-template-columns: 1fr;
+    max-width: 820px;
+    text-align: center;
+  }
+  .vs-hero-center .hero-cta {
+    margin-inline: auto;
+  }
+  .hero-eyebrow {
+    margin: 0 0 1.1rem;
+    font: 600 0.72rem/1 var(--font-mono);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .hero-title {
+    margin: 0;
+    font: 500 clamp(2.2rem, 5.4vw, 4.2rem) / 1.05 var(--font-display);
+    letter-spacing: -0.03em;
+    color: var(--fg);
+  }
+  .hero-sub {
+    margin: 1.3rem 0 0;
+    max-width: 52ch;
+    font-size: clamp(1rem, 1.7vw, 1.18rem);
+    line-height: 1.65;
+    color: var(--muted);
+  }
+  .vs-hero-center .hero-sub {
+    margin-inline: auto;
+  }
+  .hero-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 2rem;
+    padding: 0.9rem 1.6rem;
+    border-radius: 999px;
+    background: var(--accent);
+    color: var(--bg);
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-decoration: none;
+    width: fit-content;
+    transition:
+      transform 0.25s ease,
+      filter 0.25s ease;
+  }
+  .hero-cta:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.05);
+  }
+  .hero-media {
+    margin: 0;
+    border-radius: 22px;
+    overflow: hidden;
+    box-shadow: 0 40px 90px -50px rgb(0 0 0 / 45%);
+  }
+  .hero-media img {
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4/3;
+    object-fit: cover;
+  }
+  .vs-hero-background {
+    padding-block: clamp(120px, 22vw, 260px);
+    color: #fff;
+  }
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .vs-hero-background::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(180deg, rgb(0 0 0 / 45%), rgb(0 0 0 / 65%));
+  }
+  .vs-hero-background .hero-inner {
+    max-width: 900px;
+  }
+  .vs-hero-background .hero-eyebrow,
+  .vs-hero-background .hero-title,
+  .vs-hero-background .hero-sub {
+    color: #fff;
+  }
+  @media (max-width: 767px) {
+    .vs-hero-left .hero-inner {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

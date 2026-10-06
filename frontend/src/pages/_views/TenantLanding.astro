@@ -12,6 +12,9 @@ const content = tenant.site.published_json
   : null;
 if (active && content) recordView(tenant.site.id);
 const canonical = `https://${url.hostname}/`;
+const hero = content?.sections.find((section) => section.type === 'hero');
+const description = hero && hero.type === 'hero' ? hero.subtitle : '';
+const heroImage = hero && hero.type === 'hero' ? hero.image : '';
 const assistantGreeting = content
   ? content.language === 'en'
     ? 'Hi! Ask me anything about this page.'
@@ -48,7 +51,7 @@ const assistantPalette = content
 ) : (
   <Base
     title={content.title}
-    description={content.subtitle}
+    description={description}
     lang={content.language}
     noindex={Boolean(tenant.site.auto_published)}
     favicon={content.favicon || content.pwaIcon192 || '/favicon.png'}
@@ -59,19 +62,15 @@ const assistantPalette = content
   >
     <link slot="head" rel="canonical" href={canonical} />
     <meta slot="head" property="og:title" content={content.title} />
-    <meta slot="head" property="og:description" content={content.subtitle} />
-    {content.heroImage && (
-      <meta
-        slot="head"
-        property="og:image"
-        content={`https://${Astro.url.hostname}${content.heroImage}`}
-      />
+    <meta slot="head" property="og:description" content={description} />
+    {heroImage && (
+      <meta slot="head" property="og:image" content={`https://${Astro.url.hostname}${heroImage}`} />
     )}
     <SitePage content={content} />
     <script>
       import '@frontend/pages/_scripts/assistant-chat';
     </script>
-    {content.layout !== 'classico' && (
+    {content.assistant && (
       <AssistantChat
         endpoint="/api/public/assistant/chat"
         lang={content.language}

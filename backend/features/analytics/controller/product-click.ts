@@ -1,5 +1,10 @@
 import { env } from 'cloudflare:workers';
-import { hasAccess, parseSite } from '@backend/features/sites/entities/site';
+import {
+  hasAccess,
+  parseSite,
+  sitePrimaryUrl,
+  siteProducts,
+} from '@backend/features/sites/entities/site';
 import { resolveTenant } from '@backend/features/domains/repository/tenant';
 
 export async function clickProduct(
@@ -14,9 +19,9 @@ export async function clickProduct(
   const index = Number(indexParam);
   const target =
     type === 'primary'
-      ? content.primaryUrl
+      ? sitePrimaryUrl(content)
       : type === 'product' && Number.isInteger(index)
-        ? content.products[index]?.url
+        ? siteProducts(content)[index]?.url
         : '';
   if (!target || !/^https?:\/\//.test(target)) return new Response('Not found', { status: 404 });
   env.METRICS.writeDataPoint({
