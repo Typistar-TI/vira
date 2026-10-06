@@ -77,7 +77,7 @@ const t = en
 
 <div class="guardiao">
   <!-- 1. Floating dock -->
-  <nav class="dock" aria-label={t.navLabel}>
+  <nav class="guardiao-nav" aria-label={t.navLabel}>
     <a class="dock-brand" href="#top">
       {content.logo ? (
         <img
@@ -451,7 +451,7 @@ const t = en
     height: 620px;
     min-width: 0;
   }
-  .guardiao .dock {
+  .guardiao .guardiao-nav {
     inset: 20px auto auto 50%;
     transform: translateX(-50%);
     width: max-content;
@@ -463,13 +463,13 @@ const t = en
     border-radius: 24px;
     background: var(--surface);
   }
-  .guardiao .dock > * {
+  .guardiao .guardiao-nav > * {
     width: auto;
     height: auto;
     display: flex;
     flex-direction: row;
   }
-  .guardiao .dock .dock-links {
+  .guardiao .guardiao-nav .dock-links {
     display: flex;
     gap: 8px;
   }
@@ -505,10 +505,10 @@ const t = en
     .guardiao .hero {
       grid-template-columns: 1fr;
     }
-    .guardiao .dock .dock-links {
+    .guardiao .guardiao-nav .dock-links {
       display: none;
     }
-    .guardiao .dock .dock-name {
+    .guardiao .guardiao-nav .dock-name {
       display: block;
     }
     .guardiao .phone-stack {
@@ -768,7 +768,7 @@ const t = en
 
   .page,
   .footer,
-  .dock {
+  .guardiao-nav {
     position: relative;
     z-index: 1;
   }
@@ -807,7 +807,7 @@ const t = en
   }
 
   /* ---------- 1. Floating dock ---------- */
-  .dock {
+  .guardiao-nav {
     position: fixed;
     top: 18px;
     left: 50%;
@@ -1529,7 +1529,7 @@ const t = en
       grid-template-columns: repeat(2, 1fr);
     }
 
-    .dock {
+    .guardiao-nav {
       top: auto;
       bottom: 14px;
     }

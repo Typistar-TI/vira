@@ -45,20 +45,52 @@ function initAssistant(root: HTMLElement) {
   };
   const hideSuggestions = () =>
     root.querySelector('[data-assistant-suggestions]')?.classList.add('hidden');
-  const engage = () => {
-    if (root.dataset.engaged === 'true' || !root.classList.contains('assistant-demo')) return;
+  const engage = async () => {
+    if (
+      root.dataset.engaged === 'true' ||
+      root.dataset.engaging === 'true' ||
+      !root.classList.contains('assistant-demo')
+    )
+      return;
     const intro = root.querySelector<HTMLElement>('[data-hero-intro]');
-    if (intro) {
-      intro.style.setProperty('--intro-height', `${intro.getBoundingClientRect().height}px`);
-      intro.inert = true;
-      intro.setAttribute('aria-hidden', 'true');
+    if (!intro) return;
+    root.dataset.engaging = 'true';
+    intro.inert = true;
+    intro.setAttribute('aria-hidden', 'true');
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // Fade out at the original width, change layout while invisible, then reveal.
+    // Animating grid widths rewraps every line on every frame and stalls typing.
+    if (!reduced) {
+      const outgoing = [intro, log]
+        .filter((node): node is HTMLElement => Boolean(node))
+        .map((node) =>
+          node.animate(
+            [
+              { opacity: 1, transform: 'translateY(0)' },
+              { opacity: 0, transform: 'translateY(-8px)' },
+            ],
+            { duration: 180, easing: 'ease-out', fill: 'forwards' },
+          ),
+        );
+      await Promise.all(outgoing.map((animation) => animation.finished));
+      root.dataset.engaged = 'true';
+      const incoming = log.animate(
+        [
+          { opacity: 0, transform: 'translateY(12px)' },
+          { opacity: 1, transform: 'translateY(0)' },
+        ],
+        { duration: 360, easing: 'cubic-bezier(.22,1,.36,1)' },
+      );
+      outgoing.forEach((animation) => animation.cancel());
+      await incoming.finished;
     }
     root.dataset.engaged = 'true';
+    delete root.dataset.engaging;
   };
   const submit = async (question: string) => {
     const clean = question.trim().slice(0, 500);
     if (!clean || busy) return;
-    engage();
+    void engage();
     started = true;
     bubble('user', clean);
     if (!persist) messages.push({ role: 'user', content: clean });
@@ -108,7 +140,7 @@ function initAssistant(root: HTMLElement) {
     }
   });
   input.addEventListener('input', () => {
-    if (input.value.trim()) engage();
+    if (input.value.trim()) void engage();
     input.style.height = 'auto';
     input.style.height = `${Math.min(input.scrollHeight, 112)}px`;
   });
