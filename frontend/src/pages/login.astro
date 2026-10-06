@@ -3,8 +3,9 @@ import Login from '@frontend/pages/_views/Login.astro';
 import { sessionAdmin } from '@frontend/api/auth/session-admin';
 import { sessionUser } from '@frontend/api/auth/session-user';
 if (Astro.url.searchParams.get('password') !== '1') {
-  if (await sessionAdmin(Astro.request)) return Astro.redirect('/admin');
-  if (await sessionUser(Astro.request)) return Astro.redirect('/app');
+  if (Astro.url.searchParams.get('next') === 'admin') {
+    if (await sessionAdmin(Astro.request)) return Astro.redirect('/admin');
+  } else if (await sessionUser(Astro.request)) return Astro.redirect('/app');
 }
 ---
 

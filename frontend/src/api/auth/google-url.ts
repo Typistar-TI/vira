@@ -1,3 +1,5 @@
 export function googleLoginUrl(url: URL): string {
-  return new URL('/api/auth/google', url).href;
+  const login = new URL('/api/auth/google', url);
+  login.searchParams.set('next', url.searchParams.get('next') === 'admin' ? 'admin' : 'app');
+  return login.href;
 }

@@ -1,10 +1,9 @@
 ---
 import CustomerDashboard from '@frontend/pages/_views/CustomerDashboard.astro';
-import { sessionAdmin } from '@frontend/api/auth/session-admin';
 import { sessionUser } from '@frontend/api/auth/session-user';
 import { siteForUser } from '@frontend/api/sites/site-for-user';
 const user = await sessionUser(Astro.request);
-if (!user) return Astro.redirect((await sessionAdmin(Astro.request)) ? '/admin' : '/login');
+if (!user) return Astro.redirect('/login?next=app');
 const site = await siteForUser(user.id);
 if (!site) return Astro.rewrite('/404');
 ---

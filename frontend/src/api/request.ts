@@ -20,6 +20,7 @@ async function readJson<T>(response: Response): Promise<T> {
 }
 
 function successMessage(path: string, data: unknown): string {
+  path = path.split('?')[0];
   const en = document.documentElement.lang === 'en';
   const messages: Record<string, [string, string]> = {
     '/api/auth/logout': ['Sessão encerrada.', 'Signed out.'],

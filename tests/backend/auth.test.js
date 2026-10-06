@@ -4,6 +4,8 @@ import { request, customer } from './helpers';
 import { POST as start } from '../../backend/features/auth/controller/start-email';
 import { POST as verify } from '../../backend/features/auth/controller/verify-email';
 import { POST as password } from '../../backend/features/auth/controller/password';
+import { POST as signOut } from '../../backend/features/auth/controller/logout';
+import { passwordRecord } from '../../backend/features/auth/service/credentials';
 import {
   getSessionUser,
   createAdminSession,
@@ -205,6 +207,110 @@ describe('Email authentication and password lifecycle', () => {
 });
 
 describe('Sessions', () => {
+  it('logs into both roles with the same email and password without replacing either session', async () => {
+    const { email, user } = await customer();
+    await env.DB.prepare('INSERT INTO admin_accounts (email, created_at) VALUES (?, ?)')
+      .bind(email, Math.floor(Date.now() / 1000))
+      .run();
+    const secret = 'a long secure password';
+    const record = await passwordRecord(secret);
+    await env.DB.prepare(
+      'INSERT INTO auth_passwords (email, password_hash, salt, iterations, updated_at) VALUES (?, ?, ?, ?, ?)',
+    )
+      .bind(email, record.hash, record.salt, record.iterations, Math.floor(Date.now() / 1000))
+      .run();
+    const admin = await password(
+      request('/api/auth/password?next=admin', { email, password: secret }),
+    );
+    expect(await admin.json()).toEqual({ redirect: '/admin' });
+    const adminCookie = admin.headers.get('set-cookie');
+    const app = await password(
+      request(
+        '/api/auth/password?next=app',
+        { email, password: secret },
+        { cookie: adminCookie.split(';')[0] },
+      ),
+    );
+    expect(await app.json()).toEqual({ redirect: '/app' });
+    const appCookie = app.headers.get('set-cookie');
+    expect(appCookie).not.toContain('__Host-vira_admin_session');
+    for (const cookie of [appCookie, adminCookie]) expect(cookie).toContain('Max-Age=2592000');
+    const cookie = `${appCookie.split(';')[0]}; ${adminCookie.split(';')[0]}`;
+    expect((await getSessionUser(request('/app', undefined, { cookie }))).id).toBe(user.id);
+    expect((await getSessionAdmin(request('/admin', undefined, { cookie }))).email).toBe(email);
+    const again = await password(
+      request('/api/auth/password?next=admin', { email, password: secret }, { cookie }),
+    );
+    expect(again.status).toBe(200);
+    expect(again.headers.get('set-cookie')).not.toContain('__Host-vira_session=');
+    expect((await getSessionUser(request('/app', undefined, { cookie }))).id).toBe(user.id);
+  });
+
+  it.each(['app', 'admin'])(
+    'email-code login selects only the %s session, even for an admin email',
+    async (scope) => {
+      const { email, user, cookie: appCookie } = await customer();
+      await env.DB.prepare('INSERT INTO admin_accounts (email, created_at) VALUES (?, ?)')
+        .bind(email, Math.floor(Date.now() / 1000))
+        .run();
+      const adminCookie = (await createAdminSession(email)).split(';')[0];
+      const cookie = `${appCookie}; ${adminCookie}`;
+      const code = await issue(email);
+      const response = await verify(
+        request(`/api/auth/email/verify?next=${scope}`, { email, code }, { cookie }),
+      );
+      expect(response.status).toBe(200);
+      expect(await response.json()).toEqual({ redirect: `/${scope}` });
+      expect(response.headers.get('set-cookie')).toMatch(
+        scope === 'admin' ? /^__Host-vira_admin_session=/ : /^__Host-vira_session=/,
+      );
+      expect(response.headers.get('set-cookie')).toContain('Max-Age=2592000');
+      expect((await getSessionUser(request('/app', undefined, { cookie }))).id).toBe(user.id);
+      expect((await getSessionAdmin(request('/admin', undefined, { cookie }))).email).toBe(email);
+    },
+  );
+
+  it('does not grant administrative access to a customer using next=admin', async () => {
+    const { email } = await customer();
+    const code = await issue(email);
+    const response = await verify(request('/api/auth/email/verify?next=admin', { email, code }));
+    expect(response.status).toBe(403);
+    expect(response.headers.has('set-cookie')).toBe(false);
+  });
+
+  it.each(['app', 'admin'])(
+    'logout revokes only %s and leaves the other persistent session intact',
+    async (scope) => {
+      const { email, cookie: appCookie } = await customer();
+      await env.DB.prepare('INSERT INTO admin_accounts (email, created_at) VALUES (?, ?)')
+        .bind(email, Math.floor(Date.now() / 1000))
+        .run();
+      const adminCookie = (await createAdminSession(email)).split(';')[0];
+      const cookie = `${appCookie}; ${adminCookie}`;
+      expect(
+        (
+          await signOut(
+            request(`/api/auth/logout?scope=${scope}`, {}, { cookie, origin: 'https://evil.test' }),
+          )
+        ).status,
+      ).toBe(403);
+      expect((await signOut(request('/api/auth/logout?scope=all', {}, { cookie }))).status).toBe(
+        400,
+      );
+      const response = await signOut(request(`/api/auth/logout?scope=${scope}`, {}, { cookie }));
+      expect(response.status).toBe(200);
+      expect(response.headers.get('set-cookie')).toMatch(
+        scope === 'admin' ? /^__Host-vira_admin_session=;/ : /^__Host-vira_session=;/,
+      );
+      expect(await getSessionUser(request('/app', undefined, { cookie }))).toEqual(
+        scope === 'app' ? null : expect.objectContaining({ email }),
+      );
+      expect(await getSessionAdmin(request('/admin', undefined, { cookie }))).toEqual(
+        scope === 'admin' ? null : expect.objectContaining({ email }),
+      );
+    },
+  );
+
   it('uses host-only secure HttpOnly cookies, hashes tokens, rejects forged/expired tokens and revokes logout', async () => {
     const { user, cookie } = await customer();
     const token = cookie.split('=')[1];

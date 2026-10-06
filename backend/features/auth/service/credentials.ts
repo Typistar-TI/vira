@@ -1,6 +1,6 @@
 import { env } from 'cloudflare:workers';
 import { setting } from '@backend/platform/config';
-import { createAdminSession, createSession, sha256 } from './session';
+import { createAdminSession, createSession, loginScope, sha256 } from './session';
 import { consumeLimit, getOrCreateEmailUser } from '../repository/users';
 import { languageFromRequest } from './language';
 import { clientIp, json } from '@backend/platform/http';
@@ -129,9 +129,11 @@ export async function establishLogin(
     setting('PRIVACY_CONTROLLER_NAME'),
     setting('PRIVACY_CONTACT_EMAIL'),
   ]);
-  if (!existing && !admin && (!controller || !contact))
+  const adminLogin = loginScope(request) === 'admin';
+  if (adminLogin && !admin) return json({ error: 'Acesso administrativo não autorizado' }, 403);
+  if (!existing && !adminLogin && (!controller || !contact))
     return json({ error: 'Cadastro temporariamente indisponível' }, 403);
-  const user = admin ? null : await getOrCreateEmailUser(email, languageFromRequest(request));
+  const user = adminLogin ? null : await getOrCreateEmailUser(email, languageFromRequest(request));
   if (password) {
     // Reset invalidates existing sessions, including sessions from other login methods.
     await env.DB.batch([
@@ -150,8 +152,8 @@ export async function establishLogin(
       env.DB.prepare('DELETE FROM admin_sessions WHERE admin_email = ?').bind(email),
     ]);
   }
-  return json({ redirect: admin ? '/admin' : '/app' }, 200, {
-    'set-cookie': admin ? await createAdminSession(email) : await createSession(user!.id),
+  return json({ redirect: adminLogin ? '/admin' : '/app' }, 200, {
+    'set-cookie': adminLogin ? await createAdminSession(email) : await createSession(user!.id),
     'cache-control': 'no-store',
   });
 }

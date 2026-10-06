@@ -24,7 +24,8 @@ document.querySelectorAll<HTMLElement>('[data-account-menu]').forEach((root) => 
     button.addEventListener('click', async () => {
       button.disabled = true;
       try {
-        await logout();
+        const scope = root.dataset.accountScope === 'admin' ? 'admin' : 'app';
+        await logout(scope);
         window.setTimeout(() => location.assign('/'), 450);
       } catch (error) {
         reportError(error, 'Falha ao sair.');

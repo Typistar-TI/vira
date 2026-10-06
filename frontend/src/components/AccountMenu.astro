@@ -19,6 +19,16 @@ const initials = label
   .join('');
 const links = [
   { href: profileHref, label: profileLabel ?? (en ? 'My data' : 'Meus dados') },
+  {
+    href: profileHref.startsWith('/admin') ? '/app' : '/admin',
+    label: profileHref.startsWith('/admin')
+      ? en
+        ? 'Customer area'
+        : 'Área do cliente'
+      : en
+        ? 'Administration'
+        : 'Administração',
+  },
   { href: homeHref, label: en ? 'Home' : 'Página inicial' },
   { href: en ? '/en/privacy' : '/privacidade', label: en ? 'Privacy' : 'Privacidade' },
 ];
@@ -26,7 +36,7 @@ const avatarClass =
   'btn btn-circle btn-ghost btn-sm border border-[#d8ae73] bg-[#fff4df] font-semibold text-[#6f4716] hover:border-[#b88333] hover:bg-[#ffecd0] sm:btn-md';
 ---
 
-<div data-account-menu>
+<div data-account-menu data-account-scope={profileHref.startsWith('/admin') ? 'admin' : 'app'}>
   <details class="dropdown dropdown-end hidden sm:block" data-account-dropdown>
     <summary
       class:list={[avatarClass, 'avatar list-none']}

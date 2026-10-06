@@ -1,22 +1,28 @@
 <div
   id="vira-toasts"
-  class="toast toast-center toast-bottom pointer-events-none z-[100] w-[90vw] max-w-[34rem] pb-[max(1rem,env(safe-area-inset-bottom))]"
+  class="pointer-events-none fixed bottom-0 left-1/2 z-[100] flex w-max max-w-[min(34rem,calc(100vw_-_2rem))] -translate-x-1/2 flex-col items-center gap-3 pb-[max(1rem,env(safe-area-inset-bottom))]"
   aria-live="polite"
   aria-atomic="false"
 ></div>
 
 <script>
+  const dismissals = new WeakMap<Element, () => void>();
   document.addEventListener('vira:toast', (event) => {
     const { message, kind } = (event as CustomEvent<{ message: string; kind: string }>).detail;
     if (!message) return;
     const container = document.querySelector<HTMLElement>('#vira-toasts');
     if (!container) return;
-    while (container.children.length >= 3) container.firstElementChild?.remove();
+    while (container.children.length >= 3) {
+      const oldest = container.firstElementChild!;
+      const dismiss = dismissals.get(oldest);
+      if (dismiss) dismiss();
+      else oldest.remove();
+    }
     const toast = document.createElement('div');
     toast.className = [
-      'alert',
+      'flex items-start gap-3',
       'pointer-events-auto',
-      'w-full',
+      'w-fit max-w-full min-w-0 touch-none select-none',
       'rounded-2xl',
       'border',
       'px-4',
@@ -31,16 +37,99 @@
     ].join(' ');
     toast.setAttribute('role', kind === 'error' ? 'alert' : 'status');
     const text = document.createElement('span');
-    text.className = 'min-w-0 flex-1';
+    text.className = 'min-w-0 flex-1 self-center whitespace-pre-wrap [overflow-wrap:anywhere]';
     text.textContent = message;
     const close = document.createElement('button');
     close.type = 'button';
-    close.className = 'btn btn-ghost btn-xs btn-circle shrink-0';
-    close.setAttribute('aria-label', 'Fechar aviso');
+    close.className = 'btn btn-ghost btn-sm btn-circle ml-auto shrink-0';
+    close.setAttribute(
+      'aria-label',
+      document.documentElement.lang === 'en' ? 'Dismiss notification' : 'Fechar aviso',
+    );
     close.textContent = '×';
-    close.addEventListener('click', () => toast.remove());
+    const lifetime = kind === 'error' ? 7000 : 4500;
+    let timer: number;
+    let dismissed = false;
+    let drag: { id: number; x: number; y: number } | undefined;
+    let dx = 0;
+    let dy = 0;
+    const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const dismiss = (animate = false) => {
+      if (dismissed) return;
+      dismissed = true;
+      clearTimeout(timer);
+      drag = undefined;
+      dismissals.delete(toast);
+      if (!animate || reducedMotion()) {
+        toast.remove();
+        return;
+      }
+      toast.style.pointerEvents = 'none';
+      toast.style.transition = 'transform 160ms ease-out, opacity 160ms ease-out';
+      toast.style.opacity = '0';
+      const distance = Math.hypot(dx, dy);
+      toast.style.transform = distance
+        ? `translate(${dx + (dx / distance) * 64}px, ${dy + (dy / distance) * 64}px)`
+        : 'translateY(12px)';
+      timer = window.setTimeout(() => toast.remove(), 160);
+    };
+    const schedule = () => {
+      clearTimeout(timer);
+      timer = window.setTimeout(() => dismiss(true), lifetime);
+    };
+    const resetDrag = () => {
+      if (dismissed) return;
+      drag = undefined;
+      dx = dy = 0;
+      toast.style.transition = reducedMotion()
+        ? 'none'
+        : 'transform 160ms ease-out, opacity 160ms ease-out';
+      toast.style.transform = '';
+      toast.style.opacity = '';
+      schedule();
+    };
+    toast.addEventListener('pointerdown', (event) => {
+      if (
+        dismissed ||
+        !event.isPrimary ||
+        event.button !== 0 ||
+        (event.target as Element).closest('button')
+      )
+        return;
+      clearTimeout(timer);
+      dx = dy = 0;
+      drag = { id: event.pointerId, x: event.clientX, y: event.clientY };
+      toast.style.transition = 'none';
+      toast.setPointerCapture(event.pointerId);
+    });
+    toast.addEventListener('pointermove', (event) => {
+      if (!drag || event.pointerId !== drag.id) return;
+      dx = event.clientX - drag.x;
+      dy = event.clientY - drag.y;
+      toast.style.transform = `translate(${dx}px, ${dy}px)`;
+      toast.style.opacity = String(Math.max(0.35, 1 - Math.hypot(dx, dy) / 200));
+    });
+    toast.addEventListener('pointerup', (event) => {
+      if (!drag || event.pointerId !== drag.id) return;
+      dx = event.clientX - drag.x;
+      dy = event.clientY - drag.y;
+      drag = undefined;
+      if (toast.hasPointerCapture(event.pointerId)) toast.releasePointerCapture(event.pointerId);
+      if (Math.hypot(dx, dy) >= 48) dismiss(true);
+      else resetDrag();
+    });
+    toast.addEventListener('pointercancel', resetDrag);
+    toast.addEventListener('lostpointercapture', () => {
+      if (drag) resetDrag();
+    });
+    dismissals.set(toast, () => {
+      clearTimeout(timer);
+      if (dismissed) toast.remove();
+      else dismiss();
+    });
+    close.addEventListener('click', () => dismiss(true));
     toast.append(text, close);
     container.append(toast);
-    window.setTimeout(() => toast.remove(), kind === 'error' ? 7000 : 4500);
+    schedule();
   });
 </script>

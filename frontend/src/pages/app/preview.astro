@@ -1,6 +1,5 @@
 ---
 import SitePreview from '@frontend/pages/_views/SitePreview.astro';
-import { sessionAdmin } from '@frontend/api/auth/session-admin';
 import { sessionUser } from '@frontend/api/auth/session-user';
 import { siteForUser } from '@frontend/api/sites/site-for-user';
 import { parseSiteContent } from '@frontend/api/sites/parse-site';
@@ -8,7 +7,7 @@ import { readJson } from '@backend/platform/http';
 import { sameOrigin } from '@backend/features/auth/service/session';
 import { consumeLimit } from '@backend/features/auth/repository/users';
 const user = await sessionUser(Astro.request);
-if (!user) return Astro.redirect((await sessionAdmin(Astro.request)) ? '/admin' : '/login');
+if (!user) return Astro.redirect('/login?next=app');
 const site = await siteForUser(user.id);
 if (!site) return Astro.rewrite('/404');
 Astro.response.headers.set('Cache-Control', 'no-store');

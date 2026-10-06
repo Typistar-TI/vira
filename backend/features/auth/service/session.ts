@@ -4,6 +4,12 @@ import { getUser, type UserRow } from '@backend/features/auth/repository/users';
 const sessionName = '__Host-vira_session';
 const adminSessionName = '__Host-vira_admin_session';
 
+export type SessionScope = 'app' | 'admin';
+
+export function loginScope(request: Request): SessionScope {
+  return new URL(request.url).searchParams.get('next') === 'admin' ? 'admin' : 'app';
+}
+
 function cookieToken(request: Request, name: string): string | null {
   const token = request.headers
     .get('cookie')
@@ -73,9 +79,9 @@ export async function getSessionUser(request: Request): Promise<UserRow | null> 
   return row ? getUser(row.user_id) : null;
 }
 
-export async function logout(request: Request): Promise<Headers> {
-  const token = cookieToken(request, sessionName);
-  const adminToken = cookieToken(request, adminSessionName);
+export async function logout(request: Request, scope: SessionScope = 'app'): Promise<Headers> {
+  const token = scope === 'app' ? cookieToken(request, sessionName) : null;
+  const adminToken = scope === 'admin' ? cookieToken(request, adminSessionName) : null;
   if (token)
     await env.DB.prepare('DELETE FROM sessions WHERE token_hash = ?')
       .bind(await sha256(token))
@@ -85,13 +91,9 @@ export async function logout(request: Request): Promise<Headers> {
       .bind(await sha256(adminToken))
       .run();
   const headers = new Headers();
-  headers.append(
+  headers.set(
     'set-cookie',
-    `${sessionName}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0`,
-  );
-  headers.append(
-    'set-cookie',
-    `${adminSessionName}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0`,
+    `${scope === 'admin' ? adminSessionName : sessionName}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0`,
   );
   return headers;
 }
