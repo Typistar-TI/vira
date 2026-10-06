@@ -27,7 +27,10 @@ export const POST = async (request: Request): Promise<Response> => {
   const scope = loginScope(request);
   const failLogin = (message: string) => fail(message, scope);
   const origin = request.headers.get('origin');
-  if (origin && origin !== new URL(request.url).origin) return failLogin('Origem inválida');
+  const selfOrigin = new URL(request.url).origin;
+  // No modo "redirect", o Google envia o POST a partir de accounts.google.com.
+  if (origin && origin !== selfOrigin && origin !== 'https://accounts.google.com')
+    return failLogin('Origem inválida');
   try {
     const form = await readFormData(request, 8192);
     const csrf = String(form.get('g_csrf_token') || '');
