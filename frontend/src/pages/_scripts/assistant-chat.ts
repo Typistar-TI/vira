@@ -75,16 +75,16 @@ function initAssistant(root: HTMLElement) {
     for (const message of script) {
       if (message.role === 'user') {
         bubble('user', message.text);
-        await wait(reduced ? 0 : 950);
+        await wait(reduced ? 0 : 350);
       } else {
         const pending = bubble('assistant', '');
         if (!reduced) {
           pending.append(dots());
-          await wait(650);
+          await wait(200);
         }
         pending.textContent = message.text;
         scroll();
-        await wait(reduced ? 0 : 950);
+        await wait(reduced ? 0 : 400);
       }
     }
     playing = false;

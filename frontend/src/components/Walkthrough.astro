@@ -7,191 +7,177 @@ interface Props {
 }
 const { lang, heading, intro, steps } = Astro.props;
 const en = lang === 'en';
+const mockBlocks = [
+  en ? 'Hero' : 'Herói',
+  en ? 'About' : 'Sobre',
+  en ? 'Services' : 'Serviços',
+  en ? 'Gallery' : 'Galeria',
+  en ? 'Contact' : 'Contato',
+];
 ---
 
 <section
   id="como-funciona"
-  class="box-border h-[100svh] overflow-y-auto border-b border-[#d8ae73] bg-[#fcfaf6] py-[clamp(16px,3svh,32px)] text-[#17130d]"
+  class="border-b border-[#d8ae73] bg-[#fcfaf6] px-5 py-16 text-[#17130d] sm:px-8 sm:py-24"
   aria-labelledby="walkthrough-heading"
-  data-flow
 >
-  <div class="mx-auto grid h-full w-full max-w-[1240px] grid-rows-[auto_minmax(0,1fr)] gap-[clamp(16px,3svh,32px)] px-8 max-md:px-5">
-    <header class="flex items-end justify-between gap-10 max-md:block" data-reveal>
+  <div class="mx-auto w-full max-w-[1240px]">
+    <header class="mb-10 flex items-end justify-between gap-10 max-md:block" data-reveal>
       <div>
         <p class="mb-3.5 font-mono text-[10px] uppercase tracking-[0.14em] text-[#9b6823]">
           {en ? 'How it works' : 'Como funciona'}
         </p>
         <h2
           id="walkthrough-heading"
-          class="text-[clamp(1.9rem,3.8vw,3.1rem)] font-medium leading-[1.1] tracking-[-0.045em] font-['Outfit',sans-serif] [@media(max-height:650px)]:text-[1.6rem]"
+          class="text-[clamp(1.9rem,3.8vw,3.1rem)] font-medium leading-[1.1] tracking-[-0.045em] font-['Outfit',sans-serif]"
         >
           {heading}
         </h2>
       </div>
-      <p class="max-w-[34ch] text-sm leading-relaxed text-[#766c60] max-md:mt-3.5 max-md:max-w-[50ch] [@media(max-height:650px)]:mt-2 [@media(max-height:650px)]:text-xs">
+      <p class="max-w-[34ch] text-sm leading-relaxed text-[#766c60] max-md:mt-3.5 max-md:max-w-[50ch]">
         {intro}
       </p>
     </header>
 
-    <div class="grid min-h-0 grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] items-center gap-10 max-lg:grid-cols-1 max-lg:gap-6">
-      <ol class="m-0 flex list-none flex-col gap-3 p-0">
-        {steps.map((step, index) => (
-          <li class="m-0">
-            <div
-              data-flow-step={index}
-              aria-current={index === 0 ? 'step' : 'false'}
-              class="group flex w-full items-start gap-4 rounded-2xl border border-transparent px-4 py-3 text-left transition-colors aria-[current=step]:border-[#e5ded2] aria-[current=step]:bg-white"
+    <div class="relative">
+      {steps.map((step, index) => (
+        <article
+          data-stack-step={index}
+          class="sticky top-6 mb-[20svh] grid items-center gap-8 overflow-hidden rounded-[28px] border border-[#ead8bf] bg-[#fffdf9] p-6 shadow-[0_30px_70px_-50px_#80531888] last:mb-0 sm:p-10 lg:grid-cols-[minmax(0,0.42fr)_minmax(0,0.58fr)]"
+          style={`z-index:${index + 1}`}
+          aria-labelledby={`walkthrough-step-${index + 1}`}
+        >
+          <div>
+            <p class="mb-3 font-mono text-xs uppercase tracking-[0.14em] text-[#b88333]">
+              {en ? 'Step' : 'Passo'} 0{index + 1}
+            </p>
+            <h3
+              id={`walkthrough-step-${index + 1}`}
+              class="text-[clamp(1.6rem,3vw,2.6rem)] font-medium leading-tight tracking-[-0.03em] font-['Outfit',sans-serif]"
             >
-              <span class="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-full border border-[#d8c4a0] font-mono text-xs text-[#9b6823] group-aria-[current=step]:border-[#b88333] group-aria-[current=step]:bg-[#b88333] group-aria-[current=step]:text-white">
-                {String(index + 1).padStart(2, '0')}
-              </span>
-              <span class="flex flex-col gap-1">
-                <span class="text-[17px] font-medium tracking-[-0.02em] font-['Outfit',sans-serif]">
-                  {step.title}
-                </span>
-                <span class="text-[13px] leading-relaxed text-[#766c60]">{step.text}</span>
-              </span>
-            </div>
-          </li>
-        ))}
-      </ol>
-
-      <div class="min-h-0 rounded-3xl border border-[#e5ded2] bg-white shadow-[0_30px_60px_-40px_#4e392f55] max-lg:hidden [@media(max-height:640px)]:hidden">
-        <div class="flex items-center gap-2 border-b border-[#eee7dc] px-4 py-3">
-          <span class="flex gap-1.5" aria-hidden="true">
-            <span class="h-2.5 w-2.5 rounded-full bg-[#e5ded2]"></span>
-            <span class="h-2.5 w-2.5 rounded-full bg-[#e5ded2]"></span>
-            <span class="h-2.5 w-2.5 rounded-full bg-[#e5ded2]"></span>
-          </span>
-          <span class="ml-2 flex-1 truncate rounded-full bg-[#f5f2eb] px-3 py-1 font-mono text-[10px] text-[#8b8174]">
-            vira.ia.br
-          </span>
-          <span class="flex gap-1" aria-hidden="true">
-            <span data-flow-dot={0} class="h-1.5 w-1.5 rounded-full bg-[#b88333]"></span>
-            <span data-flow-dot={1} class="h-1.5 w-1.5 rounded-full bg-[#e5ded2]"></span>
-            <span data-flow-dot={2} class="h-1.5 w-1.5 rounded-full bg-[#e5ded2]"></span>
-          </span>
-        </div>
-
-        <div class="relative h-[clamp(260px,42svh,420px)] overflow-hidden bg-[#fbf9f5]">
-          <div data-flow-panel={0} class="absolute inset-0 p-5">
-            <p class="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#9b6823]">
-              {en ? 'Add blocks' : 'Adicione blocos'}
+              {step.title}
+            </h3>
+            <p class="mt-3 max-w-[42ch] text-sm leading-relaxed text-[#625a51] sm:text-base">
+              {step.text}
             </p>
-            <div class="flex flex-col gap-2">
-              {[
-                en ? 'Hero' : 'Herói',
-                en ? 'About' : 'Sobre',
-                en ? 'Services' : 'Serviços',
-                en ? 'Gallery' : 'Galeria',
-                en ? 'Contact' : 'Contato',
-              ].map((label, index) => (
-                <div
-                  class="flex items-center gap-3 rounded-xl border border-[#e5ded2] bg-white px-3 py-2.5 shadow-[0_10px_24px_-20px_#4e392f66]"
-                  style={`animation: none; opacity: ${1 - index * 0.06}`}
-                >
-                  <span class="grid h-7 w-7 place-items-center rounded-lg bg-[#f5f2eb] text-[11px] text-[#8b8174]">
-                    ≡
-                  </span>
-                  <span class="text-sm font-medium">{label}</span>
-                  <span class="ml-auto text-[#b88333]">＋</span>
-                </div>
-              ))}
-            </div>
           </div>
 
-          <div data-flow-panel={1} hidden class="absolute inset-0 p-5">
-            <p class="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#9b6823]">
-              {en ? 'Edit the content' : 'Edite o conteúdo'}
-            </p>
-            <div class="flex flex-col gap-3 rounded-2xl border border-[#e5ded2] bg-white p-4">
-              <span class="text-xs font-bold text-[#4a4238]">{en ? 'Headline' : 'Título'}</span>
-              <span class="rounded-lg border border-[#e5ded2] px-3 py-2 text-sm">
-                {en ? 'Your idea, online.' : 'Sua ideia, no ar.'}
-                <span class="ml-0.5 inline-block h-4 w-px animate-pulse bg-[#b88333] align-middle"></span>
+          <div class="min-h-0 rounded-2xl border border-[#eee7dc] bg-white">
+            <div class="flex items-center gap-2 border-b border-[#eee7dc] px-4 py-2.5">
+              <span class="flex gap-1.5" aria-hidden="true">
+                <span class="h-2.5 w-2.5 rounded-full bg-[#e5ded2]" />
+                <span class="h-2.5 w-2.5 rounded-full bg-[#e5ded2]" />
+                <span class="h-2.5 w-2.5 rounded-full bg-[#e5ded2]" />
               </span>
-              <span class="text-xs font-bold text-[#4a4238]">{en ? 'Text' : 'Texto'}</span>
-              <span class="rounded-lg border border-[#e5ded2] px-3 py-2 text-sm text-[#766c60]">
-                {en
-                  ? 'Present your work in a clear, simple page.'
-                  : 'Apresente seu trabalho em uma página clara e simples.'}
-              </span>
-              <span class="mt-1 flex gap-2">
-                <span
-                  class="btn btn-sm rounded-full border-0"
-                  style="background:#17130d;color:#fff"
-                >
-                  {en ? 'Save' : 'Salvar'}
-                </span>
-                <span class="btn btn-sm btn-ghost rounded-full">{en ? 'Preview' : 'Prévia'}</span>
+              <span class="ml-2 flex-1 truncate rounded-full bg-[#f5f2eb] px-3 py-1 font-mono text-[10px] text-[#8b8174]">
+                vira.ia.br
               </span>
             </div>
-          </div>
-
-          <div data-flow-panel={2} hidden class="absolute inset-0 p-5">
-            <p class="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#9b6823]">
-              {en ? 'Publish' : 'Publique'}
-            </p>
-            <div class="flex flex-col gap-3 rounded-2xl border border-[#e5ded2] bg-white p-4">
-              <span class="flex items-center gap-2 text-sm font-medium">
-                <span class="grid h-5 w-5 place-items-center rounded-full bg-[#17130d] text-[11px] text-white">
-                  ✓
-                </span>
-                {en ? 'Published!' : 'Publicado!'}
-              </span>
-              <span class="rounded-lg bg-[#f5f2eb] px-3 py-2 font-mono text-xs text-[#8b8174]">
-                {en ? 'your-page' : 'sua-pagina'}.vira.ia.br
-              </span>
-              <div class="mt-1 rounded-xl border border-[#eee7dc] p-3">
-                <span class="block text-base font-medium">
-                  {en ? 'Your idea, online.' : 'Sua ideia, no ar.'}
-                </span>
-                <span class="mt-1 block text-xs text-[#766c60]">
-                  {en
-                    ? 'Your visitors can ask the AI assistant anything.'
-                    : 'Seus visitantes podem perguntar qualquer coisa à assistente de IA.'}
-                </span>
-                <span
-                  class="mt-2 inline-block rounded-full px-3 py-1 text-xs text-white"
-                  style="background:#17130d"
-                >
-                  {en ? 'Get in touch' : 'Fale comigo'}
-                </span>
-              </div>
+            <div class="bg-[#fbf9f5] p-5">
+              {index === 0 && (
+                <>
+                  <p class="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#9b6823]">
+                    {en ? 'Add blocks' : 'Adicione blocos'}
+                  </p>
+                  <div class="flex flex-col gap-2">
+                    {mockBlocks.map((label) => (
+                      <div class="flex items-center gap-3 rounded-xl border border-[#e5ded2] bg-white px-3 py-2.5">
+                        <span class="grid h-7 w-7 place-items-center rounded-lg bg-[#f5f2eb] text-[11px] text-[#8b8174]">
+                          ≡
+                        </span>
+                        <span class="text-sm font-medium">{label}</span>
+                        <span class="ml-auto text-[#b88333]">＋</span>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+              {index === 1 && (
+                <>
+                  <p class="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#9b6823]">
+                    {en ? 'Edit the content' : 'Edite o conteúdo'}
+                  </p>
+                  <div class="flex flex-col gap-3 rounded-2xl border border-[#e5ded2] bg-white p-4">
+                    <span class="text-xs font-bold text-[#4a4238]">
+                      {en ? 'Headline' : 'Título'}
+                    </span>
+                    <span class="rounded-lg border border-[#e5ded2] px-3 py-2 text-sm">
+                      {en ? 'Your idea, online.' : 'Sua ideia, no ar.'}
+                      <span class="ml-0.5 inline-block h-4 w-px animate-pulse bg-[#b88333] align-middle" />
+                    </span>
+                    <span class="text-xs font-bold text-[#4a4238]">{en ? 'Text' : 'Texto'}</span>
+                    <span class="rounded-lg border border-[#e5ded2] px-3 py-2 text-sm text-[#766c60]">
+                      {en
+                        ? 'Present your work in a clear, simple page.'
+                        : 'Apresente seu trabalho em uma página clara e simples.'}
+                    </span>
+                  </div>
+                </>
+              )}
+              {index === 2 && (
+                <>
+                  <p class="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#9b6823]">
+                    {en ? 'Publish' : 'Publique'}
+                  </p>
+                  <div class="flex flex-col gap-3 rounded-2xl border border-[#e5ded2] bg-white p-4">
+                    <span class="flex items-center gap-2 text-sm font-medium">
+                      <span class="grid h-5 w-5 place-items-center rounded-full bg-[#17130d] text-[11px] text-white">
+                        ✓
+                      </span>
+                      {en ? 'Published!' : 'Publicado!'}
+                    </span>
+                    <span class="rounded-lg bg-[#f5f2eb] px-3 py-2 font-mono text-xs text-[#8b8174]">
+                      {en ? 'your-page' : 'sua-pagina'}.vira.ia.br
+                    </span>
+                    <div class="mt-1 rounded-xl border border-[#eee7dc] p-3">
+                      <span class="block text-base font-medium">
+                        {en ? 'Your idea, online.' : 'Sua ideia, no ar.'}
+                      </span>
+                      <span class="mt-1 block text-xs text-[#766c60]">
+                        {en
+                          ? 'Your visitors can ask the AI assistant anything.'
+                          : 'Seus visitantes podem perguntar qualquer coisa à assistente de IA.'}
+                      </span>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
-        </div>
-      </div>
+        </article>
+      ))}
     </div>
   </div>
 </section>
 <script>
-  document.querySelectorAll<HTMLElement>('[data-flow]').forEach((root) => {
-    const steps = [...root.querySelectorAll<HTMLElement>('[data-flow-step]')];
-    const panels = [...root.querySelectorAll<HTMLElement>('[data-flow-panel]')];
-    const dots = [...root.querySelectorAll<HTMLElement>('[data-flow-dot]')];
-    const reduced = matchMedia('(prefers-reduced-motion: reduce)');
-    let active = 0;
-    const show = (index: number, animate = true) => {
-      active = index;
-      steps.forEach((step, i) => step.setAttribute('aria-current', i === index ? 'step' : 'false'));
-      dots.forEach((dot, i) => {
-        dot.className = `h-1.5 w-1.5 rounded-full ${i === index ? 'bg-[#b88333]' : 'bg-[#e5ded2]'}`;
-      });
-      panels.forEach((panel, i) => {
-        panel.hidden = i !== index;
-        if (i === index && animate && !reduced.matches)
-          panel.animate(
-            [
-              { opacity: 0, transform: 'translateY(12px)' },
-              { opacity: 1, transform: 'translateY(0)' },
-            ],
-            { duration: 420, easing: 'cubic-bezier(.22,1,.36,1)' },
-          );
-      });
-    };
-    show(0, false);
-    // Purely automatic: no clicks, no interaction required from the visitor.
-    if (!reduced.matches) setInterval(() => show((active + 1) % steps.length), 3400);
-  });
+  const cards = [...document.querySelectorAll<HTMLElement>('[data-stack-step]')];
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+  let scheduled = false;
+  const render = () => {
+    scheduled = false;
+    cards.forEach((card, index) => {
+      const next = cards[index + 1];
+      if (!next || reduced.matches) {
+        card.style.removeProperty('transform');
+        return;
+      }
+      const top = parseFloat(getComputedStyle(card).top) || 0;
+      const distance = next.getBoundingClientRect().top - top;
+      const progress = Math.max(
+        0,
+        Math.min(1, 1 - distance / Math.min(card.offsetHeight, innerHeight * 0.8)),
+      );
+      card.style.transform = `scale(${1 - progress * 0.05}) translateY(${-progress * 10}px)`;
+    });
+  };
+  const schedule = () => {
+    if (!scheduled) {
+      scheduled = true;
+      requestAnimationFrame(render);
+    }
+  };
+  window.addEventListener('scroll', schedule, { passive: true });
+  window.addEventListener('resize', schedule);
+  reduced.addEventListener('change', schedule);
+  render();
 </script>

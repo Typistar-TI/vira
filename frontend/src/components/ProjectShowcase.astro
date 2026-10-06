@@ -18,21 +18,21 @@ const rows = moving
     )
   : [];
 const cardClass =
-  'flex h-[clamp(96px,calc((100svh_-_320px)/3),210px)] w-52 shrink-0 flex-col items-center justify-center gap-2 rounded-[1.5rem] border border-[#d8ae73] bg-white px-5 py-3 text-center text-sm font-semibold text-[#4f473e] transition-[border-color,transform] duration-300 hover:-translate-y-1 hover:border-[#b88333] focus-visible:outline-2 focus-visible:outline-[#b88333] sm:w-64 max-md:h-[clamp(84px,calc((100svh_-_300px)/3),160px)] max-md:w-[168px]';
+  'flex h-32 w-52 shrink-0 flex-col items-center justify-center gap-2 rounded-[1.5rem] border border-[#d8ae73] bg-white px-5 py-3 text-center text-sm font-semibold text-[#4f473e] transition-[border-color,transform] duration-300 hover:-translate-y-1 hover:border-[#b88333] focus-visible:outline-2 focus-visible:outline-[#b88333] sm:h-40 sm:w-64';
 ---
 
 <section
   id="vitrine"
-  class="box-border flex h-[100svh] flex-col border-b border-[#d8ae73] bg-white py-[clamp(16px,3svh,34px)]"
+  class="border-b border-[#d8ae73] bg-white px-0 py-16 sm:py-24"
   aria-labelledby="showcase-heading"
 >
-  <div class="mx-auto w-full max-w-[1380px] shrink-0 px-5 sm:px-8" data-reveal>
+  <div class="mx-auto w-full max-w-[1380px] px-5 sm:px-8" data-reveal>
     <p class="font-mono text-[11px] uppercase tracking-[0.22em] text-[#9b6823]">
       {en ? 'Made with Vira' : 'Feito com Vira'}
     </p>
     <h2
       id="showcase-heading"
-      class="mt-2.5 text-[clamp(1.9rem,4svh,3rem)] font-['Outfit',sans-serif] font-medium leading-[1.02] tracking-[-0.06em]"
+      class="mt-2.5 text-[clamp(2rem,4vw,3rem)] font-['Outfit',sans-serif] font-medium leading-[1.02] tracking-[-0.06em]"
     >
       {en ? 'Real ideas, already online.' : 'Ideias reais, já no ar.'}
     </h2>
@@ -43,7 +43,7 @@ const cardClass =
     </p>
   </div>
   {moving ? (
-    <div class="mt-[clamp(14px,2.4svh,26px)] flex min-h-0 flex-1 flex-col justify-center space-y-3 overflow-hidden sm:space-y-4 [mask-image:linear-gradient(to_right,transparent,black_7%,black_93%,transparent)]">
+    <div class="mt-10 space-y-3 overflow-hidden sm:mt-14 sm:space-y-4 [mask-image:linear-gradient(to_right,transparent,black_7%,black_93%,transparent)]">
       {rows.map((row, rowIndex) => (
         <div
           class="overflow-hidden"
@@ -93,7 +93,7 @@ const cardClass =
       ))}
     </div>
   ) : projects.length > 0 ? (
-    <div class="mx-auto flex min-h-0 w-full max-w-[1380px] flex-1 flex-wrap content-center justify-center gap-3 px-5 sm:gap-4 sm:px-8">
+    <div class="mx-auto mt-10 flex w-full max-w-[1380px] flex-wrap justify-center gap-3 px-5 sm:mt-14 sm:gap-4 sm:px-8">
       {projects.map((project) => (
         <a href={project.url} target="_blank" rel="noopener noreferrer" class={cardClass}>
           <img
@@ -108,7 +108,7 @@ const cardClass =
       ))}
     </div>
   ) : (
-    <div class="mx-auto flex min-h-0 w-full max-w-[1380px] flex-1 flex-col justify-center px-5 sm:px-8">
+    <div class="mx-auto mt-10 w-full max-w-[1380px] px-5 sm:mt-14 sm:px-8">
       <p class="rounded-[1.5rem] border border-[#d8ae73] bg-white px-6 py-12 text-center text-[#625a51]">
         {en
           ? 'The first projects will appear here as their owners share them.'
