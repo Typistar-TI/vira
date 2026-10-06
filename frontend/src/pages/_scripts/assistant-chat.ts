@@ -50,8 +50,8 @@ function initAssistant(root: HTMLElement) {
     const node = document.createElement('div');
     node.className =
       role === 'user'
-        ? 'ml-auto rounded-2xl rounded-br-md px-4 py-2.5 text-sm leading-relaxed text-white'
-        : 'mr-auto rounded-2xl rounded-bl-md px-4 py-2.5 text-sm leading-relaxed';
+        ? 'ml-auto rounded-2xl rounded-br-md px-4 py-2.5 text-sm leading-relaxed text-white animate-bubble motion-reduce:animate-none'
+        : 'mr-auto rounded-2xl rounded-bl-md px-4 py-2.5 text-sm leading-relaxed animate-bubble motion-reduce:animate-none';
     node.style.background = role === 'user' ? 'var(--a-accent)' : 'var(--a-soft)';
     node.textContent = text;
     log.append(node);
