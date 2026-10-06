@@ -8,89 +8,62 @@ interface Props {
 }
 const { section } = Astro.props;
 const items = section.items.filter((item) => item.role || item.company);
+const timeline = section.variant === 'timeline';
 ---
 
 {items.length > 0 && (
   <section
-    class:list={['experience', `experience-${section.variant}`]}
+    class="px-5 py-16 text-[var(--fg)] sm:px-10 sm:py-24 lg:py-32"
     data-vs-section="experience"
   >
-    <div class="experience-inner">
+    <div class="mx-auto w-full max-w-[900px]">
       <SectionHeading title={section.title} />
-      <ol class="experience-list">
-        {items.map((item) => (
-          <li class="experience-item">
-            <div class="experience-when">
-              {item.period && <span class="experience-period">{item.period}</span>}
-              {item.location && <span class="experience-location">{item.location}</span>}
-            </div>
-            <div class="experience-body">
-              <h3 class="experience-role">
+      <ul
+        class:list={[
+          'm-0 list-none p-0',
+          timeline ? 'timeline timeline-vertical timeline-compact' : 'flex flex-col gap-5',
+        ]}
+      >
+        {items.map((item, index) => (
+          <li class:list={[timeline && index < items.length - 1 ? '' : '']}>
+            {timeline && (
+              <>
+                <div class="timeline-start text-left text-sm text-[var(--muted)]">
+                  {item.period && <span class="font-mono">{item.period}</span>}
+                  {item.location && <span class="block">{item.location}</span>}
+                </div>
+                <div class="timeline-middle">
+                  <div class="h-3 w-3 rounded-full bg-[var(--accent)]" />
+                </div>
+              </>
+            )}
+            <div
+              class:list={[
+                timeline
+                  ? 'timeline-end timeline-box border-[var(--line)] bg-[var(--surface)] text-left'
+                  : 'card border border-[var(--line)] bg-[var(--surface)] p-6',
+              ]}
+            >
+              <h3 class="text-lg font-medium [font-family:var(--font-display)]">
                 {item.role}
-                {item.company && <span class="experience-company"> · {item.company}</span>}
+                {item.company && (
+                  <span class="text-[var(--muted)] font-normal"> · {item.company}</span>
+                )}
               </h3>
-              {item.summary && <p class="experience-text">{item.summary}</p>}
+              {!timeline && item.period && (
+                <p class="mt-1 font-mono text-xs text-[var(--muted)]">
+                  {item.period}
+                  {item.location ? ` · ${item.location}` : ''}
+                </p>
+              )}
+              {item.summary && (
+                <p class="mt-2 text-sm leading-relaxed text-[var(--muted)]">{item.summary}</p>
+              )}
             </div>
+            {timeline && index < items.length - 1 && <hr class="bg-[var(--accent)]" />}
           </li>
         ))}
-      </ol>
+      </ul>
     </div>
   </section>
 )}
-<style>
-  .experience {
-    padding: clamp(56px, 9vw, 120px) clamp(20px, 5vw, 40px);
-  }
-  .experience-inner {
-    max-width: 900px;
-    margin-inline: auto;
-  }
-  .experience-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    gap: clamp(20px, 3vw, 32px);
-  }
-  .experience-item {
-    display: grid;
-    grid-template-columns: 160px 1fr;
-    gap: clamp(16px, 2.5vw, 32px);
-  }
-  .experience-timeline .experience-item {
-    padding-left: 1.4rem;
-    border-left: 1px solid var(--line);
-  }
-  .experience-when {
-    display: flex;
-    flex-direction: column;
-    gap: 0.3rem;
-    font-size: 0.85rem;
-    color: var(--muted);
-  }
-  .experience-period {
-    font-family: var(--font-mono);
-    letter-spacing: 0.02em;
-  }
-  .experience-role {
-    margin: 0 0 0.5rem;
-    font: 500 1.2rem/1.35 var(--font-display);
-    color: var(--fg);
-  }
-  .experience-company {
-    color: var(--muted);
-    font-weight: 400;
-  }
-  .experience-text {
-    margin: 0;
-    color: var(--muted);
-    line-height: 1.7;
-    font-size: 0.95rem;
-  }
-  @media (max-width: 620px) {
-    .experience-item {
-      grid-template-columns: 1fr;
-      gap: 0.5rem;
-    }
-  }
-</style>

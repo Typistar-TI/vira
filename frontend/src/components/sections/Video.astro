@@ -12,14 +12,20 @@ const source = embedUrl(section.url);
 ---
 
 {(section.title || source) && (
-  <section class:list={['video', `video-${section.variant}`]} data-vs-section="video">
-    <div class="video-inner">
+  <section class="px-5 py-16 sm:px-10 sm:py-24 lg:py-32" data-vs-section="video">
+    <div
+      class:list={[
+        'mx-auto w-full',
+        section.variant === 'boxed' ? 'max-w-[760px]' : 'max-w-[1000px]',
+      ]}
+    >
       <SectionHeading title={section.title} />
       {source ? (
-        <div class="video-frame">
+        <div class="aspect-video overflow-hidden rounded-3xl shadow-2xl">
           <iframe
             src={source}
             title={section.title || 'Vídeo'}
+            class="h-full w-full border-0"
             loading="lazy"
             referrerpolicy="strict-origin-when-cross-origin"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -27,44 +33,11 @@ const source = embedUrl(section.url);
           />
         </div>
       ) : (
-        <p class="video-empty">Adicione um link do YouTube ou Vimeo.</p>
+        <p class="text-[var(--muted)]">Adicione um link do YouTube ou Vimeo.</p>
       )}
-      {section.caption && <p class="video-caption">{section.caption}</p>}
+      {section.caption && (
+        <p class="mt-4 text-center text-sm text-[var(--muted)]">{section.caption}</p>
+      )}
     </div>
   </section>
 )}
-<style>
-  .video {
-    padding: clamp(56px, 9vw, 120px) clamp(20px, 5vw, 40px);
-  }
-  .video-inner {
-    max-width: 1000px;
-    margin-inline: auto;
-  }
-  .video-boxed .video-inner {
-    max-width: 760px;
-  }
-  .video-frame {
-    position: relative;
-    aspect-ratio: 16/9;
-    overflow: hidden;
-    border-radius: 18px;
-    box-shadow: 0 30px 70px -45px rgb(0 0 0 / 40%);
-  }
-  .video-frame iframe {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    border: 0;
-  }
-  .video-caption {
-    margin: 1rem 0 0;
-    text-align: center;
-    color: var(--muted);
-    font-size: 0.9rem;
-  }
-  .video-empty {
-    color: var(--muted);
-  }
-</style>

@@ -1,13 +1,11 @@
 ---
 import Base from '@frontend/components/Base.astro';
 import AdminHeader from '@frontend/components/AdminHeader.astro';
-import AdminTransitions from '@frontend/components/AdminTransitions.astro';
 
 const { admin } = Astro.props;
 ---
 
 <Base title="Meus dados · Vira" noindex appearance="light" manifest="/admin/manifest.webmanifest">
-  <AdminTransitions slot="head" />
   <div class="min-h-screen bg-white text-[#17130d]">
     <AdminHeader section="conta" admin={admin} />
     <main class="mx-auto max-w-[1380px] px-5 pt-8 pb-24 sm:px-8">

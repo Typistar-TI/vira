@@ -3,549 +3,215 @@ interface Props {
   lang: 'pt' | 'en';
   heading: string;
   intro: string;
-  steps: { title: string; text: string; image?: string; alt?: string }[];
+  steps: { title: string; text: string }[];
 }
 const { lang, heading, intro, steps } = Astro.props;
 const en = lang === 'en';
-const templates = [
-  {
-    key: 'central',
-    name: 'Central',
-    description: en
-      ? 'A clear home for your product.'
-      : 'Um lugar claro para apresentar seu produto.',
-  },
-  {
-    key: 'guardiao',
-    name: 'Guardião',
-    description: en ? 'Show what your service can do.' : 'Mostre o que seu serviço pode fazer.',
-  },
-  {
-    key: 'perfil',
-    name: 'Perfil',
-    description: en ? 'Your experience, front and center.' : 'Sua experiência em primeiro plano.',
-  },
-  {
-    key: 'estudio',
-    name: 'Estúdio',
-    description: en
-      ? 'A space for your creative identity.'
-      : 'Um espaço para sua identidade criativa.',
-  },
-  {
-    key: 'classico',
-    name: 'Clássico',
-    description: en ? 'Your page and your AI, together.' : 'Sua página e sua IA, juntas.',
-  },
-];
 ---
 
 <section
   id="como-funciona"
-  class="template-experience"
+  class="box-border h-[100svh] overflow-y-auto border-b border-[#d8ae73] bg-[#fcfaf6] py-[clamp(16px,3svh,32px)] text-[#17130d]"
   aria-labelledby="walkthrough-heading"
-  data-template-experience
+  data-flow
 >
-  <div class="experience-wrap">
-    <header class="experience-heading" data-reveal>
+  <div class="mx-auto grid h-full w-full max-w-[1240px] grid-rows-[auto_minmax(0,1fr)] gap-[clamp(16px,3svh,32px)] px-8 max-md:px-5">
+    <header class="flex items-end justify-between gap-10 max-md:block" data-reveal>
       <div>
-        <p class="eyebrow">
-          {en ? 'A starting point. Your own identity.' : 'Um ponto de partida. A sua identidade.'}
+        <p class="mb-3.5 font-mono text-[10px] uppercase tracking-[0.14em] text-[#9b6823]">
+          {en ? 'How it works' : 'Como funciona'}
         </p>
-        <h2 id="walkthrough-heading">{heading}</h2>
+        <h2
+          id="walkthrough-heading"
+          class="text-[clamp(1.9rem,3.8vw,3.1rem)] font-medium leading-[1.1] tracking-[-0.045em] font-['Outfit',sans-serif] [@media(max-height:650px)]:text-[1.6rem]"
+        >
+          {heading}
+        </h2>
       </div>
-      <p class="experience-intro">{intro}</p>
+      <p class="max-w-[34ch] text-sm leading-relaxed text-[#766c60] max-md:mt-3.5 max-md:max-w-[50ch] [@media(max-height:650px)]:mt-2 [@media(max-height:650px)]:text-xs">
+        {intro}
+      </p>
     </header>
 
-    <div class="template-toolbar">
-      <div
-        class="template-tabs"
-        role="tablist"
-        aria-label={en ? 'Explore starting points' : 'Explore os pontos de partida'}
-      >
-        {templates.map((template, index) => (
-          <button
-            type="button"
-            role="tab"
-            id={`template-tab-${template.key}`}
-            aria-controls={`template-panel-${template.key}`}
-            aria-selected={index === 0 ? 'true' : 'false'}
-            tabindex={index === 0 ? 0 : -1}
-            data-template-tab={index}
-          >
-            <span class={`template-dot dot-${template.key}`} aria-hidden="true"></span>
-            {template.name}
-          </button>
+    <div class="grid min-h-0 grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)] items-center gap-10 max-lg:grid-cols-1 max-lg:gap-6">
+      <ol class="m-0 flex list-none flex-col gap-3 p-0">
+        {steps.map((step, index) => (
+          <li class="m-0">
+            <button
+              type="button"
+              data-flow-step={index}
+              aria-current={index === 0 ? 'step' : 'false'}
+              class="group flex w-full items-start gap-4 rounded-2xl border border-transparent px-4 py-3 text-left transition-colors hover:bg-white aria-[current=step]:border-[#e5ded2] aria-[current=step]:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b88333]"
+            >
+              <span class="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-full border border-[#d8c4a0] font-mono text-xs text-[#9b6823] group-aria-[current=step]:border-[#b88333] group-aria-[current=step]:bg-[#b88333] group-aria-[current=step]:text-white">
+                {String(index + 1).padStart(2, '0')}
+              </span>
+              <span class="flex flex-col gap-1">
+                <span class="text-[17px] font-medium tracking-[-0.02em] font-['Outfit',sans-serif]">
+                  {step.title}
+                </span>
+                <span class="text-[13px] leading-relaxed text-[#766c60]">{step.text}</span>
+              </span>
+            </button>
+          </li>
         ))}
-      </div>
-      <span class="template-count">
-        {en
-          ? '5 starting points. Endless possibilities.'
-          : '5 pontos de partida. Infinitas possibilidades.'}
-      </span>
-    </div>
+      </ol>
 
-    <div class="template-stage">
-      {templates.map((template, index) => (
-        <div
-          role="tabpanel"
-          id={`template-panel-${template.key}`}
-          aria-labelledby={`template-tab-${template.key}`}
-          data-template-panel={index}
-          hidden={index !== 0}
-          tabindex="0"
-        >
-          <a
-            class="template-capture"
-            href={`/template-previews/${template.key}.webp`}
-            target="_blank"
-            rel="noopener"
-            aria-label={
-              en ? `Enlarge ${template.name} preview` : `Ampliar prévia do ${template.name}`
-            }
-          >
-            <picture>
-              <source
-                media="(max-width:767px)"
-                srcset={`/template-previews/${template.key}-mobile.webp`}
-              />
-              <img
-                src={`/template-previews/${template.key}.webp`}
-                width="1440"
-                height="900"
-                loading="lazy"
-                alt={
-                  en
-                    ? `${template.name}: Vira starting point with editable sample content`
-                    : `${template.name}: ponto de partida do Vira com conteúdo editável`
-                }
-              />
-            </picture>
-            <span class="enlarge-label">{en ? 'Enlarge preview' : 'Ampliar prévia'} ↗</span>
-          </a>
-          <div class="template-caption">
-            <div>
-              <strong>{template.name}</strong>
-              <span>{template.description}</span>
+      <div class="min-h-0 rounded-3xl border border-[#e5ded2] bg-white shadow-[0_30px_60px_-40px_#4e392f55] max-lg:hidden [@media(max-height:640px)]:hidden">
+        <div class="flex items-center gap-2 border-b border-[#eee7dc] px-4 py-3">
+          <span class="flex gap-1.5" aria-hidden="true">
+            <span class="h-2.5 w-2.5 rounded-full bg-[#e5ded2]"></span>
+            <span class="h-2.5 w-2.5 rounded-full bg-[#e5ded2]"></span>
+            <span class="h-2.5 w-2.5 rounded-full bg-[#e5ded2]"></span>
+          </span>
+          <span class="ml-2 flex-1 truncate rounded-full bg-[#f5f2eb] px-3 py-1 font-mono text-[10px] text-[#8b8174]">
+            vira.ia.br
+          </span>
+          <span class="flex gap-1" aria-hidden="true">
+            <span data-flow-dot={0} class="h-1.5 w-1.5 rounded-full bg-[#b88333]"></span>
+            <span data-flow-dot={1} class="h-1.5 w-1.5 rounded-full bg-[#e5ded2]"></span>
+            <span data-flow-dot={2} class="h-1.5 w-1.5 rounded-full bg-[#e5ded2]"></span>
+          </span>
+        </div>
+
+        <div class="relative h-[clamp(260px,42svh,420px)] overflow-hidden bg-[#fbf9f5]">
+          <div data-flow-panel={0} class="absolute inset-0 p-5">
+            <p class="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#9b6823]">
+              {en ? 'Add blocks' : 'Adicione blocos'}
+            </p>
+            <div class="flex flex-col gap-2">
+              {[
+                en ? 'Hero' : 'Herói',
+                en ? 'About' : 'Sobre',
+                en ? 'Services' : 'Serviços',
+                en ? 'Gallery' : 'Galeria',
+                en ? 'Contact' : 'Contato',
+              ].map((label, index) => (
+                <div
+                  class="flex items-center gap-3 rounded-xl border border-[#e5ded2] bg-white px-3 py-2.5 shadow-[0_10px_24px_-20px_#4e392f66]"
+                  style={`animation: none; opacity: ${1 - index * 0.06}`}
+                >
+                  <span class="grid h-7 w-7 place-items-center rounded-lg bg-[#f5f2eb] text-[11px] text-[#8b8174]">
+                    ≡
+                  </span>
+                  <span class="text-sm font-medium">{label}</span>
+                  <span class="ml-auto text-[#b88333]">＋</span>
+                </div>
+              ))}
             </div>
-            <a href="/login">{en ? 'Create my page' : 'Criar minha página'} ↗</a>
+          </div>
+
+          <div data-flow-panel={1} hidden class="absolute inset-0 p-5">
+            <p class="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#9b6823]">
+              {en ? 'Edit the content' : 'Edite o conteúdo'}
+            </p>
+            <div class="flex flex-col gap-3 rounded-2xl border border-[#e5ded2] bg-white p-4">
+              <span class="text-xs font-bold text-[#4a4238]">{en ? 'Headline' : 'Título'}</span>
+              <span class="rounded-lg border border-[#e5ded2] px-3 py-2 text-sm">
+                {en ? 'Your idea, online.' : 'Sua ideia, no ar.'}
+                <span class="ml-0.5 inline-block h-4 w-px animate-pulse bg-[#b88333] align-middle"></span>
+              </span>
+              <span class="text-xs font-bold text-[#4a4238]">{en ? 'Text' : 'Texto'}</span>
+              <span class="rounded-lg border border-[#e5ded2] px-3 py-2 text-sm text-[#766c60]">
+                {en
+                  ? 'Present your work in a clear, simple page.'
+                  : 'Apresente seu trabalho em uma página clara e simples.'}
+              </span>
+              <span class="mt-1 flex gap-2">
+                <span
+                  class="btn btn-sm rounded-full border-0"
+                  style="background:#17130d;color:#fff"
+                >
+                  {en ? 'Save' : 'Salvar'}
+                </span>
+                <span class="btn btn-sm btn-ghost rounded-full">{en ? 'Preview' : 'Prévia'}</span>
+              </span>
+            </div>
+          </div>
+
+          <div data-flow-panel={2} hidden class="absolute inset-0 p-5">
+            <p class="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#9b6823]">
+              {en ? 'Publish' : 'Publique'}
+            </p>
+            <div class="flex flex-col gap-3 rounded-2xl border border-[#e5ded2] bg-white p-4">
+              <span class="flex items-center gap-2 text-sm font-medium">
+                <span class="grid h-5 w-5 place-items-center rounded-full bg-[#17130d] text-[11px] text-white">
+                  ✓
+                </span>
+                {en ? 'Published!' : 'Publicado!'}
+              </span>
+              <span class="rounded-lg bg-[#f5f2eb] px-3 py-2 font-mono text-xs text-[#8b8174]">
+                {en ? 'your-page' : 'sua-pagina'}.vira.ia.br
+              </span>
+              <div class="mt-1 rounded-xl border border-[#eee7dc] p-3">
+                <span class="block text-base font-medium">
+                  {en ? 'Your idea, online.' : 'Sua ideia, no ar.'}
+                </span>
+                <span class="mt-1 block text-xs text-[#766c60]">
+                  {en
+                    ? 'Your visitors can ask the AI assistant anything.'
+                    : 'Seus visitantes podem perguntar qualquer coisa à assistente de IA.'}
+                </span>
+                <span
+                  class="mt-2 inline-block rounded-full px-3 py-1 text-xs text-white"
+                  style="background:#17130d"
+                >
+                  {en ? 'Get in touch' : 'Fale comigo'}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
-      ))}
-    </div>
-
-    <div class="experience-steps">
-      {steps.map((step, index) => (
-        <article class="experience-step">
-          <span class="step-index">0{index + 1}</span>
-          <div>
-            <h3>{step.title}</h3>
-            <p>{step.text}</p>
-          </div>
-        </article>
-      ))}
+      </div>
     </div>
   </div>
 </section>
-
-<style>
-  .template-experience {
-    height: 100svh;
-    box-sizing: border-box;
-    padding: clamp(16px, 3svh, 32px) 0;
-    background: #fcfaf6;
-    border-bottom: 1px solid #d8ae73;
-    color: #17130d;
-  }
-  .experience-wrap {
-    display: grid;
-    grid-template-rows: auto auto minmax(0, 1fr) auto;
-    gap: clamp(12px, 2svh, 20px);
-    height: 100%;
-    width: 100%;
-    max-width: 1240px;
-    margin: auto;
-    padding: 0 32px;
-  }
-  .experience-heading {
-    display: flex;
-    justify-content: space-between;
-    align-items: end;
-    gap: 40px;
-    margin-bottom: 0;
-  }
-  .eyebrow {
-    color: #9b6823;
-    font:
-      10px ui-monospace,
-      monospace;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    margin-bottom: 14px;
-  }
-  h2 {
-    font:
-      500 clamp(1.9rem, 3.8vw, 3.1rem)/1.1 'Outfit',
-      sans-serif;
-    letter-spacing: -0.045em;
-  }
-  .experience-intro {
-    max-width: 34ch;
-    color: #766c60;
-    font-size: 14px;
-    line-height: 1.7;
-  }
-  .template-toolbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 20px;
-    margin-bottom: 0;
-  }
-  .template-tabs {
-    display: flex;
-    gap: 4px;
-    flex-wrap: wrap;
-  }
-  .template-tabs button {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    min-height: 42px;
-    padding: 10px 16px;
-    border: 1px solid transparent;
-    border-radius: 8px;
-    color: #766c60;
-    font:
-      500 13px 'Outfit',
-      sans-serif;
-    cursor: pointer;
-    transition:
-      background 0.2s,
-      color 0.2s;
-  }
-  .template-tabs button[aria-selected='true'] {
-    color: #17130d;
-    border-color: #e5ded2;
-    background: white;
-    box-shadow: 0 2px 6px #30251008;
-  }
-  .template-tabs button:hover {
-    background: #f2ede5;
-    color: #17130d;
-  }
-  .template-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: #ff7919;
-  }
-  .dot-guardiao {
-    background: #70b85f;
-  }
-  .dot-perfil {
-    background: #79756d;
-  }
-  .dot-estudio {
-    background: #743d24;
-  }
-  .dot-classico {
-    background: #b88333;
-  }
-  .template-count {
-    font-size: 11px;
-    color: #8b8174;
-    white-space: nowrap;
-  }
-  .template-stage {
-    min-height: 0;
-    overflow: hidden;
-    border: 1px solid #e5ded2;
-    border-radius: 14px;
-    background: white;
-    box-shadow: 0 16px 44px -30px #4e392f40;
-  }
-  [role='tabpanel']:not([hidden]) {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    min-height: 0;
-  }
-  [role='tabpanel'][hidden] {
-    display: none;
-  }
-  .template-capture {
-    display: flex;
-    flex: 1;
-    min-height: 0;
-    justify-content: center;
-    position: relative;
-    background: #f5f2eb;
-  }
-  .template-capture img {
-    display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-  }
-  .template-capture picture {
-    display: block;
-    width: 100%;
-    height: 100%;
-    min-height: 0;
-  }
-  .enlarge-label {
-    position: absolute;
-    right: 18px;
-    bottom: 18px;
-    padding: 8px 12px;
-    background: #fffefbea;
-    border: 1px solid #e5ded2;
-    border-radius: 6px;
-    font-size: 11px;
-    color: #625a51;
-    opacity: 0;
-    transition: opacity 0.2s;
-  }
-  .template-capture:hover .enlarge-label,
-  .template-capture:focus-visible .enlarge-label {
-    opacity: 1;
-  }
-  .template-caption {
-    flex-shrink: 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 20px;
-    padding: 12px 20px;
-    border-top: 1px solid #eee7dc;
-  }
-  .template-caption > div {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-  .template-caption strong {
-    font-weight: 500;
-    font-size: 14px;
-  }
-  .template-caption span {
-    font-size: 12px;
-    color: #766c60;
-  }
-  .template-caption > a {
-    font-size: 12px;
-    font-weight: 500;
-    color: #9b6823;
-    white-space: nowrap;
-  }
-  .experience-steps {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 36px;
-    padding-top: 0;
-  }
-  .experience-step {
-    display: flex;
-    gap: 16px;
-    align-items: start;
-  }
-  .step-index {
-    padding-top: 3px;
-    color: #b88333;
-    font:
-      12px ui-monospace,
-      monospace;
-  }
-  h3 {
-    font:
-      500 18px/1.3 'Outfit',
-      sans-serif;
-    letter-spacing: -0.025em;
-  }
-  .experience-step p {
-    margin-top: 9px;
-    color: #766c60;
-    font-size: 12px;
-    line-height: 1.8;
-  }
-  button:focus-visible,
-  a:focus-visible,
-  [role='tabpanel']:focus-visible {
-    outline: 2px solid #b88333;
-    outline-offset: 4px;
-  }
-  @media (max-width: 767px) {
-    .template-experience {
-      padding: 20px 0;
-    }
-    .experience-wrap {
-      padding: 0 20px;
-    }
-    .experience-heading {
-      display: block;
-      margin-bottom: 0;
-    }
-    .experience-intro {
-      margin-top: 14px;
-      max-width: 50ch;
-    }
-    .template-toolbar {
-      display: block;
-    }
-    .template-count {
-      display: none;
-    }
-    .template-tabs {
-      gap: 2px;
-    }
-    .template-tabs button {
-      padding: 8px 10px;
-      font-size: 12px;
-      min-height: 40px;
-    }
-    .template-caption {
-      padding: 14px;
-      gap: 12px;
-    }
-    .template-caption > div {
-      align-items: start;
-      flex-direction: column;
-      gap: 4px;
-    }
-    .template-caption span {
-      font-size: 11px;
-    }
-    .experience-steps {
-      display: flex;
-      overflow-x: auto;
-      scroll-snap-type: x mandatory;
-      gap: 12px;
-      padding-top: 0;
-      padding-bottom: 8px;
-    }
-    .experience-step {
-      flex: 0 0 90%;
-      scroll-snap-align: start;
-    }
-    .enlarge-label {
-      opacity: 1;
-      right: 8px;
-      bottom: 8px;
-      padding: 5px 8px;
-      font-size: 9px;
-    }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    button,
-    .enlarge-label {
-      transition: none;
-    }
-  }
-  @media (max-width: 767px) {
-    .template-capture img {
-      object-fit: contain;
-      object-position: top;
-    }
-  }
-  @media (max-height: 650px) {
-    .experience-heading h2 {
-      font-size: 1.6rem;
-    }
-    .eyebrow {
-      margin-bottom: 8px;
-    }
-    .experience-intro {
-      font-size: 12px;
-      margin-top: 8px;
-    }
-    .experience-steps {
-      display: flex;
-      overflow-x: auto;
-      scroll-snap-type: x mandatory;
-      gap: 20px;
-    }
-    .experience-step {
-      flex: 0 0 100%;
-      scroll-snap-align: start;
-    }
-    .experience-step h3 {
-      font-size: 15px;
-    }
-    .experience-step p {
-      margin-top: 4px;
-      font-size: 11px;
-      line-height: 1.5;
-    }
-    .template-caption {
-      padding: 8px 12px;
-    }
-  }
-</style>
 <script>
-  document.querySelectorAll<HTMLElement>('[data-template-experience]').forEach((section) => {
-    const tabs = [...section.querySelectorAll<HTMLButtonElement>('[data-template-tab]')];
-    const panels = [...section.querySelectorAll<HTMLElement>('[data-template-panel]')];
+  document.querySelectorAll<HTMLElement>('[data-flow]').forEach((root) => {
+    const steps = [...root.querySelectorAll<HTMLButtonElement>('[data-flow-step]')];
+    const panels = [...root.querySelectorAll<HTMLElement>('[data-flow-panel]')];
+    const dots = [...root.querySelectorAll<HTMLElement>('[data-flow-dot]')];
     const reduced = matchMedia('(prefers-reduced-motion: reduce)');
     let active = 0;
-    let animation: Animation | undefined;
-    const select = (index: number, focus = false) => {
-      if (index === active) {
-        if (focus) tabs[index].focus();
-        return;
-      }
-      animation?.cancel();
+    let timer: ReturnType<typeof setInterval> | undefined;
+    const show = (index: number, animate = true) => {
       active = index;
-      tabs.forEach((tab, i) => {
-        tab.setAttribute('aria-selected', String(i === index));
-        tab.tabIndex = i === index ? 0 : -1;
-        panels[i].hidden = i !== index;
+      steps.forEach((step, i) => step.setAttribute('aria-current', i === index ? 'step' : 'false'));
+      dots.forEach((dot, i) => {
+        dot.className = `h-1.5 w-1.5 rounded-full ${i === index ? 'bg-[#b88333]' : 'bg-[#e5ded2]'}`;
       });
-      if (!reduced.matches)
-        animation = panels[index].animate(
-          [
-            { opacity: 0, transform: 'translateY(10px)' },
-            { opacity: 1, transform: 'translateY(0)' },
-          ],
-          { duration: 420, easing: 'cubic-bezier(.22,1,.36,1)' },
-        );
-      if (focus) tabs[index].focus();
-    };
-    tabs.forEach((tab, index) => {
-      tab.addEventListener('click', () => select(index));
-      tab.addEventListener('keydown', (event) => {
-        let next = index;
-        if (event.key === 'ArrowRight') next = (index + 1) % tabs.length;
-        else if (event.key === 'ArrowLeft') next = (index + tabs.length - 1) % tabs.length;
-        else if (event.key === 'Home') next = 0;
-        else if (event.key === 'End') next = tabs.length - 1;
-        else return;
-        event.preventDefault();
-        select(next, true);
-      });
-    });
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (!entries.some((entry) => entry.isIntersecting)) return;
-        if (!reduced.matches)
-          section.querySelectorAll('.experience-step').forEach((step, index) =>
-            step.animate(
-              [
-                { opacity: 0, transform: 'translateY(18px)' },
-                { opacity: 1, transform: 'translateY(0)' },
-              ],
-              {
-                duration: 550,
-                delay: index * 90,
-                easing: 'cubic-bezier(.22,1,.36,1)',
-                fill: 'backwards',
-              },
-            ),
+      panels.forEach((panel, i) => {
+        panel.hidden = i !== index;
+        if (i === index && animate && !reduced.matches)
+          panel.animate(
+            [
+              { opacity: 0, transform: 'translateY(12px)' },
+              { opacity: 1, transform: 'translateY(0)' },
+            ],
+            { duration: 420, easing: 'cubic-bezier(.22,1,.36,1)' },
           );
-        observer.disconnect();
-      },
-      { threshold: 0.2 },
+      });
+    };
+    const stop = () => {
+      if (timer) clearInterval(timer);
+      timer = undefined;
+    };
+    const start = () => {
+      stop();
+      if (reduced.matches) return;
+      timer = setInterval(() => show((active + 1) % steps.length), 3400);
+    };
+    steps.forEach((step, index) =>
+      step.addEventListener('click', () => {
+        show(index);
+        start();
+      }),
     );
-    observer.observe(section.querySelector('.experience-steps')!);
+    root.addEventListener('pointerenter', stop);
+    root.addEventListener('pointerleave', start);
+    root.addEventListener('focusin', stop);
+    root.addEventListener('focusout', start);
+    show(0, false);
+    start();
   });
 </script>

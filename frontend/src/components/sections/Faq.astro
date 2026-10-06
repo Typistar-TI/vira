@@ -8,27 +8,33 @@ interface Props {
 }
 const { section } = Astro.props;
 const items = section.items.filter((item) => item.question || item.answer);
+const accordion = section.variant === 'accordion';
 ---
 
 {items.length > 0 && (
-  <section class:list={['faq', `faq-${section.variant}`]} data-vs-section="faq">
-    <div class="faq-inner">
+  <section class="px-5 py-16 text-[var(--fg)] sm:px-10 sm:py-24 lg:py-32" data-vs-section="faq">
+    <div class="mx-auto w-full max-w-[820px]">
       <SectionHeading title={section.title} />
-      {section.variant === 'accordion' ? (
-        <div class="faq-list">
+      {accordion ? (
+        <div class="flex flex-col gap-3">
           {items.map((item) => (
-            <details class="faq-item">
-              <summary class="faq-question">{item.question}</summary>
-              <p class="faq-answer">{item.answer}</p>
-            </details>
+            <div class="collapse-arrow collapse border border-[var(--line)] bg-[var(--surface)]">
+              <input type="checkbox" name={`faq-${section.id}`} />
+              <div class="collapse-title font-medium [font-family:var(--font-display)]">
+                {item.question}
+              </div>
+              <div class="collapse-content text-[var(--muted)]">
+                <p>{item.answer}</p>
+              </div>
+            </div>
           ))}
         </div>
       ) : (
-        <dl class="faq-list">
+        <dl class="m-0 flex flex-col gap-3">
           {items.map((item) => (
-            <div class="faq-item">
-              <dt class="faq-question">{item.question}</dt>
-              <dd class="faq-answer">{item.answer}</dd>
+            <div class="rounded-box border border-[var(--line)] bg-[var(--surface)] p-4">
+              <dt class="font-medium [font-family:var(--font-display)]">{item.question}</dt>
+              <dd class="mt-2 text-[var(--muted)]">{item.answer}</dd>
             </div>
           ))}
         </dl>
@@ -36,37 +42,3 @@ const items = section.items.filter((item) => item.question || item.answer);
     </div>
   </section>
 )}
-<style>
-  .faq {
-    padding: clamp(56px, 9vw, 120px) clamp(20px, 5vw, 40px);
-  }
-  .faq-inner {
-    max-width: 820px;
-    margin-inline: auto;
-  }
-  .faq-list {
-    margin: 0;
-    display: grid;
-    gap: 0.75rem;
-  }
-  .faq-item {
-    padding: 1rem 1.25rem;
-    border: 1px solid var(--line);
-    border-radius: 14px;
-    background: var(--surface);
-  }
-  .faq-question {
-    cursor: pointer;
-    font: 500 1.05rem/1.4 var(--font-display);
-    color: var(--fg);
-  }
-  .faq-list dt.faq-question {
-    cursor: default;
-  }
-  .faq-answer {
-    margin: 0.75rem 0 0;
-    color: var(--muted);
-    line-height: 1.7;
-    font-size: 0.95rem;
-  }
-</style>

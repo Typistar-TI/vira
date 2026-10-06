@@ -88,8 +88,8 @@ const t = en
           ],
         },
       ],
-      section: 'Your page, your way.',
-      sectionText: 'Add blocks, customize your content and publish your page.',
+      section: 'How it works.',
+      sectionText: 'Three steps, using our own example page.',
       steps: [
         {
           title: 'Open your space',
@@ -158,8 +158,8 @@ const t = en
           ],
         },
       ],
-      section: 'Sua página, do seu jeito.',
-      sectionText: 'Adicione blocos, personalize o conteúdo e publique sua página.',
+      section: 'Como funciona.',
+      sectionText: 'Três passos, usando a nossa própria página de exemplo.',
       steps: [
         {
           title: 'Entre no seu espaço',
@@ -206,7 +206,7 @@ const t = en
   <link slot="head" rel="alternate" hreflang="x-default" href={'https://' + domain + '/'} />
   <div class="min-h-screen overflow-x-clip bg-white text-[#17130d]">
     <main>
-      <div class="marketing-first-screen">
+      <div class="marketing-first-screen flex h-[100svh] box-border flex-col border-b border-[#d8ae73]">
         <header class="relative z-20 mx-auto flex w-full max-w-[1380px] shrink-0 items-center justify-between gap-4 px-5 pt-5 sm:px-8 sm:pt-7">
           <Brand href={signedIn ? dashboardHref : en ? '/en' : '/'} tone="light" />
           <nav
@@ -254,7 +254,7 @@ const t = en
         </header>
         <section
           data-marketing-hero
-          class="relative isolate mx-auto flex min-h-0 w-full max-w-[1380px] flex-1 flex-col overflow-hidden px-5 pb-20 pt-5 sm:px-8 lg:pt-8"
+          class="relative isolate mx-auto flex min-h-0 w-full max-w-[1380px] flex-1 flex-col overflow-hidden px-5 pb-20 pt-5 sm:px-8 lg:pt-8 [@media(max-height:640px)]:pb-16 [@media(max-height:640px)]:pt-2"
           aria-labelledby="hero-title"
         >
           <img
@@ -265,7 +265,7 @@ const t = en
             fetchpriority="high"
             class="pointer-events-none absolute inset-0 -z-20 h-full w-full select-none object-cover object-center opacity-[0.07]"
           />
-          <div class="hero-conversation relative z-10 min-h-0 w-full flex-1">
+          <div class="hero-conversation relative z-10 flex min-h-0 w-full flex-1 items-stretch [&_.assistant-demo]:h-full [&_.assistant-demo]:w-full">
             <AssistantChat
               endpoint="/api/assistant/chat"
               lang={lang}
@@ -283,14 +283,14 @@ const t = en
                 </p>
                 <h1
                   id="hero-title"
-                  class="mt-4 max-w-[18ch] font-['Outfit',sans-serif] text-[clamp(2rem,3.5vw,3.4rem)] font-medium leading-[1.1] tracking-[-0.05em]"
+                  class="mt-4 max-w-[18ch] font-['Outfit',sans-serif] text-[clamp(2rem,3.5vw,3.4rem)] font-medium leading-[1.1] tracking-[-0.05em] [@media(max-height:640px)]:mt-2 [@media(max-height:640px)]:text-[1.65rem]"
                 >
                   {en ? 'Your page ready.' : 'Sua página pronta.'}
                   <span class="text-[#a66f27]">
                     {en ? ' Your AI assisting.' : ' Sua IA atendendo.'}
                   </span>
                 </h1>
-                <p class="mt-4 max-w-[44ch] text-sm leading-relaxed text-[#625a51]">
+                <p class="mt-4 max-w-[44ch] text-sm leading-relaxed text-[#625a51] [@media(max-height:640px)]:hidden">
                   {en
                     ? 'Create your site with an AI assistant. Try a conversation below.'
                     : 'Crie seu site com uma assistente de IA. Experimente uma conversa abaixo.'}
@@ -324,22 +324,22 @@ const t = en
       <ProjectShowcase lang={lang} projects={projects} />
       <section
         id="planos"
-        class="mx-auto max-w-[1380px] scroll-mt-12 bg-white px-5 py-24 sm:px-8 md:py-32"
+        class="box-border flex h-[100svh] max-w-none scroll-mt-12 flex-col border-b border-[#d8ae73] bg-white px-[max(20px,calc((100%-1316px)/2))] py-[clamp(16px,3svh,32px)]"
       >
-        <div class="mb-14 text-center" data-reveal>
+        <div class="mb-[clamp(16px,3svh,32px)] shrink-0 text-center" data-reveal>
           <p class="font-mono text-[11px] uppercase tracking-[0.22em] text-[#9b6823]">
             {en ? 'Plans' : 'Planos'}
           </p>
-          <h2 class="mt-5 font-['Outfit',sans-serif] text-[clamp(3.3rem,6.2vw,6.4rem)] font-medium leading-none tracking-[-0.06em]">
+          <h2 class="mt-2.5 font-['Outfit',sans-serif] text-[clamp(1.9rem,4svh,3rem)] font-medium leading-none tracking-[-0.06em]">
             {t.plans}
           </h2>
-          <p class="mt-5 text-[#625a51]">{t.plansText}</p>
+          <p class="mt-2.5 text-sm text-[#625a51]">{t.plansText}</p>
         </div>
-        <div class="grid auto-rows-fr gap-4 lg:grid-cols-3">
+        <div class="grid min-h-0 flex-1 gap-4 lg:grid-cols-3 max-lg:block max-lg:overflow-y-auto">
           {[t.monthly, t.yearly, t.lifetime].map((name, i) => (
             <article
               data-reveal
-              class="flex h-full min-w-0 flex-col rounded-[1.5rem] border border-[#d8ae73] bg-white px-6 py-8 sm:px-8 lg:py-10"
+              class="flex h-full min-w-0 flex-col rounded-[22px] border border-[#d8ae73] bg-white px-[clamp(20px,2.6vw,32px)] py-[clamp(24px,4svh,52px)] max-lg:mb-3.5 max-lg:h-auto"
             >
               <div class="flex items-center justify-between">
                 <span class="font-mono text-[11px] uppercase tracking-[0.16em] text-[#9b6823]">
@@ -353,16 +353,16 @@ const t = en
                 </span>
                 {i === 1 && <span class="h-1.5 w-1.5 rounded-full bg-[#b88333]"></span>}
               </div>
-              <h3 class="mt-8 font-['Outfit',sans-serif] text-[clamp(1.7rem,3vw,2.2rem)] font-medium tracking-[-0.04em]">
+              <h3 class="mt-[clamp(18px,4svh,44px)] font-['Outfit',sans-serif] text-[clamp(1.6rem,3.6svh,2.4rem)] font-medium tracking-[-0.04em]">
                 {name}
               </h3>
-              <p class="mt-4 min-h-16 max-w-[34ch] leading-relaxed text-[#625a51]">
+              <p class="mt-[clamp(12px,2.4svh,22px)] max-w-[34ch] text-[clamp(14px,1.6svh,16px)] leading-[1.7] text-[#625a51]">
                 {[t.monthlyDesc, t.yearlyDesc, t.lifetimeDesc][i]}
               </p>
-              <p class="mt-10 border-b border-[#d8ae73] pb-7 font-['Outfit',sans-serif] text-[clamp(2rem,3.5vw,3.4rem)] font-medium leading-none tracking-[-0.05em] tabular-nums">
+              <p class="mt-[clamp(18px,4svh,46px)] border-b border-[#d8ae73] pb-[clamp(16px,3.8svh,42px)] font-['Outfit',sans-serif] text-[clamp(1.8rem,4.8svh,3.1rem)] font-medium leading-none tracking-[-0.05em] tabular-nums">
                 {planPrices[i] ?? t.comingSoon}
               </p>
-              <ul class="my-8 space-y-3 text-sm text-[#4f473e]">
+              <ul class="mt-[clamp(18px,3.8svh,42px)] mb-0 space-y-[clamp(8px,1.8svh,18px)] text-[clamp(13px,1.6svh,15px)] text-[#4f473e]">
                 {t.included.map((item) => (
                   <li class="flex gap-3">
                     <span class="text-[#9b6823]" aria-hidden="true">
@@ -382,7 +382,7 @@ const t = en
                         : '/login'
                   }
                   class:list={[
-                    'btn mt-auto h-12 w-full rounded-full font-semibold shadow-none',
+                    'btn mt-auto h-12 min-h-[clamp(44px,5.4svh,54px)] w-full rounded-full font-semibold shadow-none',
                     i === 1
                       ? 'border border-[#a66f27] bg-[#b88333] text-white hover:bg-[#9b6823]'
                       : 'border border-[#b88333] bg-white text-[#6f4716] hover:border-[#9b6823] hover:bg-[#fff9ef]',
@@ -416,101 +416,7 @@ const t = en
     </footer>
   </div>
 </Base>
-<style>
-  .marketing-first-screen {
-    display: flex;
-    flex-direction: column;
-    height: 100svh;
-    box-sizing: border-box;
-    border-bottom: 1px solid #d8ae73;
-  }
-  .hero-conversation {
-    display: flex;
-    align-items: stretch;
-  }
-  .hero-conversation :global(.assistant-demo) {
-    width: 100%;
-    height: 100%;
-  }
-  #planos {
-    height: 100svh;
-    box-sizing: border-box;
-    border-bottom: 1px solid #d8ae73;
-    max-width: none;
-    display: flex;
-    flex-direction: column;
-    padding: clamp(16px, 3svh, 32px) max(20px, calc((100% - 1316px) / 2));
-  }
-  #planos > div:first-child {
-    flex-shrink: 0;
-    margin-bottom: clamp(16px, 3svh, 32px);
-  }
-  #planos h2 {
-    font-size: clamp(1.9rem, 4svh, 3rem);
-    margin-top: 10px;
-  }
-  #planos > div:first-child > p:last-child {
-    margin-top: 10px;
-    font-size: 14px;
-  }
-  #planos > div:last-child {
-    flex: 1;
-    min-height: 0;
-  }
-  #planos article {
-    padding: clamp(24px, 4svh, 52px) clamp(20px, 2.6vw, 32px);
-    border-radius: 22px;
-  }
-  #planos article h3 {
-    margin-top: clamp(18px, 4svh, 44px);
-    font-size: clamp(1.6rem, 3.6svh, 2.4rem);
-  }
-  #planos article > p:first-of-type {
-    min-height: 0;
-    margin-top: clamp(12px, 2.4svh, 22px);
-    font-size: clamp(14px, 1.6svh, 16px);
-    line-height: 1.7;
-  }
-  #planos article > p:nth-of-type(2) {
-    margin-top: clamp(18px, 4svh, 46px);
-    padding-bottom: clamp(16px, 3.8svh, 42px);
-    font-size: clamp(1.8rem, 4.8svh, 3.1rem);
-  }
-  #planos article ul {
-    margin-block: clamp(18px, 3.8svh, 42px) 0;
-    font-size: clamp(13px, 1.6svh, 15px);
-  }
-  #planos article li + li {
-    margin-top: clamp(8px, 1.8svh, 18px);
-  }
-  #planos article .btn {
-    min-height: clamp(44px, 5.4svh, 54px);
-  }
-  @media (max-width: 1023px) {
-    #planos > div:last-child {
-      display: block;
-      overflow-y: auto;
-    }
-    #planos article {
-      height: auto;
-      min-height: 0;
-      margin-bottom: 14px;
-    }
-  }
-  @media (max-height: 640px) {
-    [data-marketing-hero] {
-      padding-top: 0.5rem;
-      padding-bottom: 4rem;
-    }
-    [data-hero-intro] h1 {
-      font-size: 1.65rem;
-      margin-top: 0.5rem;
-    }
-    [data-hero-intro] > p:last-of-type {
-      display: none;
-    }
-  }
-</style>
+
 <script>
   import '@frontend/pages/_scripts/assistant-chat';
 </script>

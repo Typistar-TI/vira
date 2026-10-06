@@ -11,53 +11,34 @@ const { section } = Astro.props;
 ---
 
 {(section.title || section.address) && (
-  <section class:list={['map', `map-${section.variant}`]} data-vs-section="map">
-    <div class="map-inner">
+  <section class="px-5 py-16 sm:px-10 sm:py-24 lg:py-32" data-vs-section="map">
+    <div
+      class:list={[
+        'mx-auto w-full',
+        section.variant === 'boxed' ? 'max-w-[760px]' : 'max-w-[1000px]',
+      ]}
+    >
       <SectionHeading title={section.title} />
       {section.address ? (
-        <div class="map-frame">
-          <iframe src={mapSrc(section.address)} title={section.address} loading="lazy" />
-          <a class="map-link" href={mapLink(section.address)} target="_blank" rel="noopener">
+        <div class="overflow-hidden rounded-3xl border border-[var(--line)]">
+          <iframe
+            src={mapSrc(section.address)}
+            title={section.address}
+            class="aspect-video w-full border-0"
+            loading="lazy"
+          />
+          <a
+            href={mapLink(section.address)}
+            target="_blank"
+            rel="noopener"
+            class="link inline-block p-4 text-[var(--accent)] no-underline"
+          >
             {section.address} ↗
           </a>
         </div>
       ) : (
-        <p class="map-empty">Adicione um endereço.</p>
+        <p class="text-[var(--muted)]">Adicione um endereço.</p>
       )}
     </div>
   </section>
 )}
-<style>
-  .map {
-    padding: clamp(56px, 9vw, 120px) clamp(20px, 5vw, 40px);
-  }
-  .map-inner {
-    max-width: 1000px;
-    margin-inline: auto;
-  }
-  .map-boxed .map-inner {
-    max-width: 760px;
-  }
-  .map-frame {
-    position: relative;
-    border-radius: 18px;
-    overflow: hidden;
-    border: 1px solid var(--line);
-  }
-  .map-frame iframe {
-    display: block;
-    width: 100%;
-    aspect-ratio: 16/9;
-    border: 0;
-  }
-  .map-link {
-    display: inline-block;
-    padding: 0.75rem 1rem;
-    font-size: 0.9rem;
-    color: var(--accent);
-    text-decoration: none;
-  }
-  .map-empty {
-    color: var(--muted);
-  }
-</style>

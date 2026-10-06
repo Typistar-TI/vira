@@ -1,5 +1,6 @@
 import { z } from 'astro/zod';
 import { imagePath, MAX_SECTIONS, sectionSchema, type Section } from './sections';
+import { exampleSite } from './example';
 
 const text = (max: number) => z.string().trim().max(max);
 
@@ -54,18 +55,8 @@ export const fontHrefs: Record<FontKey, string> = {
   gilda: `${googleFonts}family=Gilda+Display&display=swap`,
 };
 
-export const starterKeys = [
-  'guardiao',
-  'central',
-  'perfil',
-  'estudio',
-  'classico',
-  'blank',
-] as const;
-export type StarterKey = (typeof starterKeys)[number];
-
-export const starterThemes: Record<
-  StarterKey,
+export const legacyThemes: Record<
+  string,
   { font: FontKey; backgroundColor: string; textColor: string; accentColor: string }
 > = {
   guardiao: {
@@ -102,7 +93,7 @@ export const starterThemes: Record<
     font: 'outfit',
     backgroundColor: '#ffffff',
     textColor: '#17130d',
-    accentColor: '#b88333',
+    accentColor: '#17130d',
   },
 };
 
@@ -156,52 +147,9 @@ export const defaultSite: SiteContent = {
   sections: [],
 };
 
-/** A neutral first page so a brand new account is never empty. */
+/** The single, simple black-and-white page every new account starts from. */
 export function initialSite(language: 'pt' | 'en'): SiteContent {
-  const en = language === 'en';
-  const theme = starterThemes.blank;
-  return {
-    ...defaultSite,
-    ...theme,
-    themeColor: theme.backgroundColor,
-    language,
-    title: en ? 'Your idea, online.' : 'Sua ideia, no ar.',
-    sections: [
-      {
-        id: 'hero',
-        type: 'hero',
-        variant: 'center',
-        eyebrow: en ? 'WELCOME' : 'BEM-VINDO',
-        title: en ? 'Your idea, online.' : 'Sua ideia, no ar.',
-        subtitle: en
-          ? 'Introduce your work and invite people to get in touch.'
-          : 'Apresente seu trabalho e convide as pessoas a entrar em contato.',
-        image: '',
-        primaryLabel: en ? 'Get in touch' : 'Fale comigo',
-        primaryUrl: '',
-      },
-      {
-        id: 'about',
-        type: 'about',
-        variant: 'text',
-        title: en ? 'About' : 'Sobre',
-        body: en
-          ? 'Write here what you do, for whom and what makes you different.'
-          : 'Escreva aqui o que você faz, para quem e o que te diferencia.',
-        image: '',
-      },
-      {
-        id: 'contact',
-        type: 'contact',
-        variant: 'simple',
-        title: en ? 'Let’s talk' : 'Vamos conversar',
-        body: en ? 'Tell me about your project.' : 'Conte sobre o seu projeto.',
-        primaryLabel: en ? 'Send a message' : 'Enviar mensagem',
-        primaryUrl: '',
-        links: [],
-      },
-    ],
-  };
+  return exampleSite(language);
 }
 
 function asRecord(value: unknown): Record<string, unknown> {
@@ -382,11 +330,11 @@ function sectionsFromLegacy(original: Record<string, unknown>): Section[] {
   return sections;
 }
 
-function legacyStarterKey(original: Record<string, unknown>): StarterKey | null {
+function legacyStarterKey(original: Record<string, unknown>): string | null {
   const raw = original.layout;
   if (typeof raw !== 'string') return null;
   const key = legacyLayouts[raw] || raw;
-  return key in starterThemes ? (key as StarterKey) : null;
+  return key in legacyThemes ? key : null;
 }
 
 const legacyOnlyKeys = [
@@ -419,7 +367,7 @@ export function parseSite(value: unknown): SiteContent {
   const hasLegacyContent = legacyOnlyKeys.some((key) => nonEmpty(original[key]));
   if (!hasSections && hasLegacyContent) migrated.sections = sectionsFromLegacy(original);
   const content = siteSchema.parse(migrated);
-  const theme = starterThemes[legacyStarterKey(original) ?? 'blank'];
+  const theme = legacyThemes[legacyStarterKey(original) ?? 'blank'];
   if (original.backgroundColor === undefined) content.backgroundColor = theme.backgroundColor;
   if (original.textColor === undefined) content.textColor = theme.textColor;
   if (original.accentColor === undefined) content.accentColor = theme.accentColor;

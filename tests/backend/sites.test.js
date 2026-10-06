@@ -5,34 +5,33 @@ import { defaultSite, hasAccess, parseSite } from '../../backend/features/sites/
 import { getSiteForUser } from '../../backend/features/sites/repository/sites';
 import { readMedia } from '../../backend/features/media/controller/read';
 import { customer, request } from './helpers';
-import { starterSite } from '../../backend/features/sites/entities/starters';
+import { exampleSite } from '../../backend/features/sites/entities/example';
 
-it.each(['guardiao', 'central', 'perfil', 'estudio', 'classico', 'blank'])(
-  'loads a complete generic editable %s starting point without publishing',
-  async (key) => {
-    const { user, cookie } = await customer();
-    const before = await getSiteForUser(user.id);
-    for (const language of ['pt', 'en']) {
-      const preset = starterSite(key, language);
-      expect(parseSite(preset)).toEqual(preset);
-      expect(preset.language).toBe(language);
-      expect(preset.sections.length).toBeGreaterThan(0);
-      expect(JSON.stringify(preset)).not.toMatch(
-        /Valkyris|DashLab|Fertec|Forastieri|Miriam|\/templates\/assets/,
-      );
-      expect((await api.fetch(request('/api/site/save', preset, { cookie }))).status).toBe(200);
-      const after = await getSiteForUser(user.id);
-      expect(JSON.parse(after.draft_json)).toEqual(preset);
-      expect(after.published_json).toBe(before.published_json);
-    }
-  },
-);
+it('starts every account from the single fixed black-and-white page', async () => {
+  const { user, cookie } = await customer();
+  const before = await getSiteForUser(user.id);
+  for (const language of ['pt', 'en']) {
+    const preset = exampleSite(language);
+    expect(parseSite(preset)).toEqual(preset);
+    expect(preset.language).toBe(language);
+    expect(preset.backgroundColor).toBe('#ffffff');
+    expect(preset.accentColor).toBe('#17130d');
+    expect(preset.sections.length).toBeGreaterThan(0);
+    expect(JSON.stringify(preset)).not.toMatch(
+      /Valkyris|DashLab|Fertec|Forastieri|Miriam|\/templates\/assets/,
+    );
+    expect((await api.fetch(request('/api/site/save', preset, { cookie }))).status).toBe(200);
+    const after = await getSiteForUser(user.id);
+    expect(JSON.parse(after.draft_json)).toEqual(preset);
+    expect(after.published_json).toBe(before.published_json);
+  }
+});
 
-it('returns independent starting points and keeps image ownership restrictions', async () => {
-  const first = starterSite('perfil', 'pt');
+it('example content is independent and image ownership is enforced', () => {
+  const first = exampleSite('pt');
   const services = first.sections.find((section) => section.type === 'services');
   services.items[0].title = 'Edited';
-  const second = starterSite('perfil', 'pt');
+  const second = exampleSite('pt');
   expect(second.sections.find((section) => section.type === 'services').items[0].title).not.toBe(
     'Edited',
   );

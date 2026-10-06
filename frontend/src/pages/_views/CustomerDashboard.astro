@@ -9,7 +9,6 @@ import {
   parseSiteContent,
   blankSection,
   sectionTypes,
-  starterKeys,
   type SectionType,
 } from '@frontend/api/sites/parse-site';
 import { preferredLanguage } from '@frontend/i18n/preferred-language';
@@ -48,18 +47,6 @@ const t = en
       desktop: 'Desktop',
       mobile: 'Mobile',
       content: 'Your page',
-      startingPoint: 'Starting point',
-      applyStarter: 'Apply',
-      starterHint:
-        'Inserts a ready set of blocks and colors. You can change everything afterwards, without saving or publishing.',
-      starters: {
-        guardiao: 'Guardian',
-        central: 'Control room',
-        perfil: 'Profile',
-        estudio: 'Studio',
-        classico: 'Classic',
-        blank: 'Blank',
-      } as Record<string, string>,
       style: 'Typography and colors',
       blocks: 'Page blocks',
       addBlock: 'Add block',
@@ -81,8 +68,6 @@ const t = en
       assistantToggle: 'AI assistant on the published page',
       assistantToggleHint:
         'On by default. It answers visitors using the content you write here. Publish to update what it knows.',
-      confirmStarter:
-        'Replace the blocks and colors with this starting point? It does not save or publish.',
       font: 'Typography',
       language: 'Page language',
       eyebrow: 'Small label',
@@ -171,18 +156,6 @@ const t = en
       desktop: 'Computador',
       mobile: 'Celular',
       content: 'Sua página',
-      startingPoint: 'Ponto de partida',
-      applyStarter: 'Aplicar',
-      starterHint:
-        'Insere um conjunto de blocos e cores prontos. Você pode mudar tudo depois, sem salvar nem publicar.',
-      starters: {
-        guardiao: 'Guardião',
-        central: 'Central',
-        perfil: 'Perfil',
-        estudio: 'Estúdio',
-        classico: 'Clássico',
-        blank: 'Em branco',
-      } as Record<string, string>,
       style: 'Tipografia e cores',
       blocks: 'Blocos da página',
       addBlock: 'Adicionar bloco',
@@ -204,8 +177,6 @@ const t = en
       assistantToggle: 'Assistente de IA na página publicada',
       assistantToggleHint:
         'Ligada por padrão. Responde aos visitantes com base no conteúdo que você escreve aqui. Publique para atualizar o que ela sabe.',
-      confirmStarter:
-        'Substituir os blocos e cores por este ponto de partida? Não salva nem publica.',
       font: 'Tipografia',
       language: 'Idioma da página',
       eyebrow: 'Etiqueta curta',
@@ -322,7 +293,7 @@ const trialLeft = en
       )}
       <div>
         {section === 'dominio' && (
-          <section class="card rounded-xl border border-[#d8ae73] bg-white p-6 [&_h2]:mb-4 [&_h2]:text-[1.45rem] [&_h2]:text-[#17130d] [&_h3]:mt-7 [&_h3]:mb-3 [&_h3]:text-lg [&_label]:mt-4 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold [&_.input]:w-full [&_.textarea]:w-full [&_.select]:w-full [&_small]:text-[#625a51] mb-5">
+          <section class="card rounded-none border-x-0 border-b-0 border-[#d8ae73] bg-white p-6 px-0 shadow-none [&_h2]:font-['Outfit',sans-serif] [&_h2]:font-medium [&_h2]:tracking-[-0.03em] [&_h2]:mb-4 [&_h2]:text-[1.45rem] [&_h2]:text-[#17130d] [&_h3]:mt-7 [&_h3]:mb-3 [&_h3]:text-lg [&_label]:mt-4 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold [&_.input]:w-full [&_.textarea]:w-full [&_.select]:w-full [&_small]:text-[#625a51] mb-5">
             <h2>{t.address}</h2>
             <p class="text-sm text-[#625a51]">
               {t.publicLink}:{' '}
@@ -419,20 +390,7 @@ const trialLeft = en
                   class="card rounded-xl border border-[#d8ae73] bg-white p-5 [&_h2]:mb-4 [&_h2]:text-[1.45rem] [&_h2]:text-[#17130d] [&_h3]:mt-6 [&_h3]:mb-3 [&_h3]:text-lg [&_label]:mt-4 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold [&_.input]:w-full [&_.textarea]:w-full [&_.select]:w-full [&_small]:text-[#625a51] mb-5"
                   data-initial={JSON.stringify(content)}
                 >
-                  <label for="starter">{t.startingPoint}</label>
-                  <div class="flex flex-col gap-2 sm:flex-row">
-                    <select class="select select-bordered flex-1" id="starter" name="starter">
-                      {starterKeys.map((key) => (
-                        <option value={key}>{t.starters[key]}</option>
-                      ))}
-                    </select>
-                    <button class="btn btn-outline btn-sm" type="button" id="apply-starter">
-                      {t.applyStarter}
-                    </button>
-                  </div>
-                  <small>{t.starterHint}</small>
-
-                  <label class="mt-4 flex items-start gap-3 text-sm font-medium text-[#17130d]">
+                  <label class="flex items-start gap-3 text-sm font-medium text-[#17130d]">
                     <input
                       class="checkbox checkbox-primary mt-0.5 shrink-0 border border-[#b88333]"
                       name="assistant"
@@ -633,7 +591,7 @@ const trialLeft = en
           </section>
         )}
         {section === 'plano' && (
-          <section class="card rounded-xl border border-[#d8ae73] bg-white p-6 [&_h2]:mb-4 [&_h2]:text-[1.45rem] [&_h2]:text-[#17130d] [&_h3]:mt-7 [&_h3]:mb-3 [&_h3]:text-lg [&_label]:mt-4 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold [&_.input]:w-full [&_.textarea]:w-full [&_.select]:w-full [&_small]:text-[#625a51] mb-5">
+          <section class="card rounded-none border-x-0 border-b-0 border-[#d8ae73] bg-white p-6 px-0 shadow-none [&_h2]:font-['Outfit',sans-serif] [&_h2]:font-medium [&_h2]:tracking-[-0.03em] [&_h2]:mb-4 [&_h2]:text-[1.45rem] [&_h2]:text-[#17130d] [&_h3]:mt-7 [&_h3]:mb-3 [&_h3]:text-lg [&_label]:mt-4 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold [&_.input]:w-full [&_.textarea]:w-full [&_.select]:w-full [&_small]:text-[#625a51] mb-5">
             <h2>{t.plans}</h2>
             <p class="text-[#625a51]">{user.plan === 'trial' ? trialLeft : user.plan}</p>
             <div class="mt-5 flex flex-wrap gap-2.5">
@@ -680,7 +638,7 @@ const trialLeft = en
           </section>
         )}
         {section === 'dominio' && (
-          <section class="card rounded-xl border border-[#d8ae73] bg-white p-6 [&_h2]:mb-4 [&_h2]:text-[1.45rem] [&_h2]:text-[#17130d] [&_h3]:mt-7 [&_h3]:mb-3 [&_h3]:text-lg [&_label]:mt-4 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold [&_.input]:w-full [&_.textarea]:w-full [&_.select]:w-full [&_small]:text-[#625a51] mb-5">
+          <section class="card rounded-none border-x-0 border-b-0 border-[#d8ae73] bg-white p-6 px-0 shadow-none [&_h2]:font-['Outfit',sans-serif] [&_h2]:font-medium [&_h2]:tracking-[-0.03em] [&_h2]:mb-4 [&_h2]:text-[1.45rem] [&_h2]:text-[#17130d] [&_h3]:mt-7 [&_h3]:mb-3 [&_h3]:text-lg [&_label]:mt-4 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold [&_.input]:w-full [&_.textarea]:w-full [&_.select]:w-full [&_small]:text-[#625a51] mb-5">
             <h2>{t.domain}</h2>
             <p class="text-[#625a51] text-sm">{t.domainHint}</p>
             <form id="domain-form" class="mt-4 flex flex-col gap-2 sm:flex-row">
@@ -703,7 +661,7 @@ const trialLeft = en
         {section === 'conta' && (
           <section
             id="account"
-            class="card rounded-xl border border-[#d8ae73] bg-white p-6 [&_h2]:mb-4 [&_h2]:text-[1.45rem] [&_h2]:text-[#17130d] [&_h3]:mt-7 [&_h3]:mb-3 [&_h3]:text-lg [&_label]:mt-4 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold [&_.input]:w-full [&_.textarea]:w-full [&_.select]:w-full [&_small]:text-[#625a51] mb-5"
+            class="card rounded-none border-x-0 border-b-0 border-[#d8ae73] bg-white p-6 px-0 shadow-none [&_h2]:font-['Outfit',sans-serif] [&_h2]:font-medium [&_h2]:tracking-[-0.03em] [&_h2]:mb-4 [&_h2]:text-[1.45rem] [&_h2]:text-[#17130d] [&_h3]:mt-7 [&_h3]:mb-3 [&_h3]:text-lg [&_label]:mt-4 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold [&_.input]:w-full [&_.textarea]:w-full [&_.select]:w-full [&_small]:text-[#625a51] mb-5"
           >
             <h2>{t.account}</h2>
             <a
@@ -745,22 +703,7 @@ const trialLeft = en
       </div>
     </main>
   </div>
-  <style>
-    #site-controls[hidden] {
-      display: none;
-    }
-    .customer-dashboard :global(.card) {
-      border-radius: 0;
-      border-width: 1px 0 0;
-      padding-inline: 0;
-      box-shadow: none;
-    }
-    .customer-dashboard :global(h2) {
-      font-family: 'Outfit', sans-serif;
-      font-weight: 500;
-      letter-spacing: -0.03em;
-    }
-  </style>
+
   <script>
     import '@frontend/pages/_scripts/account-menu';
     import { uploadMedia } from '@frontend/api/media/upload';
@@ -775,8 +718,6 @@ const trialLeft = en
     import { exportAccount } from '@frontend/api/accounts/export';
     import { getMetrics } from '@frontend/api/analytics/metrics';
     import { reportError } from '@frontend/components/toast';
-    import { starter } from '@frontend/api/sites/parse-site';
-    import type { StarterKey } from '@frontend/api/sites/parse-site';
 
     const input = (scope: ParentNode, name: string) =>
       (
@@ -818,7 +759,6 @@ const trialLeft = en
     function initEditor(form: HTMLFormElement) {
       let changeVersion = 0;
       let savedVersion = 0;
-      const lang = document.documentElement.lang === 'en' ? 'en' : 'pt';
       const markChanged = () => {
         changeVersion += 1;
       };
@@ -856,56 +796,10 @@ const trialLeft = en
         )!;
         const node = tpl.cloneNode(true) as HTMLElement;
         node.removeAttribute('data-template');
+        node.classList.remove('hidden');
         setField(node, 'field-id', crypto.randomUUID().slice(0, 12));
         return node;
       };
-
-      const fillSection = (node: HTMLElement, data: Record<string, unknown>) => {
-        setField(
-          node,
-          'field-id',
-          typeof data.id === 'string' && data.id ? data.id : crypto.randomUUID().slice(0, 12),
-        );
-        for (const key of TEXT_KEYS)
-          if (typeof data[key] === 'string') setField(node, `field-${key}`, data[key] as string);
-        if (typeof data.variant === 'string') setField(node, 'field-variant', data.variant);
-        if (typeof data.image === 'string') setField(node, 'field-image', data.image);
-        const rows = (data.items || data.images || data.links || []) as Record<string, string>[];
-        const root = node.querySelector<HTMLElement>('[data-items]');
-        const itemTpl = node.querySelector<HTMLTemplateElement>('[data-item-template]');
-        if (!root || !itemTpl) return;
-        root.replaceChildren(
-          ...rows.map((row) => {
-            const item = itemTpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
-            for (const [key, value] of Object.entries(row)) setField(item, `item-${key}`, value);
-            return item;
-          }),
-        );
-      };
-
-      const applyStarter = (key: StarterKey) => {
-        if (!window.confirm(t().confirmStarter)) return;
-        const data = starter(key, lang);
-        sectionsRoot.replaceChildren(
-          ...data.sections.map((item) => {
-            const node = makeSection(item.type);
-            fillSection(node, item as unknown as Record<string, unknown>);
-            return node;
-          }),
-        );
-        setField(form, 'font', data.font);
-        setField(form, 'backgroundColor', data.colors.backgroundColor);
-        setField(form, 'textColor', data.colors.textColor);
-        setField(form, 'accentColor', data.colors.accentColor);
-        setField(form, 'themeColor', data.colors.backgroundColor);
-        markChanged();
-        updatePreview();
-      };
-      form.querySelector('#apply-starter')?.addEventListener('click', () => {
-        const value = (form.querySelector<HTMLSelectElement>('#starter')?.value ||
-          'blank') as StarterKey;
-        applyStarter(value);
-      });
 
       form.querySelector('#add-section')?.addEventListener('click', () => {
         const type = form.querySelector<HTMLSelectElement>('#add-section-type')?.value || 'hero';
@@ -1166,17 +1060,6 @@ const trialLeft = en
         document.querySelector('#mobile-preview')?.setAttribute('aria-pressed', 'true');
         document.querySelector<HTMLIFrameElement>('#preview-frame')!.classList.add('max-w-[390px]');
       });
-    }
-    function t() {
-      return document.documentElement.lang === 'en'
-        ? {
-            confirmStarter:
-              'Replace the blocks and colors with this starting point? It does not save or publish.',
-          }
-        : {
-            confirmStarter:
-              'Substituir os blocos e cores por este ponto de partida? Não salva nem publica.',
-          };
     }
     const editorForm = document.querySelector<HTMLFormElement>('#editor');
     if (editorForm) initEditor(editorForm);

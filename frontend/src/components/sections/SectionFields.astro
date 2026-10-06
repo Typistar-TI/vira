@@ -174,29 +174,50 @@ const variants = variantLabels[section.type];
 ---
 
 <div
-  class="sec"
+  class:list={[
+    'mb-3 overflow-hidden rounded-[14px] border border-[#e2d8c6] bg-white',
+    template && 'hidden',
+  ]}
   data-section
   data-type={section.type}
   data-template={template ? 'true' : undefined}
 >
-  <div class="sec-head">
-    <strong class="sec-name">{L.types[section.type]}</strong>
-    <span class="sec-tools">
-      <button type="button" data-move="up" aria-label={L.moveUp} title={L.moveUp}>
+  <div class="flex items-center justify-between gap-2 border-b border-[#e2d8c6] bg-[#fbf6ec] px-3 py-2.5">
+    <strong class="text-[0.95rem]">{L.types[section.type]}</strong>
+    <span class="flex gap-1">
+      <button
+        type="button"
+        class="h-[30px] w-[30px] cursor-pointer rounded-lg border border-[#e2d8c6] bg-white leading-none hover:border-[#b88333]"
+        data-move="up"
+        aria-label={L.moveUp}
+        title={L.moveUp}
+      >
         ↑
       </button>
-      <button type="button" data-move="down" aria-label={L.moveDown} title={L.moveDown}>
+      <button
+        type="button"
+        class="h-[30px] w-[30px] cursor-pointer rounded-lg border border-[#e2d8c6] bg-white leading-none hover:border-[#b88333]"
+        data-move="down"
+        aria-label={L.moveDown}
+        title={L.moveDown}
+      >
         ↓
       </button>
-      <button type="button" data-remove-section aria-label={L.remove} title={L.remove}>
+      <button
+        type="button"
+        class="h-[30px] w-[30px] cursor-pointer rounded-lg border border-[#e2d8c6] bg-white leading-none hover:border-[#b88333]"
+        data-remove-section
+        aria-label={L.remove}
+        title={L.remove}
+      >
         ✕
       </button>
     </span>
   </div>
-  <div class="sec-body">
+  <div class="flex flex-col gap-2 p-3">
     <input type="hidden" name="field-id" value={section.id} />
     {variants.length > 0 && (
-      <label class="sec-row">
+      <label class="flex flex-col gap-1 text-[0.8rem] font-bold text-[#4a4238]">
         <span>{L.variant}</span>
         <select class="select select-bordered" name="field-variant">
           {variants.map((option) => (
@@ -210,7 +231,7 @@ const variants = variantLabels[section.type];
 
     {section.type === 'hero' && (
       <>
-        <label class="sec-row">
+        <label class="flex flex-col gap-1 text-[0.8rem] font-bold text-[#4a4238]">
           <span>{L.eyebrow}</span>
           <input
             class="input input-bordered"
@@ -219,7 +240,7 @@ const variants = variantLabels[section.type];
             maxlength="60"
           />
         </label>
-        <label class="sec-row">
+        <label class="flex flex-col gap-1 text-[0.8rem] font-bold text-[#4a4238]">
           <span>{L.title}</span>
           <input
             class="input input-bordered"
@@ -228,7 +249,7 @@ const variants = variantLabels[section.type];
             maxlength="120"
           />
         </label>
-        <label class="sec-row">
+        <label class="flex flex-col gap-1 text-[0.8rem] font-bold text-[#4a4238]">
           <span>{L.subtitle}</span>
           <textarea
             class="textarea textarea-bordered"
@@ -236,7 +257,7 @@ const variants = variantLabels[section.type];
             maxlength="400"
           >{section.subtitle}</textarea>
         </label>
-        <label class="sec-row">
+        <label class="flex flex-col gap-1 text-[0.8rem] font-bold text-[#4a4238]">
           <span>{L.buttonText}</span>
           <input
             class="input input-bordered"
@@ -245,7 +266,7 @@ const variants = variantLabels[section.type];
             maxlength="40"
           />
         </label>
-        <label class="sec-row">
+        <label class="flex flex-col gap-1 text-[0.8rem] font-bold text-[#4a4238]">
           <span>{L.buttonUrl}</span>
           <input
             class="input input-bordered"
@@ -255,7 +276,7 @@ const variants = variantLabels[section.type];
             placeholder="https://"
           />
         </label>
-        <label class="sec-row">
+        <label class="flex flex-col gap-1 text-[0.8rem] font-bold text-[#4a4238]">
           <span>{L.image}</span>
           <input
             class="file-input file-input-bordered w-full"
@@ -266,14 +287,20 @@ const variants = variantLabels[section.type];
           <input type="hidden" name="field-image" value={section.image} />
         </label>
         {section.image && (
-          <img class="sec-thumb" src={section.image} alt="" width="120" height="80" />
+          <img
+            class="h-16 w-auto rounded-lg border border-[#e2d8c6] object-contain"
+            src={section.image}
+            alt=""
+            width="120"
+            height="80"
+          />
         )}
       </>
     )}
 
     {section.type === 'about' && (
       <>
-        <label class="sec-row">
+        <label class="flex flex-col gap-1 text-[0.8rem] font-bold text-[#4a4238]">
           <span>{L.title}</span>
           <input
             class="input input-bordered"
@@ -282,7 +309,7 @@ const variants = variantLabels[section.type];
             maxlength="120"
           />
         </label>
-        <label class="sec-row">
+        <label class="flex flex-col gap-1 text-[0.8rem] font-bold text-[#4a4238]">
           <span>{L.body}</span>
           <textarea
             class="textarea textarea-bordered"
@@ -290,7 +317,7 @@ const variants = variantLabels[section.type];
             maxlength="1500"
           >{section.body}</textarea>
         </label>
-        <label class="sec-row">
+        <label class="flex flex-col gap-1 text-[0.8rem] font-bold text-[#4a4238]">
           <span>{L.image}</span>
           <input
             class="file-input file-input-bordered w-full"
@@ -301,7 +328,13 @@ const variants = variantLabels[section.type];
           <input type="hidden" name="field-image" value={section.image} />
         </label>
         {section.image && (
-          <img class="sec-thumb" src={section.image} alt="" width="120" height="80" />
+          <img
+            class="h-16 w-auto rounded-lg border border-[#e2d8c6] object-contain"
+            src={section.image}
+            alt=""
+            width="120"
+            height="80"
+          />
         )}
       </>
     )}
@@ -313,7 +346,7 @@ const variants = variantLabels[section.type];
       section.type === 'experience' ||
       section.type === 'testimonials' ||
       section.type === 'faq') && (
-      <label class="sec-row">
+      <label class="flex flex-col gap-1 text-[0.8rem] font-bold text-[#4a4238]">
         <span>{L.title}</span>
         <input
           class="input input-bordered"
@@ -326,7 +359,7 @@ const variants = variantLabels[section.type];
 
     {section.type === 'video' && (
       <>
-        <label class="sec-row">
+        <label class="flex flex-col gap-1 text-[0.8rem] font-bold text-[#4a4238]">
           <span>{L.title}</span>
           <input
             class="input input-bordered"
@@ -335,7 +368,7 @@ const variants = variantLabels[section.type];
             maxlength="120"
           />
         </label>
-        <label class="sec-row">
+        <label class="flex flex-col gap-1 text-[0.8rem] font-bold text-[#4a4238]">
           <span>{L.videoUrl}</span>
           <input
             class="input input-bordered"
@@ -345,7 +378,7 @@ const variants = variantLabels[section.type];
             placeholder="https://youtu.be/..."
           />
         </label>
-        <label class="sec-row">
+        <label class="flex flex-col gap-1 text-[0.8rem] font-bold text-[#4a4238]">
           <span>{L.caption}</span>
           <input
             class="input input-bordered"
@@ -359,7 +392,7 @@ const variants = variantLabels[section.type];
 
     {section.type === 'map' && (
       <>
-        <label class="sec-row">
+        <label class="flex flex-col gap-1 text-[0.8rem] font-bold text-[#4a4238]">
           <span>{L.title}</span>
           <input
             class="input input-bordered"
@@ -368,7 +401,7 @@ const variants = variantLabels[section.type];
             maxlength="120"
           />
         </label>
-        <label class="sec-row">
+        <label class="flex flex-col gap-1 text-[0.8rem] font-bold text-[#4a4238]">
           <span>{L.address}</span>
           <input
             class="input input-bordered"
@@ -382,7 +415,7 @@ const variants = variantLabels[section.type];
 
     {section.type === 'contact' && (
       <>
-        <label class="sec-row">
+        <label class="flex flex-col gap-1 text-[0.8rem] font-bold text-[#4a4238]">
           <span>{L.title}</span>
           <input
             class="input input-bordered"
@@ -391,7 +424,7 @@ const variants = variantLabels[section.type];
             maxlength="120"
           />
         </label>
-        <label class="sec-row">
+        <label class="flex flex-col gap-1 text-[0.8rem] font-bold text-[#4a4238]">
           <span>{L.body}</span>
           <textarea
             class="textarea textarea-bordered"
@@ -399,7 +432,7 @@ const variants = variantLabels[section.type];
             maxlength="600"
           >{section.body}</textarea>
         </label>
-        <label class="sec-row">
+        <label class="flex flex-col gap-1 text-[0.8rem] font-bold text-[#4a4238]">
           <span>{L.buttonText}</span>
           <input
             class="input input-bordered"
@@ -408,7 +441,7 @@ const variants = variantLabels[section.type];
             maxlength="40"
           />
         </label>
-        <label class="sec-row">
+        <label class="flex flex-col gap-1 text-[0.8rem] font-bold text-[#4a4238]">
           <span>{L.buttonUrl}</span>
           <input
             class="input input-bordered"
@@ -422,7 +455,7 @@ const variants = variantLabels[section.type];
     )}
 
     {section.type === 'footer' && (
-      <label class="sec-row">
+      <label class="flex flex-col gap-1 text-[0.8rem] font-bold text-[#4a4238]">
         <span>{L.text}</span>
         <input
           class="input input-bordered"
@@ -436,7 +469,7 @@ const variants = variantLabels[section.type];
     {hasItems && itemLimits[section.type] > 0 && (
       <div class="sec-items" data-items>
         {itemList.map((item: Record<string, unknown>) => (
-          <fieldset class="sec-item" data-item>
+          <fieldset class="mb-2 rounded-[10px] border border-[#e2d8c6] p-2.5" data-item>
             <ItemFields kind={section.type} en={en} item={item as Record<string, string>} />
             <button type="button" class="btn btn-ghost btn-sm mt-2" data-remove>
               {en ? 'Remove' : 'Remover'}
@@ -453,7 +486,7 @@ const variants = variantLabels[section.type];
   </div>
   {hasItems && (
     <template data-item-template>
-      <fieldset class="sec-item" data-item>
+      <fieldset class="mb-2 rounded-[10px] border border-[#e2d8c6] p-2.5" data-item>
         <ItemFields kind={section.type} en={en} />
         <button type="button" class="btn btn-ghost btn-sm mt-2" data-remove>
           {en ? 'Remove' : 'Remover'}
@@ -462,73 +495,3 @@ const variants = variantLabels[section.type];
     </template>
   )}
 </div>
-<style>
-  .sec {
-    border: 1px solid #e2d8c6;
-    border-radius: 14px;
-    background: #fff;
-    margin-bottom: 12px;
-    overflow: hidden;
-  }
-  .sec-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    padding: 10px 12px;
-    background: #fbf6ec;
-    border-bottom: 1px solid #e2d8c6;
-  }
-  .sec-name {
-    font-size: 0.95rem;
-  }
-  .sec-tools {
-    display: flex;
-    gap: 4px;
-  }
-  .sec-tools button {
-    width: 30px;
-    height: 30px;
-    border: 1px solid #e2d8c6;
-    border-radius: 8px;
-    background: #fff;
-    cursor: pointer;
-    line-height: 1;
-  }
-  .sec-tools button:hover {
-    border-color: #b88333;
-  }
-  .sec-body {
-    padding: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-  .sec-row {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    font-size: 0.8rem;
-    font-weight: 700;
-    color: #4a4238;
-  }
-  .sec-row > span {
-    margin: 0;
-  }
-  .sec-item {
-    border: 1px solid #e2d8c6;
-    border-radius: 10px;
-    padding: 10px;
-    margin-bottom: 8px;
-  }
-  .sec-thumb {
-    height: 64px;
-    width: auto;
-    border-radius: 8px;
-    border: 1px solid #e2d8c6;
-    object-fit: contain;
-  }
-  [data-template='true'] {
-    display: none;
-  }
-</style>

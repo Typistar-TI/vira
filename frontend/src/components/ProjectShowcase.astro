@@ -17,27 +17,33 @@ const rows = moving
       ),
     )
   : [];
+const cardClass =
+  'flex h-[clamp(96px,calc((100svh_-_320px)/3),210px)] w-52 shrink-0 flex-col items-center justify-center gap-2 rounded-[1.5rem] border border-[#d8ae73] bg-white px-5 py-3 text-center text-sm font-semibold text-[#4f473e] transition-[border-color,transform] duration-300 hover:-translate-y-1 hover:border-[#b88333] focus-visible:outline-2 focus-visible:outline-[#b88333] sm:w-64 max-md:h-[clamp(84px,calc((100svh_-_300px)/3),160px)] max-md:w-[168px]';
 ---
 
-<section id="vitrine" class="bg-white py-20 sm:py-28" aria-labelledby="showcase-heading">
-  <div class="mx-auto max-w-[1380px] px-5 sm:px-8" data-reveal>
+<section
+  id="vitrine"
+  class="box-border flex h-[100svh] flex-col border-b border-[#d8ae73] bg-white py-[clamp(16px,3svh,34px)]"
+  aria-labelledby="showcase-heading"
+>
+  <div class="mx-auto w-full max-w-[1380px] shrink-0 px-5 sm:px-8" data-reveal>
     <p class="font-mono text-[11px] uppercase tracking-[0.22em] text-[#9b6823]">
       {en ? 'Made with Vira' : 'Feito com Vira'}
     </p>
     <h2
       id="showcase-heading"
-      class="mt-5 max-w-[14ch] font-['Outfit',sans-serif] text-[clamp(2.8rem,6vw,5.7rem)] font-medium leading-[1.02] tracking-[-0.06em]"
+      class="mt-2.5 text-[clamp(1.9rem,4svh,3rem)] font-['Outfit',sans-serif] font-medium leading-[1.02] tracking-[-0.06em]"
     >
       {en ? 'Real ideas, already online.' : 'Ideias reais, já no ar.'}
     </h2>
-    <p class="mt-5 max-w-[55ch] text-[#625a51]">
+    <p class="mt-2.5 max-w-[55ch] text-sm text-[#625a51]">
       {en
         ? 'Projects shared by people who created and published their pages with Vira.'
         : 'Projetos compartilhados por quem criou e publicou sua página com o Vira.'}
     </p>
   </div>
   {moving ? (
-    <div class="mt-12 space-y-3 overflow-hidden sm:mt-16 sm:space-y-4 [mask-image:linear-gradient(to_right,transparent,black_7%,black_93%,transparent)]">
+    <div class="mt-[clamp(14px,2.4svh,26px)] flex min-h-0 flex-1 flex-col justify-center space-y-3 overflow-hidden sm:space-y-4 [mask-image:linear-gradient(to_right,transparent,black_7%,black_93%,transparent)]">
       {rows.map((row, rowIndex) => (
         <div
           class="overflow-hidden"
@@ -68,14 +74,14 @@ const rows = moving
                     tabindex={
                       duplicate || rowIndex > 0 || itemIndex >= projects.length ? -1 : undefined
                     }
-                    class="flex h-32 w-52 shrink-0 flex-col items-center justify-center gap-2 rounded-[1.5rem] border border-[#d8ae73] bg-white px-5 py-3 text-center text-sm font-semibold text-[#4f473e] shadow-[0_12px_30px_-24px_rgba(131,85,21,0.35)] transition-[border-color,transform] duration-300 hover:-translate-y-1 hover:border-[#b88333] focus-visible:outline-2 focus-visible:outline-offset-[-3px] focus-visible:outline-[#b88333] sm:h-40 sm:w-64"
+                    class={cardClass}
                   >
                     <img
                       src={project.logo}
                       alt=""
                       loading="lazy"
                       decoding="async"
-                      class="max-h-19 w-full object-contain sm:max-h-24"
+                      class="max-h-[58%] w-full object-contain"
                     />
                     <span class="max-w-full truncate">{project.name}</span>
                   </a>
@@ -87,27 +93,22 @@ const rows = moving
       ))}
     </div>
   ) : projects.length > 0 ? (
-    <div class="mx-auto mt-12 flex max-w-[1380px] flex-wrap justify-center gap-3 px-5 sm:mt-16 sm:gap-4 sm:px-8">
+    <div class="mx-auto flex min-h-0 w-full max-w-[1380px] flex-1 flex-wrap content-center justify-center gap-3 px-5 sm:gap-4 sm:px-8">
       {projects.map((project) => (
-        <a
-          href={project.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          class="flex h-32 w-52 flex-col items-center justify-center gap-2 rounded-[1.5rem] border border-[#d8ae73] bg-white px-5 py-3 text-center text-sm font-semibold text-[#4f473e] transition-colors hover:border-[#b88333] focus-visible:outline-2 focus-visible:outline-[#b88333] sm:h-40 sm:w-64"
-        >
+        <a href={project.url} target="_blank" rel="noopener noreferrer" class={cardClass}>
           <img
             src={project.logo}
             alt=""
             loading="lazy"
             decoding="async"
-            class="max-h-19 w-full object-contain sm:max-h-24"
+            class="max-h-[58%] w-full object-contain"
           />
           <span class="max-w-full truncate">{project.name}</span>
         </a>
       ))}
     </div>
   ) : (
-    <div class="mx-auto mt-12 max-w-[1380px] px-5 sm:px-8">
+    <div class="mx-auto flex min-h-0 w-full max-w-[1380px] flex-1 flex-col justify-center px-5 sm:px-8">
       <p class="rounded-[1.5rem] border border-[#d8ae73] bg-white px-6 py-12 text-center text-[#625a51]">
         {en
           ? 'The first projects will appear here as their owners share them.'
@@ -116,46 +117,3 @@ const rows = moving
     </div>
   )}
 </section>
-<style>
-  #vitrine {
-    height: 100svh;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    padding: clamp(16px, 3svh, 34px) 0;
-    border-bottom: 1px solid #d8ae73;
-  }
-  #vitrine > div:first-child {
-    flex-shrink: 0;
-    width: 100%;
-  }
-  #vitrine h2 {
-    font-size: clamp(1.9rem, 4svh, 3rem);
-    max-width: none;
-    margin-top: 10px;
-  }
-  #vitrine > div:first-child > p:last-child {
-    font-size: 14px;
-    margin-top: 10px;
-  }
-  #vitrine > div:nth-child(2) {
-    flex: 1;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    margin-top: clamp(14px, 2.4svh, 26px);
-  }
-  #vitrine a {
-    height: clamp(96px, calc((100svh - 320px) / 3), 210px);
-  }
-  #vitrine img {
-    max-height: 58%;
-  }
-  @media (max-width: 767px) {
-    #vitrine a {
-      height: clamp(84px, calc((100svh - 300px) / 3), 160px);
-      width: 168px;
-    }
-  }
-</style>

@@ -73,7 +73,7 @@ const error = url.searchParams.get('error')?.slice(0, 150);
         data-reset={reset ? 'true' : undefined}
         data-email-ready={emailReady ? 'true' : undefined}
         aria-label={en ? 'Sign in' : 'Entrar'}
-        class="w-full max-w-[400px] text-center [&_form]:text-left [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-semibold [&_.input]:w-full"
+        class="w-full max-w-[400px] text-center [&_[hidden]]:hidden! [&_form]:text-left [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-semibold [&_.input]:w-full"
       >
         <span class="font-mono text-xs uppercase tracking-wider text-[#8b5b1e]">
           {scope === 'admin'
@@ -260,7 +260,7 @@ const error = url.searchParams.get('error')?.slice(0, 150);
             data-login-mode="code"
             aria-pressed="false"
             disabled={!emailReady}
-            class="btn btn-ghost h-10 min-h-10 rounded-full bg-[#fff4df] px-5 font-medium text-[#6f4716]"
+            class="btn btn-ghost h-10 min-h-10 rounded-full bg-[#fff4df] px-5 font-medium text-[#6f4716] aria-pressed:bg-[#fff4df] aria-pressed:text-[#6f4716]"
           >
             <svg
               aria-hidden="true"
@@ -281,7 +281,7 @@ const error = url.searchParams.get('error')?.slice(0, 150);
           type="button"
           data-login-mode="password"
           hidden
-          class="mt-4 text-sm font-semibold text-[#8b5b1e] hover:underline"
+          class="mt-4 text-sm font-semibold text-[#8b5b1e] hover:underline aria-pressed:bg-[#fff4df] aria-pressed:text-[#6f4716]"
         >
           {en ? 'Back to password sign-in' : 'Voltar para e-mail e senha'}
         </button>
@@ -309,15 +309,7 @@ const error = url.searchParams.get('error')?.slice(0, 150);
     </div>
   </main>
   {clientId && <script src="https://accounts.google.com/gsi/client" async defer></script>}
-  <style>
-    [data-login] [hidden] {
-      display: none !important;
-    }
-    [data-login-mode][aria-pressed='true'] {
-      background: #fff4df;
-      color: #6f4716;
-    }
-  </style>
+
   <script>
     import { startEmail } from '@frontend/api/auth/start-email';
     import { verifyEmail } from '@frontend/api/auth/verify-email';

@@ -8,66 +8,32 @@ interface Props {
 }
 const { section } = Astro.props;
 const items = section.items.filter((item) => item.quote || item.name);
+const single = section.variant === 'single';
 ---
 
 {items.length > 0 && (
   <section
-    class:list={['testimonials', `testimonials-${section.variant}`]}
+    class="px-5 py-16 text-[var(--fg)] sm:px-10 sm:py-24 lg:py-32"
     data-vs-section="testimonials"
   >
-    <div class="testimonials-inner">
+    <div class="mx-auto w-full max-w-[1180px]">
       <SectionHeading title={section.title} />
-      <div class="testimonials-grid">
+      <div
+        class:list={[single ? 'mx-auto max-w-[760px]' : 'grid gap-5 sm:grid-cols-2 lg:grid-cols-3']}
+      >
         {items.map((item) => (
-          <figure class="testimonial">
-            <blockquote class="testimonial-quote">{item.quote}</blockquote>
-            {item.name && <figcaption class="testimonial-name">{item.name}</figcaption>}
+          <figure class="card m-0 border border-[var(--line)] bg-[var(--surface)] p-6">
+            <blockquote class="text-lg leading-relaxed text-[var(--fg)] [font-family:var(--font-display)]">
+              {`“${item.quote}”`}
+            </blockquote>
+            {item.name && (
+              <figcaption class="mt-4 text-xs uppercase tracking-wide text-[var(--muted)]">
+                {item.name}
+              </figcaption>
+            )}
           </figure>
         ))}
       </div>
     </div>
   </section>
 )}
-<style>
-  .testimonials {
-    padding: clamp(56px, 9vw, 120px) clamp(20px, 5vw, 40px);
-  }
-  .testimonials-inner {
-    max-width: 1180px;
-    margin-inline: auto;
-  }
-  .testimonials-grid {
-    display: grid;
-    gap: clamp(16px, 2.4vw, 28px);
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  }
-  .testimonials-single .testimonials-grid {
-    grid-template-columns: 1fr;
-    max-width: 760px;
-  }
-  .testimonial {
-    margin: 0;
-    padding: clamp(20px, 3vw, 34px);
-    border: 1px solid var(--line);
-    border-radius: 18px;
-    background: var(--surface);
-  }
-  .testimonial-quote {
-    margin: 0;
-    font: 400 clamp(1.1rem, 2vw, 1.4rem) / 1.5 var(--font-display);
-    color: var(--fg);
-  }
-  .testimonial-quote::before {
-    content: '“';
-  }
-  .testimonial-quote::after {
-    content: '”';
-  }
-  .testimonial-name {
-    margin-top: 1rem;
-    font-size: 0.85rem;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--muted);
-  }
-</style>

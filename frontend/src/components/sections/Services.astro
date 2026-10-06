@@ -14,32 +14,56 @@ const globalIndex = (index: number) => productOffset + index;
 ---
 
 {items.length > 0 && (
-  <section class:list={['services', `services-${section.variant}`]} data-vs-section="services">
-    <div class="services-inner">
+  <section
+    class="px-5 py-16 text-[var(--fg)] sm:px-10 sm:py-24 lg:py-32"
+    data-vs-section="services"
+  >
+    <div class="mx-auto w-full max-w-[1180px]">
       <SectionHeading title={section.title} />
-      <div class="services-grid">
+      <div
+        class:list={[
+          section.variant === 'list'
+            ? 'flex flex-col gap-4'
+            : 'grid gap-5 sm:grid-cols-2 lg:grid-cols-3',
+        ]}
+      >
         {items.map((item, index) => {
           const linked = Boolean(item.url);
           const Tag = linked ? 'a' : 'div';
           return (
             <Tag
-              class="service"
+              class:list={[
+                'card border border-[var(--line)] bg-[var(--surface)] text-[var(--fg)] transition-transform',
+                linked ? 'hover:-translate-y-1' : '',
+                section.variant === 'list' ? 'card-side items-center overflow-hidden' : '',
+              ]}
               href={linked ? productHref(item.url, preview, globalIndex(index)) : undefined}
             >
               {item.image && (
-                <span class="service-media">
-                  <img src={item.image} alt={item.title} loading="lazy" />
-                </span>
+                <figure class:list={[section.variant === 'list' ? 'w-40 shrink-0' : '']}>
+                  <img
+                    src={item.image}
+                    alt={item.title}
+                    class="aspect-[4/3] h-full w-full object-cover"
+                    loading="lazy"
+                  />
+                </figure>
               )}
-              <span class="service-body">
-                {item.title && <span class="service-title">{item.title}</span>}
-                {item.description && <span class="service-text">{item.description}</span>}
+              <div class="card-body p-6">
+                {item.title && (
+                  <h3 class="card-title text-lg font-medium [font-family:var(--font-display)]">
+                    {item.title}
+                  </h3>
+                )}
+                {item.description && (
+                  <p class="text-sm leading-relaxed text-[var(--muted)]">{item.description}</p>
+                )}
                 {linked && (
-                  <span class="service-link" aria-hidden="true">
+                  <span class="text-[var(--accent)]" aria-hidden="true">
                     ↗
                   </span>
                 )}
-              </span>
+              </div>
             </Tag>
           );
         })}
@@ -47,85 +71,3 @@ const globalIndex = (index: number) => productOffset + index;
     </div>
   </section>
 )}
-<style>
-  .services {
-    padding: clamp(56px, 9vw, 120px) clamp(20px, 5vw, 40px);
-  }
-  .services-inner {
-    max-width: 1180px;
-    margin-inline: auto;
-  }
-  .services-grid {
-    display: grid;
-    gap: clamp(16px, 2vw, 24px);
-  }
-  .services-cards .services-grid {
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  }
-  .services-list .services-grid {
-    grid-template-columns: 1fr;
-  }
-  .service {
-    display: flex;
-    gap: 1rem;
-    padding: clamp(18px, 2.4vw, 28px);
-    border: 1px solid var(--line);
-    border-radius: 18px;
-    background: var(--surface);
-    color: inherit;
-    text-decoration: none;
-    transition:
-      transform 0.25s ease,
-      border-color 0.25s ease;
-  }
-  .services-cards .service {
-    flex-direction: column;
-  }
-  a.service:hover {
-    transform: translateY(-3px);
-    border-color: var(--accent);
-  }
-  .service-media {
-    display: block;
-    overflow: hidden;
-    border-radius: 12px;
-    aspect-ratio: 4/3;
-  }
-  .services-list .service-media {
-    width: 140px;
-    flex-shrink: 0;
-  }
-  .service-media img {
-    display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  .service-body {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-  .service-title {
-    font: 500 1.15rem/1.3 var(--font-display);
-    letter-spacing: -0.01em;
-  }
-  .service-text {
-    color: var(--muted);
-    font-size: 0.95rem;
-    line-height: 1.6;
-  }
-  .service-link {
-    margin-top: auto;
-    color: var(--accent);
-    font-size: 0.9rem;
-  }
-  @media (max-width: 560px) {
-    .services-list .service {
-      flex-direction: column;
-    }
-    .services-list .service-media {
-      width: 100%;
-    }
-  }
-</style>

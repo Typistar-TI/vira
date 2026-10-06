@@ -1,7 +1,6 @@
 ---
 import Base from '@frontend/components/Base.astro';
 import AdminHeader from '@frontend/components/AdminHeader.astro';
-import AdminTransitions from '@frontend/components/AdminTransitions.astro';
 import ResponsiveTables from '@frontend/components/ResponsiveTables.astro';
 import PreviewStudio from '@frontend/components/PreviewStudio.astro';
 import { adminDashboard } from '@frontend/api/admin/dashboard';
@@ -100,7 +99,6 @@ const deliveryStatus: Record<string, string> = {
   appearance="light"
   manifest="/admin/manifest.webmanifest"
 >
-  <AdminTransitions slot="head" />
   <div class="min-h-screen bg-white text-[#17130d]">
     <AdminHeader section={section} admin={admin} />
     <main

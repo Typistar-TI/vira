@@ -12,21 +12,34 @@ const links = section.links.filter((link) => link.label && link.url);
 ---
 
 {(section.title || section.body || section.primaryLabel || links.length > 0) && (
-  <section class:list={['contact', `contact-${section.variant}`]} data-vs-section="contact">
-    <div class="contact-inner">
-      <SectionHeading title={section.title} />
-      {section.body && <p class="contact-body">{section.body}</p>}
+  <section class="px-5 py-16 text-[var(--fg)] sm:px-10 sm:py-24 lg:py-32" data-vs-section="contact">
+    <div
+      class:list={[
+        'mx-auto w-full max-w-[760px] text-center',
+        section.variant === 'cards'
+          ? 'card border border-[var(--line)] bg-[var(--surface)] p-8 sm:p-12'
+          : '',
+      ]}
+    >
+      <SectionHeading title={section.title} centered />
+      {section.body && (
+        <p class="mx-auto max-w-[46ch] leading-relaxed text-[var(--muted)]">{section.body}</p>
+      )}
       {section.primaryLabel && (
-        <a class="contact-cta" href={primaryHref(section.primaryUrl, preview)}>
+        <a
+          href={primaryHref(section.primaryUrl, preview)}
+          class="btn mt-6 rounded-full border-0"
+          style="background:var(--accent);color:var(--bg)"
+        >
           {section.primaryLabel}
           <span aria-hidden="true">↗</span>
         </a>
       )}
       {links.length > 0 && (
-        <ul class="contact-links">
+        <ul class="mt-6 flex list-none flex-wrap justify-center gap-5 p-0">
           {links.map((link) => (
             <li>
-              <a href={link.url} target="_blank" rel="noopener">
+              <a href={link.url} target="_blank" rel="noopener" class="link no-underline">
                 {link.label} ↗
               </a>
             </li>
@@ -36,64 +49,3 @@ const links = section.links.filter((link) => link.label && link.url);
     </div>
   </section>
 )}
-<style>
-  .contact {
-    padding: clamp(56px, 9vw, 120px) clamp(20px, 5vw, 40px);
-  }
-  .contact-inner {
-    max-width: 760px;
-    margin-inline: auto;
-    text-align: center;
-  }
-  .contact-cards .contact-inner {
-    padding: clamp(28px, 4vw, 48px);
-    border: 1px solid var(--line);
-    border-radius: 22px;
-    background: var(--surface);
-  }
-  .contact-body {
-    margin: 0 auto;
-    max-width: 46ch;
-    color: var(--muted);
-    line-height: 1.7;
-  }
-  .contact-cta {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-top: 1.6rem;
-    padding: 0.9rem 1.7rem;
-    border-radius: 999px;
-    background: var(--accent);
-    color: var(--bg);
-    font-weight: 600;
-    text-decoration: none;
-    transition:
-      transform 0.25s ease,
-      filter 0.25s ease;
-  }
-  .contact-cta:hover {
-    transform: translateY(-2px);
-    filter: brightness(1.05);
-  }
-  .contact-links {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 1.2rem;
-    margin: 1.6rem 0 0;
-    padding: 0;
-    list-style: none;
-  }
-  .contact-links a {
-    color: var(--fg);
-    text-decoration: none;
-    font-size: 0.95rem;
-    border-bottom: 1px solid var(--line);
-    padding-bottom: 0.2rem;
-  }
-  .contact-links a:hover {
-    border-color: var(--accent);
-    color: var(--accent);
-  }
-</style>
