@@ -134,6 +134,6 @@ Crie uma conta na Resend, cadastre o domínio de envio e conclua a verificação
 
 O assistente roda no próprio Worker, com o binding `AI` do Workers AI declarado em `frontend/wrangler.jsonc`. Ative o Workers AI na conta Cloudflare; o deploy cria o binding automaticamente e nenhuma chave de API precisa ser guardada no D1.
 
-Por padrão, o Vira usa `@cf/meta/llama-3.1-8b-instruct-fp8-fast`, disponível na camada gratuita. Para trocar o modelo, preencha `AI_MODEL` no painel administrativo, em **Configurações**. Sem esse valor, o padrão é mantido. Em desenvolvimento local sem o binding, o assistente responde com um aviso amigável em vez de falhar.
+O Vira usa `@cf/meta/llama-3.1-8b-instruct-fp8-fast`, disponível na camada gratuita. O modelo fica no banco de dados (`AI_MODEL`, obrigatório) e pode ser alterado no painel administrativo, em **Configurações**. Em desenvolvimento local sem o binding, o assistente responde com um aviso amigável em vez de falhar.
 
 O assistente fica disponível para toda conta com acesso ativo, inclusive durante o teste de um dia, e usa apenas o conteúdo publicado do site como contexto. O total de perguntas é limitado por um teto diário global de 2.000, além do limite por visitante.

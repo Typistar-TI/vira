@@ -17,12 +17,14 @@ const dashboardHref = (await sessionAdmin(Astro.request))
     ? '/app'
     : '/login';
 const signedIn = dashboardHref !== '/login';
-const [controller, email, contact, policy] = await Promise.all([
+const [controller, email, contact, policyPt, policyEn] = await Promise.all([
   getSetting('PRIVACY_CONTROLLER_NAME'),
   getSetting('PRIVACY_CONTACT_EMAIL'),
   getSetting('CONTACT_EMAIL'),
   getSetting('PRIVACY_POLICY'),
+  getSetting('PRIVACY_POLICY_EN'),
 ]);
+const policy = en ? policyEn || policyPt : policyPt;
 const mail = contact || email;
 const ready = Boolean(controller && email);
 const custom = policy.trim();

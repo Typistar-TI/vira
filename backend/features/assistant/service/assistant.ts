@@ -1,11 +1,10 @@
 import { env } from 'cloudflare:workers';
-import { setting } from '@backend/platform/config';
+import { requiredSetting } from '@backend/platform/config';
 import { publicPrices } from '@backend/features/billing/service/billing';
 import { hasAccess, parseSite, type SiteContent } from '@backend/features/sites/entities/site';
 import { resolveTenant } from '@backend/features/domains/repository/tenant';
 import { siteKnowledge, viraKnowledge } from './knowledge';
 
-const DEFAULT_MODEL = '@cf/meta/llama-3.1-8b-instruct-fp8-fast';
 const MAX_MESSAGES = 8;
 const MAX_MESSAGE_LENGTH = 600;
 const MAX_ANSWER_LENGTH = 1200;
@@ -95,7 +94,7 @@ function unavailableMessage(en: boolean): string {
 }
 
 async function modelName(): Promise<string> {
-  return (await setting('AI_MODEL')) || DEFAULT_MODEL;
+  return requiredSetting('AI_MODEL');
 }
 
 function sseFrame(text: string): Uint8Array {

@@ -13,7 +13,9 @@ const editable = new Set([
   'PRIVACY_CONTROLLER_NAME',
   'PRIVACY_CONTACT_EMAIL',
   'PRIVACY_POLICY',
+  'PRIVACY_POLICY_EN',
   'TERMS_OF_USE',
+  'TERMS_OF_USE_EN',
   'CONTACT_EMAIL',
   'SOCIAL_INSTAGRAM',
   'SOCIAL_X',
@@ -27,7 +29,12 @@ const editable = new Set([
   'AI_MODEL',
 ]);
 
-const longText = new Set(['PRIVACY_POLICY', 'TERMS_OF_USE']);
+const longText = new Set([
+  'PRIVACY_POLICY',
+  'PRIVACY_POLICY_EN',
+  'TERMS_OF_USE',
+  'TERMS_OF_USE_EN',
+]);
 const emailKeys = new Set(['PRIVACY_CONTACT_EMAIL', 'CONTACT_EMAIL']);
 
 export const GET = async (request: Request): Promise<Response> => {
@@ -79,6 +86,7 @@ export const POST = async (request: Request): Promise<Response> => {
       return json({ error: 'Chave Stripe inválida' }, 400);
     if (key === 'STRIPE_WEBHOOK_SECRET' && value && !/^whsec_[A-Za-z0-9]+$/.test(value))
       return json({ error: 'Segredo de webhook inválido' }, 400);
+    if (key === 'AI_MODEL' && !value) return json({ error: 'Informe o modelo de IA' }, 400);
     const stored = row.encrypted && value ? await encrypt(value) : value;
     await env.DB.batch([
       env.DB.prepare(
