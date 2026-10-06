@@ -71,7 +71,10 @@ const t = en
         "Hi! I'm the Vira assistant. Ask me about plans, custom domains, or how to publish your page.",
       assistantSuggestions: ['How much does it cost?', 'Do I need to code?', 'How do I publish?'],
       publishAnswer:
-        'Good question! To publish: open your panel, pick the layout, edit your text and images, then press Publish. Your page goes live at a Vira address (like your-page.vira.ia.br), and you can connect your own domain later.',
+        'It is simple: open your panel, pick the layout, edit your text and images and press Publish.',
+      domainQuestion: 'And where does my page live?',
+      domainAnswer:
+        'Your page goes live at a Vira address, like your-page.vira.ia.br. If you want, you can connect your own domain later.',
       featuresEyebrow: 'Two main features',
       featuresTitle: 'Your page and your assistant.',
       featuresText: 'Everything Vira does, summed up in two ideas.',
@@ -143,7 +146,10 @@ const t = en
         'Como publico minha página?',
       ],
       publishAnswer:
-        'Boa pergunta! Para publicar: entre no painel, escolha o layout, edite seus textos e imagens e clique em Publicar. Sua página fica no ar num endereço Vira (como sua-pagina.vira.ia.br), e você pode conectar seu domínio próprio depois.',
+        'É simples: entre no painel, escolha o layout, edite seus textos e imagens e clique em Publicar.',
+      domainQuestion: 'E onde fica o endereço da minha página?',
+      domainAnswer:
+        'Sua página fica no ar num endereço Vira, como sua-pagina.vira.ia.br. Se quiser, você conecta seu domínio próprio depois.',
       featuresEyebrow: 'Duas features principais',
       featuresTitle: 'Sua página e sua assistente.',
       featuresText: 'Tudo o que o Vira faz, resumido em duas ideias.',
@@ -211,6 +217,8 @@ const heroScript = [
   { role: 'assistant' as const, text: t.intro, html: introHtml },
   { role: 'user' as const, text: t.assistantSuggestions[2] },
   { role: 'assistant' as const, text: t.publishAnswer },
+  { role: 'user' as const, text: t.domainQuestion },
+  { role: 'assistant' as const, text: t.domainAnswer },
 ];
 ---
 
