@@ -17,14 +17,14 @@ const links = [
 ---
 
 <header class="relative z-20 mx-auto flex w-full max-w-[1380px] shrink-0 items-center justify-between gap-4 px-5 pt-5 sm:px-8 sm:pt-7">
-  <div class="flex items-center gap-3">
+  <div class="flex flex-col justify-center">
     <Brand href={signedIn ? dashboardHref : en ? '/en' : '/'} tone="light" />
-    <span class="hidden max-w-[20ch] text-xs leading-tight text-[#8b5b1e] lg:block">
+    <span class="mt-1 hidden text-xs leading-tight text-[#8b5b1e] lg:block">
       {en ? 'A clear place for what you do.' : 'Um lugar claro para mostrar o que você faz.'}
     </span>
   </div>
   <nav
-    class="hidden items-center gap-7 rounded-full border border-[#d8ae73] bg-white/95 px-7 py-3 text-sm text-[#605448] shadow-[0_8px_30px_-22px_rgba(131,85,21,0.35)] backdrop-blur-md md:flex"
+    class="hidden h-10 items-center gap-7 rounded-full border border-[#d8ae73] bg-white/95 px-6 text-sm text-[#605448] shadow-[0_8px_30px_-22px_rgba(131,85,21,0.35)] backdrop-blur-md md:flex"
     aria-label={en ? 'Main navigation' : 'Navegação principal'}
   >
     {links.map((link) => (
@@ -44,7 +44,7 @@ const links = [
   <div class="flex items-center gap-2 sm:gap-4">
     <a
       href={dashboardHref}
-      class="btn btn-sm rounded-full border border-[#b88333] bg-white px-3 font-semibold text-[#6f4716] shadow-none transition-colors hover:border-[#9b6823] hover:bg-[#fff9ef] sm:btn-md sm:px-5"
+      class="btn h-10 min-h-10 rounded-full border border-[#b88333] bg-white px-4 font-semibold text-[#6f4716] shadow-none transition-colors hover:border-[#9b6823] hover:bg-[#fff9ef] sm:px-5"
     >
       <span class="sm:hidden">
         {signedIn ? (en ? 'Dashboard' : 'Painel') : en ? 'Start' : 'Começar'}
