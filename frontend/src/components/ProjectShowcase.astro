@@ -122,8 +122,8 @@ const rows = moving
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    padding: clamp(20px, 4svh, 40px) 0;
-    overflow: auto;
+    padding: clamp(16px, 3svh, 34px) 0;
+    border-bottom: 1px solid #d8ae73;
   }
   #vitrine > div:first-child {
     flex-shrink: 0;
@@ -132,28 +132,30 @@ const rows = moving
   #vitrine h2 {
     font-size: clamp(1.9rem, 4svh, 3rem);
     max-width: none;
-    margin-top: 12px;
+    margin-top: 10px;
   }
   #vitrine > div:first-child > p:last-child {
     font-size: 14px;
-    margin-top: 12px;
+    margin-top: 10px;
   }
   #vitrine > div:nth-child(2) {
-    margin-top: 24px;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin-top: clamp(14px, 2.4svh, 26px);
   }
   #vitrine a {
-    height: clamp(64px, calc((100svh - 290px) / 3), 160px);
+    height: clamp(96px, calc((100svh - 320px) / 3), 210px);
   }
   #vitrine img {
-    max-height: 60%;
+    max-height: 58%;
   }
-  @media (max-height: 500px) {
-    #vitrine > div:nth-child(2) {
-      margin-top: 16px;
-    }
+  @media (max-width: 767px) {
     #vitrine a {
-      gap: 4px;
-      padding-block: 6px;
+      height: clamp(84px, calc((100svh - 300px) / 3), 160px);
+      width: 168px;
     }
   }
 </style>
