@@ -358,21 +358,29 @@ const trialLeft = en
                   <label for="layout">Template</label>
                   <select class="select select-bordered" name="layout" id="layout">
                     <option value="guardiao" selected={content.layout === 'guardiao'}>
-                      {t.layoutGuardiao}
+                      {t.layoutGuardiao} · Valkyris
                     </option>
                     <option value="central" selected={content.layout === 'central'}>
-                      {t.layoutCentral}
+                      {t.layoutCentral} · DashLab+
                     </option>
                     <option value="perfil" selected={content.layout === 'perfil'}>
-                      {t.layoutPerfil}
+                      {t.layoutPerfil} · Fertec
                     </option>
                     <option value="estudio" selected={content.layout === 'estudio'}>
-                      {t.layoutEstudio}
+                      {t.layoutEstudio} · Mundo de Miriam
                     </option>
                     <option value="classico" selected={content.layout === 'classico'}>
-                      {t.layoutClassico}
+                      {t.layoutClassico} · Vira
                     </option>
                   </select>
+                  <button class="btn btn-outline btn-sm mt-3" type="button" id="load-template">
+                    {en ? 'Load template example' : 'Carregar exemplo do template'}
+                  </button>
+                  <p class="mt-2 text-xs text-[#625a51]">
+                    {en
+                      ? 'Each template starts with a complete editable example. Saving and publishing are separate actions.'
+                      : 'Cada template começa com um exemplo completo e editável. Salvar e publicar são ações separadas.'}
+                  </p>
                   <label for="font">{t.font}</label>
                   <select class="select select-bordered" name="font" id="font">
                     <option value="outfit" selected={content.font === 'outfit'}>
@@ -1066,6 +1074,8 @@ const trialLeft = en
     import { exportAccount } from '@frontend/api/accounts/export';
     import { getMetrics } from '@frontend/api/analytics/metrics';
     import { reportError } from '@frontend/components/toast';
+    import { templatePreset } from '@frontend/api/sites/template-presets';
+    import type { Layout } from '@frontend/api/sites/parse-site';
     const input = (scope: ParentNode, name: string) =>
       (
         scope.querySelector<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(
@@ -1104,36 +1114,68 @@ const trialLeft = en
       const list = (name: string) => [
         ...form.querySelectorAll<HTMLElement>(`[data-item="${name}"]`),
       ];
-      const layoutPalettes: Record<string, [string, string, string]> = {
-        guardiao: ['#0f1310', '#f1f4ef', '#8ae07d'],
-        central: ['#090d0f', '#f4f7f5', '#ff7919'],
-        perfil: ['#11120f', '#f3ede4', '#c9a86a'],
-        estudio: ['#ffffff', '#552200', '#552200'],
-        classico: ['#ffffff', '#17130d', '#b88333'],
-      };
-      const layoutFonts: Record<string, string> = {
-        guardiao: 'bricolage',
-        central: 'inter',
-        perfil: 'instrument',
-        estudio: 'gilda',
-        classico: 'outfit',
-      };
-      form.querySelector<HTMLSelectElement>('#layout')?.addEventListener('change', (event) => {
-        const key = (event.target as HTMLSelectElement).value;
-        const palette = layoutPalettes[key];
-        if (!palette) return;
-        const set = (name: string, value: string) => {
+      let selectedLayout = input(form, 'layout') as Layout;
+      const loadTemplate = (layout: Layout) => {
+        const en = document.documentElement.lang === 'en';
+        if (
+          !window.confirm(
+            en
+              ? 'Load this complete example? It replaces the content in the editor, but does not save or publish it.'
+              : 'Carregar este exemplo completo? Ele substitui o conteúdo do editor, mas não salva nem publica.',
+          )
+        ) {
+          form.querySelector<HTMLSelectElement>('#layout')!.value = selectedLayout;
+          return;
+        }
+        const preset = templatePreset(layout, input(form, 'language') === 'en' ? 'en' : 'pt');
+        for (const [name, value] of Object.entries(preset)) {
           const field = form.querySelector<
             HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
           >(`[name="${name}"]`);
-          if (field) field.value = value;
-        };
-        set('backgroundColor', palette[0]);
-        set('textColor', palette[1]);
-        set('accentColor', palette[2]);
-        set('themeColor', palette[0]);
-        set('font', layoutFonts[key]);
-      });
+          if (!field) continue;
+          if (field instanceof HTMLInputElement && field.type === 'checkbox')
+            field.checked = Boolean(value);
+          else if (typeof value === 'string') field.value = value;
+        }
+        form
+          .querySelectorAll<HTMLInputElement>('input[type="file"]')
+          .forEach((field) => (field.value = ''));
+        form.querySelectorAll('[data-item]').forEach((row) => row.remove());
+        const collections = {
+          benefits: 'benefit',
+          steps: 'step',
+          stats: 'stat',
+          experience: 'experience',
+          testimonials: 'testimonial',
+          faq: 'faq',
+          products: 'product',
+          gallery: 'gallery',
+          links: 'link',
+        } as const;
+        for (const [name, type] of Object.entries(collections)) {
+          for (const item of preset[name as keyof typeof collections]) {
+            form.querySelector<HTMLButtonElement>(`[data-add="${type}"]`)!.click();
+            const row = list(type).at(-1)!;
+            for (const [key, value] of Object.entries(item)) {
+              const field = row.querySelector<HTMLInputElement | HTMLTextAreaElement>(
+                `[name="item-${key}"]`,
+              );
+              if (field) field.value = value;
+            }
+          }
+        }
+        selectedLayout = layout;
+        markChanged();
+        updatePreview();
+      };
+      form
+        .querySelector<HTMLSelectElement>('#layout')
+        ?.addEventListener('change', (event) =>
+          loadTemplate((event.target as HTMLSelectElement).value as Layout),
+        );
+      form
+        .querySelector('#load-template')
+        ?.addEventListener('click', () => loadTemplate(input(form, 'layout') as Layout));
       async function upload(file: File) {
         const body = new FormData();
         body.set('file', file);

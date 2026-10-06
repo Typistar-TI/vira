@@ -1,0 +1,51 @@
+---
+const { en = false } = Astro.props;
+---
+
+<button
+  type="button"
+  data-template-theme
+  aria-label={en ? 'Toggle color theme' : 'Alternar tema de cores'}
+  aria-pressed="false"
+>
+  ☼
+</button>
+<style>
+  button {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 38px;
+    height: 38px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--surface);
+    color: var(--fg);
+    font-size: 22px;
+    cursor: pointer;
+  }
+</style>
+<script>
+  document.querySelectorAll<HTMLButtonElement>('[data-template-theme]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const page = button.closest<HTMLElement>('.vira-template')!;
+      const opposite = button.getAttribute('aria-pressed') !== 'true';
+      if (!button.dataset.originalBg) {
+        button.dataset.originalBg = page.style.getPropertyValue('--bg');
+        button.dataset.originalFg = page.style.getPropertyValue('--fg');
+        button.dataset.originalTone = page.dataset.tone;
+      }
+      const dark = button.dataset.originalTone === 'dark';
+      page.style.setProperty(
+        '--bg',
+        opposite ? (dark ? '#f5f2eb' : '#111719') : button.dataset.originalBg!,
+      );
+      page.style.setProperty(
+        '--fg',
+        opposite ? (dark ? '#111719' : '#f4f7f5') : button.dataset.originalFg!,
+      );
+      page.dataset.tone = opposite ? (dark ? 'light' : 'dark') : button.dataset.originalTone!;
+      button.setAttribute('aria-pressed', String(opposite));
+    });
+  });
+</script>

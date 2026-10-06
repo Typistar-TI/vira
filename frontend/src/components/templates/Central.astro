@@ -1,6 +1,7 @@
 ---
 import type { SiteContent } from '@frontend/api/sites/parse-site';
 import { primaryLink, productLink } from './links';
+import ThemeToggle from './ThemeToggle.astro';
 
 interface Props {
   content: SiteContent;
@@ -31,16 +32,15 @@ if (hasInstallation) navItems.push({ href: '#instalacao', label: en ? 'Install' 
 /* ------------------------------------------------------------------ *
  * Hero
  * ------------------------------------------------------------------ */
-const titleWords = content.title.trim().split(/\s+/).filter(Boolean);
-const hasMultiWordTitle = titleWords.length > 1;
-const titleLead = hasMultiWordTitle ? titleWords.slice(0, -1).join(' ') : '';
-const titleAccent = hasMultiWordTitle ? titleWords[titleWords.length - 1] : '';
+const titleBreak = content.title.indexOf(',');
+const hasMultiWordTitle = titleBreak >= 0;
+const titleLead = hasMultiWordTitle ? content.title.slice(0, titleBreak + 1) : '';
+const titleAccent = hasMultiWordTitle ? content.title.slice(titleBreak + 1).trim() : '';
 
-const proof = (
-  content.stats.length
-    ? content.stats.slice(0, 3).map((s) => ({ head: s.value, text: s.label }))
-    : content.benefits.slice(0, 3).map((b) => ({ head: b.title, text: b.description }))
-).filter((item) => item.head);
+const proof = content.benefits
+  .slice(0, 3)
+  .map((b) => ({ head: b.title, text: b.description }))
+  .filter((item) => item.head);
 
 const metricDefaults = en
   ? [
@@ -137,6 +137,7 @@ const architectureNodes = (
           {content.primaryLabel}
         </a>
       )}
+      <ThemeToggle en={en} />
     </div>
   </header>
 
@@ -199,7 +200,7 @@ const architectureNodes = (
               <span class="dash-title mono">{brand}</span>
             </div>
             <div class="dash-metrics">
-              {dashMetrics.map((metric) => (
+              {dashMetrics.slice(0, 2).map((metric) => (
                 <div class="metric">
                   <span class="metric-value">{metric.value}</span>
                   <span class="metric-label mono">{metric.label}</span>
@@ -207,7 +208,10 @@ const architectureNodes = (
               ))}
             </div>
             <div class="dash-services">
-              {services.map((label, index) => (
+              {(content.products.length
+                ? content.products.slice(0, 4).map((product) => product.title)
+                : services
+              ).map((label, index) => (
                 <div class="service">
                   <span class="service-name">
                     <span class="service-glyph mono">{String(index + 1).padStart(2, '0')}</span>
@@ -219,6 +223,10 @@ const architectureNodes = (
                   </span>
                 </div>
               ))}
+            </div>
+            <div class="dash-footer mono">
+              <span>{en ? 'PERSONAL WORKSPACE' : 'ESPAÇO PESSOAL'}</span>
+              <span>● {en ? 'SYSTEM READY' : 'SISTEMA PRONTO'}</span>
             </div>
           </div>
         </div>
@@ -712,7 +720,7 @@ const architectureNodes = (
   .hero {
     position: relative;
     overflow: hidden;
-    padding: clamp(60px, 9vw, 130px) 0 clamp(70px, 10vw, 140px);
+    padding: 48px 0 56px;
   }
   .hero::before {
     content: '';
@@ -731,8 +739,8 @@ const architectureNodes = (
     position: relative;
     z-index: 1;
     display: grid;
-    grid-template-columns: 1.05fr 0.95fr;
-    gap: clamp(40px, 6vw, 84px);
+    grid-template-columns: 0.41fr 0.59fr;
+    gap: 42px;
     align-items: center;
   }
   .eyebrow {
@@ -752,6 +760,9 @@ const architectureNodes = (
   }
   .hero-title-accent {
     color: var(--c-accent);
+    font-family: Georgia, serif;
+    font-style: italic;
+    font-weight: 400;
   }
   .hero-sub {
     margin: 26px 0 0;
@@ -770,7 +781,7 @@ const architectureNodes = (
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 1px;
-    margin: clamp(44px, 6vw, 68px) 0 0;
+    margin: 32px 0 0;
     padding: 0;
     border: 1px solid var(--c-line);
     border-radius: 2px;
@@ -816,6 +827,7 @@ const architectureNodes = (
     background: var(--c-surface);
     overflow: hidden;
     box-shadow: 0 40px 90px -50px rgba(0, 0, 0, 0.9);
+    padding: 18px;
   }
   .dash-bar {
     display: flex;
@@ -823,7 +835,7 @@ const architectureNodes = (
     gap: 10px;
     padding: 11px 14px;
     border-bottom: 1px solid var(--c-line);
-    background: var(--c-soft);
+    background: transparent;
   }
   .dash-dots {
     display: inline-flex;
@@ -868,19 +880,77 @@ const architectureNodes = (
     font-size: 10px;
   }
   .dash-services {
-    border-top: 1px solid var(--c-line);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 8px;
   }
   .service {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    padding: 13px 16px;
-    border-bottom: 1px solid var(--c-line);
+    padding: 24px 16px;
+    border: 1px solid var(--c-line);
+    background: var(--c-soft);
     font-size: 0.85rem;
   }
   .service:last-child {
-    border-bottom: 0;
+    border-bottom: 1px solid var(--c-line);
+  }
+  .dash-footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px solid var(--c-line);
+    font-size: 8px;
+  }
+  .central {
+    --c-soft: color-mix(in srgb, var(--bg) 92%, var(--fg));
+    --c-surface: color-mix(in srgb, var(--bg) 70%, white);
+  }
+  .central .shell {
+    max-width: 1282px;
+    width: calc(100% - 80px);
+  }
+  .central .header-inner {
+    min-height: 80px;
+  }
+  .central .metric {
+    min-height: 112px;
+    background: var(--c-soft);
+    margin-top: 14px;
+    border: 1px solid var(--c-line);
+  }
+  .central .dash-metrics {
+    gap: 8px;
+    background: transparent;
+  }
+  .central .service {
+    min-height: 112px;
+    position: relative;
+  }
+  .central .service .status {
+    font-size: 8px;
+    letter-spacing: 0;
+  }
+  .central .hero-grid {
+    grid-template-columns: 0.4fr 0.6fr;
+    gap: 42px;
+  }
+  @media (max-width: 900px) {
+    .central .shell {
+      width: calc(100% - 40px);
+    }
+    .central .hero-grid {
+      grid-template-columns: 1fr;
+    }
+    .central .service {
+      min-height: 80px;
+      padding: 12px;
+    }
   }
   .service-name {
     display: inline-flex;

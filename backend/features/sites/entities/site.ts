@@ -74,9 +74,9 @@ export const defaultLayoutColors: Record<
   Layout,
   { backgroundColor: string; textColor: string; accentColor: string }
 > = {
-  guardiao: { backgroundColor: '#0f1310', textColor: '#f1f4ef', accentColor: '#8ae07d' },
-  central: { backgroundColor: '#090d0f', textColor: '#f4f7f5', accentColor: '#ff7919' },
-  perfil: { backgroundColor: '#11120f', textColor: '#f3ede4', accentColor: '#c9a86a' },
+  guardiao: { backgroundColor: '#e8e9e5', textColor: '#242724', accentColor: '#70d65a' },
+  central: { backgroundColor: '#f5f2eb', textColor: '#111719', accentColor: '#ff7919' },
+  perfil: { backgroundColor: '#11120f', textColor: '#f3ede4', accentColor: '#c9c4ba' },
   estudio: { backgroundColor: '#ffffff', textColor: '#552200', accentColor: '#552200' },
   classico: { backgroundColor: '#ffffff', textColor: '#17130d', accentColor: '#b88333' },
 };

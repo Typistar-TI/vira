@@ -36,7 +36,13 @@ const fonts = fontStacks[content.font];
 <div
   class="vira-template"
   data-tone={tone}
-  style={`--bg:${content.backgroundColor};--fg:${content.textColor};--accent:${content.accentColor};--surface:color-mix(in srgb, ${content.backgroundColor} 93%, ${content.textColor});--soft:color-mix(in srgb, ${content.backgroundColor} 86%, ${content.accentColor});--line:color-mix(in srgb, ${content.textColor} 16%, transparent);--muted:color-mix(in srgb, ${content.textColor} 62%, transparent);--font-display:${fonts.display};--font-body:${fonts.body};--font-mono:${fonts.mono};--sans:var(--font-body);--serif:var(--font-display);--mono:var(--font-mono);font-family:var(--font-body)`}
+  style={`--bg:${content.backgroundColor};--fg:${content.textColor};--accent:${content.accentColor};--surface:color-mix(in srgb, var(--bg) 93%, var(--fg));--soft:color-mix(in srgb, var(--bg) 86%, var(--accent));--line:color-mix(in srgb, var(--fg) 16%, transparent);--muted:color-mix(in srgb, var(--fg) 62%, transparent);--font-display:${fonts.display};--font-body:${fonts.body};--font-mono:${fonts.mono};--sans:var(--font-body);--serif:var(--font-display);--mono:var(--font-mono);font-family:var(--font-body)`}
 >
   <Template content={content} preview={preview} />
 </div>
+<style>
+  /* Templates own their grids, not DaisyUI's overlapping .hero cells. */
+  .vira-template :global(.hero > *) {
+    grid-area: auto;
+  }
+</style>

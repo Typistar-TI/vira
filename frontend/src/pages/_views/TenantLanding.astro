@@ -71,25 +71,27 @@ const assistantPalette = content
     <script>
       import '@frontend/pages/_scripts/assistant-chat';
     </script>
-    <AssistantChat
-      endpoint="/api/public/assistant/chat"
-      lang={content.language}
-      variant="floating"
-      persist
-      name={assistantName}
-      greeting={assistantGreeting}
-      suggestions={
-        content.language === 'en'
-          ? ['What do you offer?', 'How can I contact you?']
-          : ['O que vocês oferecem?', 'Como entro em contato?']
-      }
-      colors={{
-        accent: content.accentColor,
-        text: content.textColor,
-        surface: assistantPalette.surface,
-        soft: assistantPalette.soft,
-        line: assistantPalette.line,
-      }}
-    />
+    {content.layout !== 'classico' && (
+      <AssistantChat
+        endpoint="/api/public/assistant/chat"
+        lang={content.language}
+        variant="floating"
+        persist
+        name={assistantName}
+        greeting={assistantGreeting}
+        suggestions={
+          content.language === 'en'
+            ? ['What do you offer?', 'How can I contact you?']
+            : ['O que vocês oferecem?', 'Como entro em contato?']
+        }
+        colors={{
+          accent: content.accentColor,
+          text: content.textColor,
+          surface: assistantPalette.surface,
+          soft: assistantPalette.soft,
+          line: assistantPalette.line,
+        }}
+      />
+    )}
   </Base>
 )}

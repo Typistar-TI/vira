@@ -5,6 +5,39 @@ import { defaultSite, hasAccess, parseSite } from '../../backend/features/sites/
 import { getSiteForUser } from '../../backend/features/sites/repository/sites';
 import { readMedia } from '../../backend/features/media/controller/read';
 import { customer, request } from './helpers';
+import { templatePreset } from '../../backend/features/sites/entities/template-presets';
+
+it.each(['guardiao', 'central', 'perfil', 'estudio', 'classico'])(
+  'loads a complete generic editable %s preset without publishing',
+  async (layout) => {
+    const { user, cookie } = await customer();
+    const before = await getSiteForUser(user.id);
+    for (const language of ['pt', 'en']) {
+      const preset = templatePreset(layout, language);
+      expect(parseSite(preset)).toEqual(preset);
+      expect(preset.layout).toBe(layout);
+      expect(preset.language).toBe(language);
+      expect(preset.benefits.length).toBeGreaterThan(0);
+      expect(preset.steps.length).toBe(3);
+      expect(preset.products.length).toBeGreaterThan(0);
+      expect(preset.faq.length).toBeGreaterThan(0);
+      expect(JSON.stringify(preset)).not.toMatch(
+        /Valkyris|DashLab|Fertec|Forastieri|Miriam|\/templates\/assets/,
+      );
+      expect((await api.fetch(request('/api/site/save', preset, { cookie }))).status).toBe(200);
+      const after = await getSiteForUser(user.id);
+      expect(JSON.parse(after.draft_json)).toEqual(preset);
+      expect(after.published_json).toBe(before.published_json);
+    }
+  },
+);
+
+it('returns independent template content and keeps image ownership restrictions', async () => {
+  const first = templatePreset('perfil');
+  first.products[0].title = 'Edited';
+  expect(templatePreset('perfil').products[0].title).not.toBe('Edited');
+  expect(() => parseSite({ ...first, heroImage: '/templates/assets/imported.png' })).toThrow();
+});
 
 it('saves only the authenticated customer draft and rejects foreign images', async () => {
   const a = await customer(),

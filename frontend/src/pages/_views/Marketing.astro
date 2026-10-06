@@ -88,26 +88,20 @@ const t = en
           ],
         },
       ],
-      section: 'Three steps to your page.',
-      sectionText: 'See the real Vira screens, from sign-in to publishing.',
+      section: 'Your page, your way.',
+      sectionText: 'Choose a template, customize your content and publish your page.',
       steps: [
         {
           title: 'Open your space',
-          text: 'Sign in with your email or Google. Your page, its address, and a preview are ready in the dashboard.',
-          mobile: '/step-start-en-mobile.webp',
-          alt: 'Actual Vira dashboard showing the page address and preview',
+          text: 'Sign in with your email and password, a code or Google, then open your dashboard.',
         },
         {
           title: 'Add your information',
-          text: 'Pick a layout, write a headline, and add your images. You can see the page take shape beside the form.',
-          mobile: '/step-edit-en-mobile.webp',
-          alt: 'Actual Vira editor with layout, text fields, and a live preview',
+          text: 'Choose a layout and edit your text and images directly in the interactive preview.',
         },
         {
           title: 'Check and publish',
           text: 'Review the page on desktop or mobile, then press Publish. Share your Vira address right away; connect your own domain when you choose a plan.',
-          mobile: '/step-preview-en-mobile.webp',
-          alt: 'Actual preview of a page made in Vira',
         },
       ],
       plans: 'Choose your plan',
@@ -164,26 +158,20 @@ const t = en
           ],
         },
       ],
-      section: 'Sua página em três passos.',
-      sectionText: 'Veja as telas reais do Vira, do acesso à publicação.',
+      section: 'Sua página, do seu jeito.',
+      sectionText: 'Escolha um template, personalize o conteúdo e publique sua página.',
       steps: [
         {
           title: 'Entre no seu espaço',
-          text: 'Acesse por e-mail ou Google. Seu painel já mostra a página, o endereço e a prévia para começar.',
-          mobile: '/step-start-pt-mobile.webp',
-          alt: 'Painel real do Vira com endereço da página e prévia',
+          text: 'Entre com e-mail e senha, código ou Google e acesse seu painel para começar.',
         },
         {
           title: 'Coloque suas informações',
-          text: 'Escolha um visual, escreva o título e adicione suas imagens. Você vê o resultado ao lado enquanto edita.',
-          mobile: '/step-edit-pt-mobile.webp',
-          alt: 'Editor real do Vira com modelo, campos de texto e prévia',
+          text: 'Escolha um visual e edite seus textos e imagens diretamente na prévia interativa.',
         },
         {
           title: 'Confira e publique',
           text: 'Veja como fica no computador ou no celular e clique em Publicar. Compartilhe seu endereço Vira; seu domínio próprio pode ser conectado após escolher um plano.',
-          mobile: '/step-preview-pt-mobile.webp',
-          alt: 'Prévia real de uma página criada no Vira',
         },
       ],
       plans: 'Escolha seu plano',
@@ -217,118 +205,121 @@ const t = en
   <link slot="head" rel="alternate" hreflang="en-US" href={'https://' + domain + '/en/'} />
   <link slot="head" rel="alternate" hreflang="x-default" href={'https://' + domain + '/'} />
   <div class="min-h-screen overflow-x-clip bg-white text-[#17130d]">
-    <header class="relative z-20 mx-auto flex max-w-[1380px] items-center justify-between gap-4 px-5 pt-5 sm:px-8 sm:pt-7">
-      <Brand href={signedIn ? dashboardHref : en ? '/en' : '/'} tone="light" />
-      <nav
-        class="hidden items-center gap-7 rounded-full border border-[#d8ae73] bg-white/95 px-7 py-3 text-sm text-[#605448] shadow-[0_8px_30px_-22px_rgba(131,85,21,0.35)] backdrop-blur-md md:flex"
-        aria-label={en ? 'Main navigation' : 'Navegação principal'}
-      >
-        <a class="transition-colors hover:text-[#9b6823]" href="#como-funciona">
-          {en ? 'How it works' : 'Como funciona'}
-        </a>
-        <a class="transition-colors hover:text-[#9b6823]" href="#vitrine">
-          {en ? 'Projects' : 'Projetos'}
-        </a>
-        <a class="transition-colors hover:text-[#9b6823]" href="#planos">
-          {en ? 'Plans' : 'Planos'}
-        </a>
-      </nav>
-      <div class="ml-auto md:hidden">
-        <MobileNavigation
-          label={en ? 'Navigation' : 'Navegação'}
-          lang={en ? 'en' : 'pt'}
-          iconOnly
-          links={[
-            { href: '#como-funciona', label: en ? 'How it works' : 'Como funciona' },
-            { href: '#vitrine', label: en ? 'Projects' : 'Projetos' },
-            { href: '#planos', label: en ? 'Plans' : 'Planos' },
-          ]}
-        />
-      </div>
-      <div class="flex items-center gap-2 sm:gap-4">
-        <a
-          href={dashboardHref}
-          class="btn btn-sm rounded-full border border-[#b88333] bg-white px-3 font-semibold text-[#6f4716] shadow-none transition-colors hover:border-[#9b6823] hover:bg-[#fff9ef] sm:btn-md sm:px-5"
-        >
-          <span class="sm:hidden">
-            {signedIn ? (en ? 'Dashboard' : 'Painel') : en ? 'Start' : 'Começar'}
-          </span>
-          <span class="hidden sm:inline">
-            {signedIn ? (en ? 'Open dashboard' : 'Abrir painel') : t.nav}
-          </span>
-          <span class="hidden sm:inline" aria-hidden="true">
-            ↗
-          </span>
-        </a>
-      </div>
-    </header>
     <main>
-      <section
-        class="relative isolate mx-auto max-w-[1380px] overflow-hidden px-5 pb-24 pt-10 sm:px-8 lg:pt-14"
-        aria-labelledby="hero-title"
-      >
-        <img
-          src="/vira-hero-light.webp"
-          width="1586"
-          height="992"
-          alt=""
-          fetchpriority="high"
-          class="pointer-events-none absolute inset-0 -z-20 h-full w-full select-none object-cover object-center opacity-[0.07]"
-        />
-        <div class="relative z-10 w-full" data-reveal>
-          <AssistantChat
-            endpoint="/api/assistant/chat"
-            lang={lang}
-            name={t.assistantName}
-            greeting={
-              en
-                ? 'You can create your site, customize its look and content, and have an AI assistant answer visitors using your published information.'
-                : 'Você cria seu site, personaliza o visual e o conteúdo e conta com uma assistente de IA que responde aos visitantes usando as informações publicadas.'
-            }
-            suggestions={t.assistantSuggestions}
+      <div class="marketing-first-screen">
+        <header class="relative z-20 mx-auto flex w-full max-w-[1380px] shrink-0 items-center justify-between gap-4 px-5 pt-5 sm:px-8 sm:pt-7">
+          <Brand href={signedIn ? dashboardHref : en ? '/en' : '/'} tone="light" />
+          <nav
+            class="hidden items-center gap-7 rounded-full border border-[#d8ae73] bg-white/95 px-7 py-3 text-sm text-[#605448] shadow-[0_8px_30px_-22px_rgba(131,85,21,0.35)] backdrop-blur-md md:flex"
+            aria-label={en ? 'Main navigation' : 'Navegação principal'}
           >
-            <div slot="intro" data-hero-intro class="py-6 text-left lg:pr-12">
-              <p class="font-mono text-[9px] uppercase tracking-[0.12em] text-[#8b5b1e]">
-                {createdLabel}
-              </p>
-              <h1
-                id="hero-title"
-                class="mt-4 max-w-[18ch] font-['Outfit',sans-serif] text-[clamp(2rem,3.5vw,3.4rem)] font-medium leading-[1.1] tracking-[-0.05em]"
-              >
-                {en ? 'Your page ready.' : 'Sua página pronta.'}
-                <span class="text-[#a66f27]">
-                  {en ? ' Your AI assisting.' : ' Sua IA atendendo.'}
-                </span>
-              </h1>
-              <p class="mt-4 max-w-[44ch] text-sm leading-relaxed text-[#625a51]">
-                {en
-                  ? 'Create your site with an AI assistant. Try a conversation below.'
-                  : 'Crie seu site com uma assistente de IA. Experimente uma conversa abaixo.'}
-              </p>
-            </div>
-            <div
-              slot="footer"
-              data-hero-footer
-              class="flex flex-col items-center gap-3 px-6 pb-6 pt-4"
+            <a class="transition-colors hover:text-[#9b6823]" href="#como-funciona">
+              {en ? 'How it works' : 'Como funciona'}
+            </a>
+            <a class="transition-colors hover:text-[#9b6823]" href="#vitrine">
+              {en ? 'Projects' : 'Projetos'}
+            </a>
+            <a class="transition-colors hover:text-[#9b6823]" href="#planos">
+              {en ? 'Plans' : 'Planos'}
+            </a>
+          </nav>
+          <div class="ml-auto md:hidden">
+            <MobileNavigation
+              label={en ? 'Navigation' : 'Navegação'}
+              lang={en ? 'en' : 'pt'}
+              iconOnly
+              links={[
+                { href: '#como-funciona', label: en ? 'How it works' : 'Como funciona' },
+                { href: '#vitrine', label: en ? 'Projects' : 'Projetos' },
+                { href: '#planos', label: en ? 'Plans' : 'Planos' },
+              ]}
+            />
+          </div>
+          <div class="flex items-center gap-2 sm:gap-4">
+            <a
+              href={dashboardHref}
+              class="btn btn-sm rounded-full border border-[#b88333] bg-white px-3 font-semibold text-[#6f4716] shadow-none transition-colors hover:border-[#9b6823] hover:bg-[#fff9ef] sm:btn-md sm:px-5"
             >
-              <p class="text-xs text-[#766e63]">
-                {en ? '1-day free trial · No card required' : '1 dia grátis · Sem cartão'}
-              </p>
-            </div>
-          </AssistantChat>
-        </div>
-        <a
-          href="#como-funciona"
-          class="absolute bottom-5 left-1/2 z-10 flex -translate-x-1/2 flex-col items-center gap-3 whitespace-nowrap font-mono text-[10px] uppercase tracking-[0.2em] text-[#8b5b1e] transition-colors hover:text-[#17130d] focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#b88333]"
-          aria-label={en ? 'Scroll to discover' : 'Role para descobrir'}
+              <span class="sm:hidden">
+                {signedIn ? (en ? 'Dashboard' : 'Painel') : en ? 'Start' : 'Começar'}
+              </span>
+              <span class="hidden sm:inline">
+                {signedIn ? (en ? 'Open dashboard' : 'Abrir painel') : t.nav}
+              </span>
+              <span class="hidden sm:inline" aria-hidden="true">
+                ↗
+              </span>
+            </a>
+          </div>
+        </header>
+        <section
+          data-marketing-hero
+          class="relative isolate mx-auto flex min-h-0 w-full max-w-[1380px] flex-1 flex-col overflow-hidden px-5 pb-20 pt-5 sm:px-8 lg:pt-8"
+          aria-labelledby="hero-title"
         >
-          Explore
-          <span
-            aria-hidden="true"
-            class="h-7 w-px bg-gradient-to-b from-[#b88333] to-transparent"
-          ></span>
-        </a>
-      </section>
+          <img
+            src="/vira-hero-light.webp"
+            width="1586"
+            height="992"
+            alt=""
+            fetchpriority="high"
+            class="pointer-events-none absolute inset-0 -z-20 h-full w-full select-none object-cover object-center opacity-[0.07]"
+          />
+          <div class="relative z-10 min-h-0 w-full flex-1">
+            <AssistantChat
+              endpoint="/api/assistant/chat"
+              lang={lang}
+              name={t.assistantName}
+              greeting={
+                en
+                  ? 'You can create your site, customize its look and content, and have an AI assistant answer visitors using your published information.'
+                  : 'Você cria seu site, personaliza o visual e o conteúdo e conta com uma assistente de IA que responde aos visitantes usando as informações publicadas.'
+              }
+              suggestions={t.assistantSuggestions}
+            >
+              <div slot="intro" data-hero-intro class="py-3 text-left lg:pr-12">
+                <p class="font-mono text-[9px] uppercase tracking-[0.12em] text-[#8b5b1e]">
+                  {createdLabel}
+                </p>
+                <h1
+                  id="hero-title"
+                  class="mt-4 max-w-[18ch] font-['Outfit',sans-serif] text-[clamp(2rem,3.5vw,3.4rem)] font-medium leading-[1.1] tracking-[-0.05em]"
+                >
+                  {en ? 'Your page ready.' : 'Sua página pronta.'}
+                  <span class="text-[#a66f27]">
+                    {en ? ' Your AI assisting.' : ' Sua IA atendendo.'}
+                  </span>
+                </h1>
+                <p class="mt-4 max-w-[44ch] text-sm leading-relaxed text-[#625a51]">
+                  {en
+                    ? 'Create your site with an AI assistant. Try a conversation below.'
+                    : 'Crie seu site com uma assistente de IA. Experimente uma conversa abaixo.'}
+                </p>
+              </div>
+              <div
+                slot="footer"
+                data-hero-footer
+                class="flex flex-col items-center gap-2 px-6 pb-1 pt-2"
+              >
+                <p class="text-xs text-[#766e63]">
+                  {en ? '1-day free trial · No card required' : '1 dia grátis · Sem cartão'}
+                </p>
+              </div>
+            </AssistantChat>
+          </div>
+          <a
+            href="#como-funciona"
+            class="absolute bottom-5 left-1/2 z-10 flex -translate-x-1/2 flex-col items-center gap-3 whitespace-nowrap font-mono text-[10px] uppercase tracking-[0.2em] text-[#8b5b1e] transition-colors hover:text-[#17130d] focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#b88333]"
+            aria-label={en ? 'Scroll to discover' : 'Role para descobrir'}
+          >
+            Explore
+            <span
+              aria-hidden="true"
+              class="h-7 w-px bg-gradient-to-b from-[#b88333] to-transparent"
+            ></span>
+          </a>
+        </section>
+      </div>
       <Walkthrough lang={lang} heading={t.section} intro={t.sectionText} steps={t.steps} />
       <ProjectShowcase lang={lang} projects={projects} />
       <section
@@ -425,6 +416,26 @@ const t = en
     </footer>
   </div>
 </Base>
+<style>
+  .marketing-first-screen {
+    display: flex;
+    flex-direction: column;
+    height: 100svh;
+  }
+  @media (max-height: 640px) {
+    [data-marketing-hero] {
+      padding-top: 0.5rem;
+      padding-bottom: 4rem;
+    }
+    [data-hero-intro] h1 {
+      font-size: 1.65rem;
+      margin-top: 0.5rem;
+    }
+    [data-hero-intro] > p:last-of-type {
+      display: none;
+    }
+  }
+</style>
 <script>
   import '@frontend/pages/_scripts/assistant-chat';
 </script>

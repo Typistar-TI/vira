@@ -49,13 +49,6 @@ function initAssistant(root: HTMLElement) {
     const clean = question.trim().slice(0, 500);
     if (!clean || busy) return;
     started = true;
-    if (
-      root.classList.contains('assistant-demo') &&
-      !root.classList.contains('conversation-active')
-    ) {
-      root.classList.add('conversation-active');
-      log.replaceChildren();
-    }
     bubble('user', clean);
     if (!persist) messages.push({ role: 'user', content: clean });
     input.value = '';

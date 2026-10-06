@@ -1,6 +1,7 @@
 ---
 import type { SiteContent } from '@frontend/api/sites/parse-site';
 import { primaryLink, productLink } from './links';
+import AssistantChat from '@frontend/components/AssistantChat.astro';
 
 interface Props {
   content: SiteContent;
@@ -107,48 +108,59 @@ const aboutKicker = content.aboutTitle && content.eyebrow ? content.eyebrow : ''
         {hasSteps && <a href="#passos">{t.navSteps}</a>}
         {hasCatalog && <a href="#catalogo">{t.navCatalog}</a>}
         {hasFaq && <a href="#faq">{t.navFaq}</a>}
-        {hasPrimary && (
-          <a class="btn btn-sm" href={primaryLink(content, preview)}>
-            {content.primaryLabel}
-          </a>
-        )}
       </nav>
+      {hasPrimary && (
+        <a class="btn btn-sm" href={primaryLink(content, preview)}>
+          {content.primaryLabel} ↗
+        </a>
+      )}
     </div>
   </header>
 
   <main id="main">
     <section class="hero" id="top">
-      <div class="wrap hero-grid">
-        <div class="hero-copy reveal">
-          {content.eyebrow && <p class="eyebrow">{content.eyebrow}</p>}
-          <h1>{content.title}</h1>
-          {content.subtitle && <p class="lead">{content.subtitle}</p>}
-          <div class="hero-actions">
-            {hasPrimary && (
-              <a class="btn" href={primaryLink(content, preview)}>
-                {content.primaryLabel}
-              </a>
-            )}
-            {hasSteps && (
-              <a class="quiet-link" href="#passos">
-                {t.howItWorks}
-              </a>
-            )}
+      {content.heroImage && <img class="hero-backdrop" src={content.heroImage} alt="" />}
+      <div class="wrap chat-hero">
+        <AssistantChat
+          endpoint="/api/public/assistant/chat"
+          lang={content.language}
+          name={brand}
+          greeting={content.about || content.subtitle}
+          introQuestion={en ? 'How can you help me?' : 'Como vocês podem me ajudar?'}
+          suggestions={content.faq.slice(0, 3).map((item) => item.question)}
+          persist={!preview}
+          colors={{
+            accent: content.accentColor,
+            text: content.textColor,
+            surface: content.backgroundColor,
+            soft: `color-mix(in srgb, ${content.backgroundColor} 88%, ${content.accentColor})`,
+            line: `color-mix(in srgb, ${content.textColor} 16%, transparent)`,
+          }}
+        >
+          <div slot="intro" class="chat-intro">
+            {content.eyebrow && <p class="eyebrow">{content.eyebrow}</p>}
+            <h1>
+              {content.title.includes('.') ? (
+                <>
+                  {content.title.slice(0, content.title.indexOf('.') + 1)}
+                  <span class="title-accent">
+                    {content.title.slice(content.title.indexOf('.') + 1)}
+                  </span>
+                </>
+              ) : (
+                content.title
+              )}
+            </h1>
+            {content.subtitle && <p class="lead">{content.subtitle}</p>}
           </div>
-        </div>
-
-        <div class="hero-media reveal">
-          {content.heroImage ? (
-            <img src={content.heroImage} alt={content.title} loading="eager" />
-          ) : (
-            <div class="hero-placeholder">
-              <span class="hero-placeholder-mark" aria-hidden="true">
-                {monogram}
-              </span>
-            </div>
-          )}
-        </div>
+          <p slot="footer" data-hero-footer class="chat-footer">
+            {content.footerText}
+          </p>
+        </AssistantChat>
       </div>
+      <a class="explore" href={hasSteps ? '#passos' : '#sobre'}>
+        Explore<span aria-hidden="true"></span>
+      </a>
     </section>
 
     {hasAbout && (
@@ -346,6 +358,129 @@ const aboutKicker = content.aboutTitle && content.eyebrow ? content.eyebrow : ''
     </div>
   </footer>
 </div>
+<script>
+  import '@frontend/pages/_scripts/assistant-chat';
+</script>
+<style>
+  .classico .site-header {
+    height: 90px;
+  }
+  .classico .hero {
+    display: block;
+    position: relative;
+    isolation: isolate;
+    height: calc(100svh - 90px);
+    min-height: 390px;
+    padding: 24px 0 80px;
+    overflow: hidden;
+  }
+  .chat-hero {
+    height: 100%;
+    min-height: 0;
+  }
+  .classico .wrap {
+    width: min(1316px, calc(100% - 40px));
+    max-width: 1380px;
+  }
+  .classico .title-accent {
+    color: var(--accent);
+  }
+  .classico .site-header {
+    border-bottom: 0;
+  }
+  .classico .site-nav {
+    border-color: var(--accent);
+  }
+  .classico .site-header .btn {
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+  }
+  .classico .chat-footer {
+    padding-top: 8px;
+    text-align: center;
+  }
+  .chat-intro {
+    padding: 12px 48px 12px 0;
+    text-align: left;
+  }
+  .classico .chat-intro h1 {
+    max-width: 18ch;
+    font: 500 clamp(2rem, 3.5vw, 3.4rem)/1.1 var(--font-display);
+    letter-spacing: -0.05em;
+  }
+  .classico .site-nav {
+    margin-inline: auto;
+    border: 1px solid var(--line);
+    border-radius: 40px;
+    padding: 12px 24px;
+  }
+  .chat-intro .lead {
+    margin-top: 16px;
+    max-width: 44ch;
+    font-size: 14px;
+  }
+  .chat-intro .eyebrow {
+    font-size: 9px;
+  }
+  .chat-footer {
+    text-align: center;
+    padding-top: 8px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .hero-backdrop {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.07;
+    z-index: -1;
+  }
+  .explore {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    font: 10px var(--font-mono);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+  .explore span {
+    width: 1px;
+    height: 28px;
+    background: linear-gradient(var(--accent), transparent);
+  }
+  @media (max-width: 767px) {
+    .chat-intro {
+      padding-right: 0;
+    }
+    .classico .site-header {
+      height: 80px;
+    }
+    .classico .hero {
+      height: calc(100svh - 80px);
+    }
+  }
+  @media (max-height: 640px) {
+    .chat-intro h1 {
+      font-size: 1.65rem;
+    }
+    .chat-intro .lead {
+      display: none;
+    }
+    .classico .hero {
+      min-height: 0;
+      padding-top: 8px;
+      padding-bottom: 64px;
+    }
+  }
+</style>
 
 <script>
   const roots = document.querySelectorAll<HTMLElement>('[data-classico]');

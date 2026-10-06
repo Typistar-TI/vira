@@ -1,6 +1,7 @@
 ---
 import type { SiteContent } from '@frontend/api/sites/parse-site';
 import { primaryLink, productLink } from './links';
+import ThemeToggle from './ThemeToggle.astro';
 
 interface Props {
   content: SiteContent;
@@ -97,11 +98,13 @@ const t = en
 
     {(hasFeatures || hasSteps || hasFaq) && (
       <div class="dock-links">
+        <a href="#top">{en ? 'Overview' : 'Visão geral'}</a>
         {hasFeatures && <a href="#recursos">{t.navResources}</a>}
         {hasSteps && <a href="#passos">{t.navSteps}</a>}
         {hasFaq && <a href="#faq">{t.navFaq}</a>}
       </div>
     )}
+    <ThemeToggle en={en} />
 
     {content.primaryLabel && (
       <a class="dock-cta" href={ctaHref}>
@@ -156,7 +159,16 @@ const t = en
         {heroShots.length > 0 ? (
           <div class="stack">
             {heroShots.map((src, index) => (
-              <figure class={`stack-card stack-card-${index + 1}`}>
+              <figure
+                class={`stack-card stack-card-${index + 1}`}
+                tabindex="0"
+                role="button"
+                data-phone
+                aria-pressed={index === 0 ? 'true' : 'false'}
+                aria-label={
+                  en ? `Bring screen ${index + 1} to front` : `Trazer tela ${index + 1} para frente`
+                }
+              >
                 <img
                   src={src}
                   alt={`${brand} — ${t.screenshot} ${index + 1}`}
@@ -166,11 +178,71 @@ const t = en
             ))}
           </div>
         ) : (
-          <div class="stack-empty" aria-hidden="true">
-            <span class="stack-glow" />
-            <span class="stack-line stack-line-a" />
-            <span class="stack-line stack-line-b" />
-            <span class="stack-line stack-line-c" />
+          <div class="phone-stack">
+            {[0, 1].map((index) => (
+              <button
+                type="button"
+                class:list={['sample-phone', `sample-phone-${index}`, { 'is-front': index === 0 }]}
+                data-phone
+                aria-pressed={index === 0 ? 'true' : 'false'}
+                aria-label={
+                  en ? `Bring screen ${index + 1} to front` : `Trazer tela ${index + 1} para frente`
+                }
+              >
+                <span class="phone-heading">
+                  <span class="phone-logo">◉</span>
+                  {index === 0 ? (en ? 'Overview' : 'Visão geral') : en ? 'Events' : 'Eventos'}
+                  <span class="phone-alert">♧</span>
+                </span>
+                {index === 0 && (
+                  <span class="phone-stats">
+                    {content.stats.slice(0, 2).map((stat) => (
+                      <span>
+                        <small>◈</small>
+                        <strong>{stat.value}</strong>
+                        <small>{stat.label}</small>
+                      </span>
+                    ))}
+                  </span>
+                )}
+                <span class="phone-section">
+                  {index === 0
+                    ? en
+                      ? 'Spaces'
+                      : 'Ambientes'
+                    : en
+                      ? 'Recent activity'
+                      : 'Atividade recente'}
+                </span>
+                {content.products.slice(0, 3).map((product, i) => (
+                  <span class="phone-row">
+                    <span class="phone-logo">{['⌂', '♧', '◈'][i]}</span>
+                    <span>
+                      <strong>{product.title}</strong>
+                      <small>{product.description}</small>
+                    </span>
+                    <span class="phone-dot">●</span>
+                  </span>
+                ))}
+                {index === 0 && (
+                  <>
+                    <span class="phone-section">
+                      {en ? 'Recent activity' : 'Atividade recente'}
+                    </span>
+                    {content.benefits.slice(0, 2).map((benefit) => (
+                      <span class="phone-row">
+                        <span class="phone-logo">♧</span>
+                        <span>
+                          <strong>{benefit.title}</strong>
+                          <small>{en ? 'Just now' : 'Agora'}</small>
+                        </span>
+                      </span>
+                    ))}
+                  </>
+                )}
+                <span class="phone-bottom">⌂　◉　☷　⚙</span>
+              </button>
+            ))}
           </div>
         )}
       </div>
@@ -352,6 +424,243 @@ const t = en
     </div>
   </footer>
 </div>
+<script>
+  document.querySelectorAll<HTMLElement>('.guardiao [data-phone]').forEach((phone) => {
+    const bringForward = () => {
+      phone
+        .closest('.hero-visual')
+        ?.querySelectorAll('[data-phone]')
+        .forEach((node) => {
+          node.classList.toggle('is-front', node === phone);
+          node.setAttribute('aria-pressed', String(node === phone));
+        });
+    };
+    phone.addEventListener('click', bringForward);
+    if (phone.tagName !== 'BUTTON')
+      phone.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          bringForward();
+        }
+      });
+  });
+</script>
+<style>
+  .phone-stack {
+    position: relative;
+    height: 620px;
+    min-width: 0;
+  }
+  .guardiao .dock {
+    inset: 20px auto auto 50%;
+    transform: translateX(-50%);
+    width: max-content;
+    height: auto;
+    display: flex;
+    gap: 16px;
+    padding: 10px;
+    max-width: calc(100vw - 24px);
+    border-radius: 24px;
+    background: var(--surface);
+  }
+  .guardiao .dock > * {
+    width: auto;
+    height: auto;
+    display: flex;
+    flex-direction: row;
+  }
+  .guardiao .dock .dock-links {
+    display: flex;
+    gap: 8px;
+  }
+  .guardiao .dock-name {
+    display: block;
+  }
+  .guardiao .page {
+    max-width: 1440px;
+    padding-inline: 24px;
+  }
+  .guardiao .hero {
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 56px;
+  }
+  .sample-phone {
+    display: block;
+  }
+  .guardiao .btn {
+    border-radius: 15px;
+  }
+  .guardiao .btn-primary {
+    background: var(--fg);
+    color: var(--bg);
+    box-shadow: none;
+  }
+  .guardiao .btn-quiet {
+    padding: 13px 20px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--fg);
+  }
+  @media (max-width: 900px) {
+    .guardiao .hero {
+      grid-template-columns: 1fr;
+    }
+    .guardiao .dock .dock-links {
+      display: none;
+    }
+    .guardiao .dock .dock-name {
+      display: block;
+    }
+    .guardiao .phone-stack {
+      max-width: 480px;
+      margin: auto;
+    }
+  }
+  .sample-phone {
+    position: absolute;
+    top: 10px;
+    left: 0;
+    width: 270px;
+    height: 565px;
+    padding: 18px 12px;
+    border: 8px solid color-mix(in srgb, var(--bg) 25%, white);
+    border-radius: 34px;
+    background: var(--bg);
+    box-shadow: 0 20px 36px #0002;
+    color: var(--fg);
+    text-align: left;
+    cursor: pointer;
+    transform: rotate(-4deg);
+    transition:
+      transform 0.4s,
+      opacity 0.4s;
+    opacity: 0.66;
+  }
+  .sample-phone-1 {
+    top: 82px;
+    left: 48%;
+    transform: rotate(9deg);
+  }
+  .sample-phone.is-front {
+    z-index: 2;
+    opacity: 1;
+    transform: rotate(-4deg) translateY(-10px);
+  }
+  .sample-phone-1.is-front {
+    transform: rotate(4deg) translateY(-20px);
+  }
+  .phone-heading {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 12px;
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .phone-logo {
+    display: grid;
+    place-items: center;
+    width: 27px;
+    height: 27px;
+    flex-shrink: 0;
+    border-radius: 8px;
+    background: var(--fg);
+    color: var(--accent);
+  }
+  .phone-alert {
+    margin-left: auto;
+  }
+  .phone-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  .phone-stats > span {
+    display: grid;
+    gap: 4px;
+    padding: 8px;
+    border-radius: 12px;
+    background: var(--surface);
+    box-shadow: 0 2px 4px #0002;
+  }
+  .phone-stats strong {
+    font-size: 18px;
+  }
+  .sample-phone small {
+    display: block;
+    color: var(--muted);
+    font: 8px/1.6 var(--font-mono);
+  }
+  .phone-section {
+    display: block;
+    margin: 12px 0 8px;
+    font-size: 10px;
+    font-weight: 700;
+  }
+  .phone-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 10px 8px;
+    margin-bottom: 8px;
+    background: var(--surface);
+    border-radius: 10px;
+    box-shadow: 0 3px 5px #0002;
+  }
+  .phone-row strong {
+    display: block;
+    font-size: 10px;
+    font-weight: 600;
+  }
+  .phone-dot {
+    color: var(--accent);
+    font-size: 10px;
+    margin-left: auto;
+  }
+  .phone-bottom {
+    position: absolute;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    padding: 5px 12px;
+    border-radius: 24px;
+    background: var(--surface);
+    box-shadow: 0 3px 5px #0002;
+    color: var(--muted);
+  }
+  .stack-card.is-front {
+    z-index: 10;
+  }
+  @media (max-width: 640px) {
+    .phone-stack {
+      height: 440px;
+      max-width: 400px;
+      margin: auto;
+    }
+    .sample-phone {
+      width: 200px;
+      height: 415px;
+      padding: 12px 8px;
+      border-width: 6px;
+    }
+    .sample-phone-1 {
+      left: 43%;
+    }
+    .phone-row {
+      padding: 6px;
+    }
+    .phone-heading {
+      font-size: 11px;
+    }
+    .phone-stats strong {
+      font-size: 13px;
+    }
+    .phone-section {
+      margin: 8px 0 4px;
+    }
+  }
+</style>
 
 <script>
   type CopyButton = HTMLButtonElement;

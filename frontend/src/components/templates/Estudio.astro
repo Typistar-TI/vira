@@ -1,6 +1,8 @@
 ---
 import type { SiteContent } from '@frontend/api/sites/parse-site';
 import { primaryLink, productLink } from './links';
+import GenericPortrait from './GenericPortrait.astro';
+import ThemeToggle from './ThemeToggle.astro';
 
 interface Props {
   content: SiteContent;
@@ -21,15 +23,8 @@ const products = content.products
   .filter(({ product }) => product.title || product.description || product.image);
 
 const primaryHref = primaryLink(content, preview);
-const ctaLabel = content.primaryLabel || (en ? 'View profile' : 'Ver perfil');
 const year = new Date().getFullYear();
 const monogram = (content.title.trim().charAt(0) || 'V').toUpperCase();
-
-const note = content.about
-  ? content.about.length > 150
-    ? `${content.about.slice(0, 147).trimEnd()}…`
-    : content.about
-  : '';
 
 const catalog = products.map(({ product, index }) => ({
   title: product.title,
@@ -72,7 +67,7 @@ function contactIcon(url: string): string {
 
 <main class="estudio">
   <!-- 1. Profile hero -->
-  <header class="hero">
+  <header class="hero" id="estudio-inicio">
     {content.heroImage ? (
       <span class="avatar">
         <img
@@ -86,8 +81,8 @@ function contactIcon(url: string): string {
         />
       </span>
     ) : (
-      <span class="avatar avatar-mono" aria-hidden="true">
-        {monogram}
+      <span class="avatar">
+        <GenericPortrait label={en ? 'Sample profile portrait' : 'Retrato genérico do perfil'} />
       </span>
     )}
 
@@ -99,9 +94,16 @@ function contactIcon(url: string): string {
   <!-- 2. Stats card -->
   {hasStats && (
     <section class="card stats" aria-labelledby="estudio-stats-title">
-      <p class="card-eyebrow" id="estudio-stats-title">
-        {content.aboutTitle || content.eyebrow || (en ? 'Highlights' : 'Destaques')}
-      </p>
+      <div class="social-header">
+        <span class="social-icon">◎</span>
+        <div>
+          <small>@{content.appName.replace(/\s/g, '').toLowerCase()}</small>
+          <h2 id="estudio-stats-title">{en ? 'Instagram in numbers' : 'Instagram em números'}</h2>
+        </div>
+        <a href={content.links[0]?.url || '#estudio-contato'}>
+          {en ? 'View profile' : 'Ver perfil'} ↗
+        </a>
+      </div>
 
       <dl class="stats-grid">
         {stats.map((stat) => (
@@ -112,12 +114,11 @@ function contactIcon(url: string): string {
         ))}
       </dl>
 
-      {note && <p class="note">{note}</p>}
-      {primaryHref && (
-        <a class="btn btn-solid" href={primaryHref}>
-          {ctaLabel}
-        </a>
-      )}
+      <p class="note">
+        {en
+          ? 'Views and interactions refer to recent public content.'
+          : 'Visualizações e interações consideram o conteúdo público recente.'}
+      </p>
     </section>
   )}
 
@@ -144,9 +145,9 @@ function contactIcon(url: string): string {
 
       <div class="highlight-body">
         {content.aboutTitle && (
-          <p class="card-eyebrow" id="estudio-about-title">
+          <h2 class="highlight-title" id="estudio-about-title">
             {content.aboutTitle}
-          </p>
+          </h2>
         )}
         {content.about && <p class="highlight-text">{content.about}</p>}
         {primaryHref && content.primaryLabel && (
@@ -161,11 +162,15 @@ function contactIcon(url: string): string {
   <!-- 4. Navigation buttons -->
   {navItems.length > 0 && (
     <nav class="nav" aria-label={en ? 'Useful links' : 'Links úteis'}>
+      <a class="nav-btn" href="#estudio-inicio">
+        ⌂ {en ? 'Home' : 'Início'}
+      </a>
       {navItems.map((item) => (
         <a class="nav-btn" href={item.href}>
           {item.label}
         </a>
       ))}
+      <ThemeToggle en={en} />
     </nav>
   )}
 
@@ -284,7 +289,7 @@ function contactIcon(url: string): string {
 
   .estudio > * {
     width: 100%;
-    max-width: 1080px;
+    max-width: 1200px;
     margin-inline: auto;
   }
 
@@ -355,6 +360,8 @@ function contactIcon(url: string): string {
   /* 1. Hero                                                            */
   /* ------------------------------------------------------------------ */
   .hero {
+    display: block;
+    min-height: 0;
     text-align: center;
   }
 
@@ -366,7 +373,7 @@ function contactIcon(url: string): string {
     margin: 0 auto clamp(1.5rem, 4vw, 2rem);
     padding: 7px;
     border: 2px solid color-mix(in srgb, var(--accent) 65%, transparent);
-    border-radius: 28px;
+    border-radius: 0;
     background: color-mix(in srgb, var(--bg) 70%, transparent);
     box-shadow: 0 26px 55px -38px color-mix(in srgb, var(--fg) 55%, transparent);
     overflow: hidden;
@@ -376,7 +383,7 @@ function contactIcon(url: string): string {
     display: block;
     width: 100%;
     height: 100%;
-    border-radius: 20px;
+    border-radius: 0;
     object-fit: cover;
   }
 
@@ -394,8 +401,8 @@ function contactIcon(url: string): string {
     font-size: clamp(2rem, 5.5vw, 3.4rem);
     font-weight: 400;
     line-height: 1.08;
-    letter-spacing: 0.22em;
-    text-indent: 0.22em;
+    letter-spacing: 0.08em;
+    text-indent: 0.08em;
     text-transform: uppercase;
   }
 
@@ -410,9 +417,9 @@ function contactIcon(url: string): string {
   }
 
   .tagline {
-    max-width: 54ch;
+    max-width: 90ch;
     margin: 0 auto;
-    font-size: clamp(1rem, 2.3vw, 1.16rem);
+    font: clamp(1rem, 2.3vw, 1.16rem)/1.75 var(--font-display);
     line-height: 1.75;
     color: color-mix(in srgb, var(--fg) 80%, transparent);
   }
@@ -441,14 +448,20 @@ function contactIcon(url: string): string {
   /* 2. Stats                                                           */
   /* ------------------------------------------------------------------ */
   .stats {
-    text-align: center;
+    display: block;
+    width: 100%;
+    overflow: visible;
+    text-align: left;
+    border-radius: 0;
+    padding: 18px 20px;
+    background: var(--bg);
   }
 
   .stats-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1.35rem 1rem;
-    margin: 0 0 1.5rem;
+    margin: 0 0 8px;
   }
 
   @media (min-width: 640px) {
@@ -458,12 +471,16 @@ function contactIcon(url: string): string {
   }
 
   .stat {
-    text-align: center;
+    display: block;
+    text-align: left;
+    border-left: 1px solid var(--line);
+    padding-left: 12px;
+    padding-block: 0;
   }
 
   .stat-value {
     font-family: var(--font-display);
-    font-size: clamp(1.7rem, 4.5vw, 2.4rem);
+    font-size: 1.5rem;
     font-weight: 700;
     line-height: 1.1;
     color: var(--fg);
@@ -472,14 +489,15 @@ function contactIcon(url: string): string {
   .stat-label {
     margin: 0.4rem 0 0;
     font-size: 0.66rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    text-transform: none;
+    font-family: var(--font-display);
     color: var(--muted);
   }
 
   .note {
-    margin: 0 0 1.5rem;
-    font-size: 0.95rem;
+    margin: 0;
+    font-size: 0.75rem;
     line-height: 1.7;
     color: var(--muted);
   }
@@ -538,6 +556,102 @@ function contactIcon(url: string): string {
     gap: clamp(1.25rem, 3.5vw, 2.25rem);
     align-items: center;
     background: var(--soft);
+  }
+  .social-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 14px;
+    font-family: var(--font-display);
+  }
+  .social-header h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 400;
+    letter-spacing: 0.05em;
+  }
+  .social-header small {
+    font-size: 10px;
+    letter-spacing: 0.15em;
+  }
+  .social-header a {
+    margin-left: auto;
+    font-size: 12px;
+    border-bottom: 1px solid;
+    padding-bottom: 4px;
+  }
+  .social-icon {
+    display: grid;
+    place-items: center;
+    background: var(--accent);
+    color: var(--bg);
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    font-size: 24px;
+  }
+  .highlight-title {
+    margin: 0 0 8px;
+    font: 400 clamp(1.6rem, 3.4vw, 3rem)/1.15 var(--font-display);
+  }
+  .estudio .nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 12px;
+    background: var(--bg);
+    border-top: 1px solid var(--line);
+    overflow-x: auto;
+    border-radius: 0;
+    max-width: none;
+    animation: none;
+  }
+  .estudio .nav-btn {
+    width: auto;
+    padding: 8px 12px;
+    font-size: 12px;
+    white-space: nowrap;
+    text-transform: none;
+  }
+  .estudio .highlight {
+    background: color-mix(in srgb, var(--bg) 90%, #efb174);
+  }
+  @media (min-width: 768px) {
+    .estudio {
+      padding-top: 40px;
+    }
+    .estudio .name {
+      font-size: 42px;
+      margin-top: 24px;
+    }
+    .estudio .eyebrow {
+      font: 14px var(--font-display);
+      margin-top: 20px;
+    }
+    .estudio .tagline {
+      margin-top: 12px;
+    }
+    .estudio > * + * {
+      margin-top: 32px;
+    }
+    .estudio .highlight {
+      min-height: 162px;
+      padding: 24px;
+    }
+    .estudio .highlight-media {
+      border-radius: 50%;
+      width: 112px;
+      height: 112px;
+    }
   }
 
   .highlight-media {

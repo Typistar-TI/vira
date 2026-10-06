@@ -16,6 +16,7 @@ interface Props {
   suggestions?: string[];
   colors?: Colors;
   persist?: boolean;
+  introQuestion?: string;
 }
 
 const {
@@ -27,6 +28,7 @@ const {
   suggestions = [],
   colors = {},
   persist = false,
+  introQuestion,
 } = Astro.props;
 const en = lang === 'en';
 const floating = variant === 'floating';
@@ -121,7 +123,7 @@ const panelClass = floating
           class="ml-auto max-w-[85%] rounded-2xl rounded-br-md px-4 py-2.5 text-sm leading-relaxed text-white"
           style={`background:${palette.accent}`}
         >
-          {en ? 'What can I create with Vira?' : 'O que posso criar com o Vira?'}
+          {introQuestion || (en ? 'What can I create with Vira?' : 'O que posso criar com o Vira?')}
         </div>
       )}
       <div
@@ -183,12 +185,18 @@ const panelClass = floating
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     align-items: center;
-    height: auto;
-    min-height: 460px;
+    grid-template-rows: auto minmax(0, 1fr) auto auto auto;
+    height: 100%;
+    min-height: 0;
     border: 0;
     border-radius: 0;
     background: transparent !important;
     box-shadow: none;
+  }
+
+  .assistant-demo {
+    height: 100%;
+    min-height: 0;
   }
 
   .assistant-demo header {
@@ -202,9 +210,9 @@ const panelClass = floating
   }
 
   .assistant-demo [data-assistant-log] {
-    max-height: 380px;
-    min-height: 180px;
-    padding: 1.25rem 0;
+    align-self: stretch;
+    min-height: 0;
+    padding: 0.75rem 0;
   }
 
   .assistant-demo [data-assistant-prompts],
@@ -217,18 +225,10 @@ const panelClass = floating
     padding-inline: 0;
   }
 
-  .assistant-demo.conversation-active :global([data-hero-intro]) {
-    display: none;
-  }
-
-  .assistant-demo.conversation-active [data-assistant-log] {
-    grid-column: 1 / -1;
-    min-height: 300px;
-  }
-
-  @media (min-width: 1024px) {
+  @media (min-width: 1024px), (min-width: 700px) and (max-height: 500px) {
     .assistant-demo [data-assistant-panel] {
       grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+      grid-template-rows: minmax(0, 1fr) auto auto auto;
       column-gap: 2rem;
     }
   }
@@ -269,10 +269,9 @@ const panelClass = floating
     height: 2.25rem;
   }
 
-  @media (max-width: 640px) {
-    .assistant-demo [data-assistant-panel] {
-      min-height: 540px;
-      border-radius: 0;
+  @media (max-height: 640px) {
+    .assistant-demo [data-assistant-prompts] {
+      display: none;
     }
   }
 </style>

@@ -7,4 +7,4 @@ export {
   fontKeys,
   defaultLayoutFonts,
 } from '@backend/features/sites/entities/site';
-export type { FontKey } from '@backend/features/sites/entities/site';
+export type { FontKey, Layout } from '@backend/features/sites/entities/site';
