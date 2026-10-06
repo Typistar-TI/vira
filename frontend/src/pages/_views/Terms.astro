@@ -24,18 +24,7 @@ const [controller, contact, email, policy] = await Promise.all([
   getSetting('TERMS_OF_USE'),
 ]);
 const mail = contact || email;
-const defaultText = en
-  ? [
-      'By creating an account you agree to use Vira lawfully and not to publish illegal, harmful or misleading content.',
-      'You are responsible for the content you publish and for keeping your access credentials safe. Vira provides the platform as is, may suspend accounts that break these rules, and offers a one-day free trial followed by the plan you choose.',
-      'These terms may be updated; continued use after an update means acceptance of the new version.',
-    ]
-  : [
-      'Ao criar uma conta você concorda em usar o Vira de forma legal e em não publicar conteúdo ilegal, nocivo ou enganoso.',
-      'Você é responsável pelo conteúdo que publica e por manter suas credenciais de acesso seguras. O Vira fornece a plataforma como está, pode suspender contas que violem estas regras e oferece um dia de teste grátis seguido do plano escolhido.',
-      'Estes termos podem ser atualizados; continuar usando após uma atualização significa aceitar a nova versão.',
-    ];
-const body = policy.trim() ? policy.trim().split(/\n{2,}/) : defaultText;
+const body = policy.trim() ? policy.trim().split(/\n{2,}/) : [];
 ---
 
 <Base title={en ? 'Terms of Use · Vira' : 'Termos de Uso · Vira'} lang={lang} appearance="light">

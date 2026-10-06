@@ -1,4 +1,5 @@
 ---
+import WalkthroughVisual from '@frontend/components/WalkthroughVisual.astro';
 interface Props {
   lang: 'pt' | 'en';
   heading: string;
@@ -7,22 +8,16 @@ interface Props {
 }
 const { lang, heading, intro, steps } = Astro.props;
 const en = lang === 'en';
-const mockBlocks = [
-  en ? 'Hero' : 'Herói',
-  en ? 'About' : 'Sobre',
-  en ? 'Services' : 'Serviços',
-  en ? 'Gallery' : 'Galeria',
-  en ? 'Contact' : 'Contato',
-];
 ---
 
 <section
   id="como-funciona"
+  data-walkthrough
   class="border-b border-[#d8ae73] bg-[#fcfaf6] px-5 py-16 text-[#17130d] sm:px-8 sm:py-24"
   aria-labelledby="walkthrough-heading"
 >
   <div class="mx-auto w-full max-w-[1240px]">
-    <header class="mb-10 flex items-end justify-between gap-10 max-md:block" data-reveal>
+    <header class="mb-12 flex items-end justify-between gap-10 max-md:block" data-reveal>
       <div>
         <p class="mb-3.5 font-mono text-[10px] uppercase tracking-[0.14em] text-[#9b6823]">
           {en ? 'How it works' : 'Como funciona'}
@@ -39,18 +34,42 @@ const mockBlocks = [
       </p>
     </header>
 
-    <div class="relative">
-      {steps.map((step, index) => (
-        <article
-          data-stack-step={index}
-          class="sticky top-6 mb-[20svh] grid items-center gap-8 overflow-hidden rounded-[28px] border border-[#ead8bf] bg-[#fffdf9] p-6 shadow-[0_30px_70px_-50px_#80531888] last:mb-0 sm:p-10 lg:grid-cols-[minmax(0,0.42fr)_minmax(0,0.58fr)]"
-          style={`z-index:${index + 1}`}
-          aria-labelledby={`walkthrough-step-${index + 1}`}
-        >
-          <div>
-            <p class="mb-3 font-mono text-xs uppercase tracking-[0.14em] text-[#b88333]">
-              {en ? 'Step' : 'Passo'} 0{index + 1}
-            </p>
+    <div class="grid gap-12 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1fr)] lg:gap-16">
+      <div class="hidden lg:block">
+        <div class="sticky top-28">
+          <div class="relative">
+            {steps.map((_, index) => (
+              <div data-step-panel={index} class={index === 0 ? '' : 'hidden'}>
+                <WalkthroughVisual index={index} lang={lang} />
+              </div>
+            ))}
+          </div>
+          <div class="mt-6 flex items-center justify-center gap-2" aria-hidden="true">
+            {steps.map((_, index) => (
+              <span
+                data-step-dot={index}
+                class={`h-1.5 rounded-full transition-all duration-300 ${
+                  index === 0 ? 'w-8 bg-[#b88333]' : 'w-3 bg-[#e5ded2]'
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <ol class="flex flex-col gap-12 sm:gap-16 lg:gap-0">
+        {steps.map((step, index) => (
+          <li data-step-item={index} class="lg:flex lg:min-h-[58svh] lg:flex-col lg:justify-center">
+            <span
+              data-step-badge={index}
+              class={`mb-4 grid h-11 w-11 place-items-center rounded-full border font-mono text-sm font-semibold transition-colors duration-300 ${
+                index === 0
+                  ? 'border-[#b88333] bg-[#17130d] text-white'
+                  : 'border-[#e5ded2] bg-white text-[#b88333]'
+              }`}
+            >
+              0{index + 1}
+            </span>
             <h3
               id={`walkthrough-step-${index + 1}`}
               class="text-[clamp(1.6rem,3vw,2.6rem)] font-medium leading-tight tracking-[-0.03em] font-['Outfit',sans-serif]"
@@ -60,124 +79,52 @@ const mockBlocks = [
             <p class="mt-3 max-w-[42ch] text-sm leading-relaxed text-[#625a51] sm:text-base">
               {step.text}
             </p>
-          </div>
-
-          <div class="min-h-0 rounded-2xl border border-[#eee7dc] bg-white">
-            <div class="flex items-center gap-2 border-b border-[#eee7dc] px-4 py-2.5">
-              <span class="flex gap-1.5" aria-hidden="true">
-                <span class="h-2.5 w-2.5 rounded-full bg-[#e5ded2]" />
-                <span class="h-2.5 w-2.5 rounded-full bg-[#e5ded2]" />
-                <span class="h-2.5 w-2.5 rounded-full bg-[#e5ded2]" />
-              </span>
-              <span class="ml-2 flex-1 truncate rounded-full bg-[#f5f2eb] px-3 py-1 font-mono text-[10px] text-[#8b8174]">
-                vira.ia.br
-              </span>
+            <div class="mt-6 lg:hidden">
+              <WalkthroughVisual index={index} lang={lang} />
             </div>
-            <div class="bg-[#fbf9f5] p-5">
-              {index === 0 && (
-                <>
-                  <p class="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#9b6823]">
-                    {en ? 'Add blocks' : 'Adicione blocos'}
-                  </p>
-                  <div class="flex flex-col gap-2">
-                    {mockBlocks.map((label) => (
-                      <div class="flex items-center gap-3 rounded-xl border border-[#e5ded2] bg-white px-3 py-2.5">
-                        <span class="grid h-7 w-7 place-items-center rounded-lg bg-[#f5f2eb] text-[11px] text-[#8b8174]">
-                          ≡
-                        </span>
-                        <span class="text-sm font-medium">{label}</span>
-                        <span class="ml-auto text-[#b88333]">＋</span>
-                      </div>
-                    ))}
-                  </div>
-                </>
-              )}
-              {index === 1 && (
-                <>
-                  <p class="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#9b6823]">
-                    {en ? 'Edit the content' : 'Edite o conteúdo'}
-                  </p>
-                  <div class="flex flex-col gap-3 rounded-2xl border border-[#e5ded2] bg-white p-4">
-                    <span class="text-xs font-bold text-[#4a4238]">
-                      {en ? 'Headline' : 'Título'}
-                    </span>
-                    <span class="rounded-lg border border-[#e5ded2] px-3 py-2 text-sm">
-                      {en ? 'Your idea, online.' : 'Sua ideia, no ar.'}
-                      <span class="ml-0.5 inline-block h-4 w-px animate-pulse bg-[#b88333] align-middle" />
-                    </span>
-                    <span class="text-xs font-bold text-[#4a4238]">{en ? 'Text' : 'Texto'}</span>
-                    <span class="rounded-lg border border-[#e5ded2] px-3 py-2 text-sm text-[#766c60]">
-                      {en
-                        ? 'Present your work in a clear, simple page.'
-                        : 'Apresente seu trabalho em uma página clara e simples.'}
-                    </span>
-                  </div>
-                </>
-              )}
-              {index === 2 && (
-                <>
-                  <p class="mb-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#9b6823]">
-                    {en ? 'Publish' : 'Publique'}
-                  </p>
-                  <div class="flex flex-col gap-3 rounded-2xl border border-[#e5ded2] bg-white p-4">
-                    <span class="flex items-center gap-2 text-sm font-medium">
-                      <span class="grid h-5 w-5 place-items-center rounded-full bg-[#17130d] text-[11px] text-white">
-                        ✓
-                      </span>
-                      {en ? 'Published!' : 'Publicado!'}
-                    </span>
-                    <span class="rounded-lg bg-[#f5f2eb] px-3 py-2 font-mono text-xs text-[#8b8174]">
-                      {en ? 'your-page' : 'sua-pagina'}.vira.ia.br
-                    </span>
-                    <div class="mt-1 rounded-xl border border-[#eee7dc] p-3">
-                      <span class="block text-base font-medium">
-                        {en ? 'Your idea, online.' : 'Sua ideia, no ar.'}
-                      </span>
-                      <span class="mt-1 block text-xs text-[#766c60]">
-                        {en
-                          ? 'Your visitors can ask the AI assistant anything.'
-                          : 'Seus visitantes podem perguntar qualquer coisa à assistente de IA.'}
-                      </span>
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-        </article>
-      ))}
+          </li>
+        ))}
+      </ol>
     </div>
   </div>
 </section>
 <script>
-  const cards = [...document.querySelectorAll<HTMLElement>('[data-stack-step]')];
-  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
-  let scheduled = false;
-  const render = () => {
-    scheduled = false;
-    cards.forEach((card, index) => {
-      const next = cards[index + 1];
-      if (!next || reduced.matches) {
-        card.style.removeProperty('transform');
-        return;
-      }
-      const top = parseFloat(getComputedStyle(card).top) || 0;
-      const distance = next.getBoundingClientRect().top - top;
-      const progress = Math.max(
-        0,
-        Math.min(1, 1 - distance / Math.min(card.offsetHeight, innerHeight * 0.8)),
+  const root = document.querySelector<HTMLElement>('[data-walkthrough]');
+  if (root) {
+    const items = [...root.querySelectorAll<HTMLElement>('[data-step-item]')];
+    const panels = [...root.querySelectorAll<HTMLElement>('[data-step-panel]')];
+    const dots = [...root.querySelectorAll<HTMLElement>('[data-step-dot]')];
+    const badges = [...root.querySelectorAll<HTMLElement>('[data-step-badge]')];
+    const activePanel = (index: number) => {
+      panels.forEach((panel, i) => panel.classList.toggle('hidden', i !== index));
+      dots.forEach((dot, i) => {
+        dot.classList.toggle('w-8', i === index);
+        dot.classList.toggle('bg-[#b88333]', i === index);
+        dot.classList.toggle('w-3', i !== index);
+        dot.classList.toggle('bg-[#e5ded2]', i !== index);
+      });
+      badges.forEach((badge, i) => {
+        badge.classList.toggle('border-[#b88333]', i === index);
+        badge.classList.toggle('bg-[#17130d]', i === index);
+        badge.classList.toggle('text-white', i === index);
+        badge.classList.toggle('border-[#e5ded2]', i !== index);
+        badge.classList.toggle('bg-white', i !== index);
+        badge.classList.toggle('text-[#b88333]', i !== index);
+      });
+    };
+    activePanel(0);
+    if ('IntersectionObserver' in window && items.length) {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              activePanel(Number((entry.target as HTMLElement).dataset.stepItem));
+            }
+          });
+        },
+        { rootMargin: '-45% 0px -45% 0px', threshold: 0 },
       );
-      card.style.transform = `scale(${1 - progress * 0.05}) translateY(${-progress * 10}px)`;
-    });
-  };
-  const schedule = () => {
-    if (!scheduled) {
-      scheduled = true;
-      requestAnimationFrame(render);
+      items.forEach((item) => observer.observe(item));
     }
-  };
-  window.addEventListener('scroll', schedule, { passive: true });
-  window.addEventListener('resize', schedule);
-  reduced.addEventListener('change', schedule);
-  render();
+  }
 </script>

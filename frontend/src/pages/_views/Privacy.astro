@@ -63,37 +63,6 @@ const custom = policy.trim();
             ))}
           </div>
         )}
-        {!custom && (
-          <>
-            <h2 class="text-2xl mt-8 mb-2">{en ? 'What we process' : 'Quais dados tratamos'}</h2>
-            <p>
-              {en
-                ? 'We use your email for account access and, when you choose Google, its account identifier. We process your page content and images to publish your site, your domain settings to connect a custom address, and billing identifiers to manage the plan. Security controls temporarily record IP addresses. Basic analytics count page views and button clicks by site ID; they do not store visitor names or emails.'
-                : 'Usamos seu e-mail para acesso à conta e, quando você escolhe Google, o identificador dessa conta. Tratamos conteúdo e imagens para publicar sua página, dados do domínio para conectar o endereço próprio e identificadores de cobrança para gerenciar o plano. Controles de segurança registram temporariamente IPs. Estatísticas básicas contam visualizações e cliques por ID da página; não guardam nomes ou e-mails dos visitantes.'}
-            </p>
-            <h2 class="text-2xl mt-8 mb-2">
-              {en ? 'Cookies and providers' : 'Cookies e fornecedores'}
-            </h2>
-            <p>
-              {en
-                ? 'Vira uses an essential, HttpOnly session cookie for login. Google verifies your identity if you choose that option. Resend delivers single-use, expiring email codes and service notices. If you set a password, we store only a salted password hash, never the password itself. We do not use advertising cookies or browser storage for authentication. Cloudflare delivers the site; Stripe processes payments. These providers may process data under their own retention rules.'
-                : 'O Vira usa um cookie essencial de sessão, HttpOnly, para login. O Google confirma sua identidade se você escolher essa opção. A Resend envia códigos de acesso de uso único e com validade, além de avisos do serviço. Se você definir uma senha, guardamos apenas seu hash com salt, nunca a senha em si. Não usamos cookies de publicidade nem armazenamento do navegador para autenticação. A Cloudflare entrega o site; a Stripe processa pagamentos. Esses fornecedores podem tratar dados conforme suas próprias regras de retenção.'}
-            </p>
-            <p class="mt-3">
-              {en
-                ? 'These providers may process data outside Brazil. Please use the privacy contact for questions about international transfers or to request correction of your account data.'
-                : 'Esses fornecedores podem tratar dados fora do Brasil. Use o contato de privacidade para dúvidas sobre transferências internacionais ou para solicitar correção dos dados da conta.'}
-            </p>
-            <h2 class="text-2xl mt-8 mb-2">
-              {en ? 'Retention and your choices' : 'Retenção e suas escolhas'}
-            </h2>
-            <p>
-              {en
-                ? 'Sessions expire after 30 days. Expired accounts are scheduled for removal after 90 days, including their pages and images. Email delivery records are removed after 30 days and when you delete your account. Security rate-limit records are periodically removed. In your dashboard you can download your account data or delete your account. Deletion cancels any Vira subscription and removes the site. Public images may remain in browser or edge caches for up to five minutes. Payment records legally required by Stripe may remain with that provider.'
-                : 'Sessões expiram em 30 dias. Contas expiradas são programadas para remoção após 90 dias, com páginas e imagens. Registros de envio de e-mails são removidos após 30 dias e quando você exclui a conta. Registros de limite de requisições são removidos periodicamente. No painel você pode baixar seus dados ou excluir a conta. A exclusão cancela a assinatura do Vira e remove a página. Imagens públicas podem permanecer em caches do navegador ou da rede por até cinco minutos. Registros de pagamento exigidos legalmente podem permanecer com a Stripe.'}
-            </p>
-          </>
-        )}
       </article>
     </main>
     <SiteFooter lang={lang} />
