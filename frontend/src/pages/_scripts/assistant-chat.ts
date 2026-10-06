@@ -45,9 +45,20 @@ function initAssistant(root: HTMLElement) {
   };
   const hideSuggestions = () =>
     root.querySelector('[data-assistant-suggestions]')?.classList.add('hidden');
+  const engage = () => {
+    if (root.dataset.engaged === 'true' || !root.classList.contains('assistant-demo')) return;
+    const intro = root.querySelector<HTMLElement>('[data-hero-intro]');
+    if (intro) {
+      intro.style.setProperty('--intro-height', `${intro.getBoundingClientRect().height}px`);
+      intro.inert = true;
+      intro.setAttribute('aria-hidden', 'true');
+    }
+    root.dataset.engaged = 'true';
+  };
   const submit = async (question: string) => {
     const clean = question.trim().slice(0, 500);
     if (!clean || busy) return;
+    engage();
     started = true;
     bubble('user', clean);
     if (!persist) messages.push({ role: 'user', content: clean });
@@ -97,6 +108,7 @@ function initAssistant(root: HTMLElement) {
     }
   });
   input.addEventListener('input', () => {
+    if (input.value.trim()) engage();
     input.style.height = 'auto';
     input.style.height = `${Math.min(input.scrollHeight, 112)}px`;
   });

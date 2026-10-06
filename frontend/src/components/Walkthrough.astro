@@ -13,6 +13,14 @@ interface Props {
 
 const { lang, heading, intro, steps } = Astro.props;
 const en = lang === 'en';
+const templates = [
+  { key: 'guardiao', name: 'Guardião' },
+  { key: 'central', name: 'Central' },
+  { key: 'perfil', name: 'Perfil' },
+  { key: 'estudio', name: 'Estúdio' },
+  { key: 'classico', name: 'Clássico' },
+];
+const scenes = [[templates[0], templates[1]], [templates[2], templates[3]], [templates[4]]];
 ---
 
 <section id="como-funciona" class="bg-white py-12 sm:py-16" aria-labelledby="walkthrough-heading">
@@ -30,34 +38,21 @@ const en = lang === 'en';
       <p class="mx-auto mt-3 max-w-[60ch] text-sm leading-relaxed text-[#625a51]">{intro}</p>
     </div>
 
-    <div class="grid gap-5 md:grid-cols-3">
+    <div class="walkthrough-stack">
       {steps.map((step, i) => (
         <article
-          class="flex min-w-0 flex-col overflow-hidden rounded-2xl border border-[#ead8bf] bg-[#fffdf9]"
+          class="walkthrough-scene"
+          style={`--scene-index:${i}`}
+          data-walkthrough-scene
           aria-labelledby={`walkthrough-step-${i + 1}`}
         >
-          {step.image && (
-            <a
-              href={step.image}
-              target="_blank"
-              rel="noopener"
-              class="block bg-white focus-visible:outline-2 focus-visible:outline-[#b88333]"
-              aria-label={en ? `Enlarge: ${step.alt}` : `Ampliar: ${step.alt}`}
-            >
-              <img
-                src={step.image}
-                width="1200"
-                height="800"
-                loading="lazy"
-                alt={step.alt}
-                class="aspect-[3/2] w-full object-contain"
-              />
-            </a>
-          )}
-          <div class="flex flex-1 flex-col px-5 py-5">
+          <div class="walkthrough-copy">
+            <p class="step-number">
+              {en ? 'Step' : 'Passo'} 0{i + 1} / 03
+            </p>
             <h3
               id={`walkthrough-step-${i + 1}`}
-              class="font-['Outfit',sans-serif] text-xl font-medium leading-tight tracking-[-0.03em] text-[#17130d]"
+              class="font-['Outfit',sans-serif] text-[clamp(1.6rem,3vw,2.6rem)] font-medium leading-tight tracking-[-0.03em] text-[#17130d]"
             >
               {step.title}
             </h3>
@@ -74,8 +69,280 @@ const en = lang === 'en';
               </div>
             )}
           </div>
+          <div class="template-scene">
+            {scenes[i].map((template, index) => (
+              <a
+                class:list={['template-window', { 'secondary-window': index === 1 }]}
+                href={`/template-previews/${template.key}.webp`}
+                target="_blank"
+                rel="noopener"
+                aria-label={
+                  en ? `Enlarge ${template.name} template` : `Ampliar template ${template.name}`
+                }
+              >
+                <div class="window-bar">
+                  <span aria-hidden="true">● ● ●</span>
+                  <span>{template.name}</span>
+                  <span aria-hidden="true">↗</span>
+                </div>
+                <img
+                  src={`/template-previews/${template.key}.webp`}
+                  width="1440"
+                  height="900"
+                  loading="lazy"
+                  alt={
+                    en
+                      ? `${template.name}: editable Vira template with sample content`
+                      : `${template.name}: template editável do Vira com conteúdo genérico`
+                  }
+                />
+              </a>
+            ))}
+            {i === 2 && (
+              <div class="template-phone">
+                <img
+                  src="/template-previews/classico-mobile.webp"
+                  width="390"
+                  height="900"
+                  loading="lazy"
+                  alt={en ? 'Clássico template on mobile' : 'Template Clássico no celular'}
+                />
+              </div>
+            )}
+            <p class="scene-caption">
+              {en
+                ? 'Actual Vira templates · All content is editable'
+                : 'Templates reais do Vira · Todo o conteúdo é editável'}
+            </p>
+          </div>
         </article>
       ))}
     </div>
   </div>
 </section>
+<style>
+  .walkthrough-stack {
+    position: relative;
+    padding-bottom: 12px;
+  }
+  .walkthrough-scene {
+    position: sticky;
+    top: 32px;
+    z-index: calc(1 + var(--scene-index));
+    display: grid;
+    grid-template-columns: 0.34fr 0.66fr;
+    align-items: center;
+    min-height: min(620px, calc(100svh - 64px));
+    margin-bottom: 24svh;
+    border: 1px solid #ead8bf;
+    border-radius: 28px;
+    background: #fffdf9;
+    box-shadow: 0 24px 65px -40px #80531855;
+    overflow: hidden;
+    transform-origin: 50% 0;
+    will-change: transform;
+  }
+  .walkthrough-scene:last-child {
+    margin-bottom: 0;
+  }
+  .walkthrough-copy {
+    padding: 32px;
+  }
+  .step-number {
+    margin-bottom: 20px;
+    color: #9b6823;
+    font:
+      10px ui-monospace,
+      monospace;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+  .template-scene {
+    position: relative;
+    min-width: 0;
+    height: 540px;
+    perspective: 1200px;
+    background: radial-gradient(ellipse at 60% 50%, #f3e6d2, transparent 72%);
+  }
+  .template-window {
+    position: absolute;
+    top: 24px;
+    left: 24px;
+    width: 85%;
+    overflow: hidden;
+    border: 1px solid #ddc8a8;
+    border-radius: 12px;
+    background: white;
+    box-shadow: 0 20px 40px -20px #53381166;
+    transform: rotate(-3deg);
+    transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .template-window img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .window-bar {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 9px 12px;
+    border-bottom: 1px solid #ead8bf;
+    background: white;
+    color: #8b5b1e;
+    font:
+      10px ui-monospace,
+      monospace;
+  }
+  .window-bar > span:first-child {
+    color: #d6c5ac;
+    letter-spacing: 3px;
+  }
+  .secondary-window {
+    top: 140px;
+    left: 30%;
+    width: 65%;
+    transform: rotate(3deg);
+  }
+  .template-window:hover,
+  .template-window:focus-visible {
+    z-index: 3;
+    transform: rotate(0) translateY(-8px);
+  }
+  .template-phone {
+    position: absolute;
+    top: 170px;
+    right: 28px;
+    width: 146px;
+    height: 330px;
+    border: 5px solid #6f5940;
+    border-radius: 24px;
+    overflow: hidden;
+    background: white;
+    transform: rotate(7deg);
+    box-shadow: 0 20px 40px -16px #53381166;
+  }
+  .template-phone img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top;
+  }
+  .scene-caption {
+    position: absolute;
+    bottom: 14px;
+    left: 24px;
+    right: 24px;
+    text-align: center;
+    color: #8b5b1e;
+    font-size: 11px;
+    width: fit-content;
+    margin: auto;
+    padding: 6px 12px;
+    border-radius: 20px;
+    background: rgb(255 253 249 / 94%);
+  }
+  @media (max-width: 767px) {
+    .walkthrough-scene {
+      top: 12px;
+      grid-template-columns: 1fr;
+      min-height: 0;
+      margin-bottom: 16svh;
+      border-radius: 20px;
+    }
+    .walkthrough-copy {
+      padding: 22px;
+    }
+    .step-number {
+      margin-bottom: 12px;
+    }
+    .template-scene {
+      height: 320px;
+    }
+    .template-window {
+      top: 12px;
+      left: 18px;
+      width: calc(100% - 44px);
+    }
+    .secondary-window {
+      top: 100px;
+      left: 38px;
+      width: calc(100% - 56px);
+    }
+    .template-phone {
+      top: 70px;
+      right: 18px;
+      width: 98px;
+      height: 215px;
+    }
+    .scene-caption {
+      font-size: 10px;
+      bottom: 8px;
+    }
+  }
+  @media (max-height: 650px) and (min-width: 768px) {
+    .walkthrough-scene {
+      top: 12px;
+      min-height: 400px;
+    }
+    .template-scene {
+      height: 400px;
+    }
+    .secondary-window {
+      top: 135px;
+    }
+    .template-phone {
+      top: 110px;
+      height: 255px;
+      width: 116px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .walkthrough-scene {
+      position: relative;
+      top: 0;
+      margin-bottom: 24px;
+      will-change: auto;
+    }
+    .template-window {
+      transition: none;
+      transform: none;
+    }
+    .template-phone {
+      transform: none;
+    }
+  }
+</style>
+<script>
+  const scenes = [...document.querySelectorAll<HTMLElement>('[data-walkthrough-scene]')];
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)');
+  let scheduled = false;
+  const render = () => {
+    scheduled = false;
+    scenes.forEach((scene, index) => {
+      const next = scenes[index + 1];
+      if (!next || reduced.matches) {
+        scene.style.removeProperty('transform');
+        return;
+      }
+      const top = parseFloat(getComputedStyle(scene).top) || 0;
+      const distance = next.getBoundingClientRect().top - top;
+      const progress = Math.max(
+        0,
+        Math.min(1, 1 - distance / Math.min(scene.offsetHeight, innerHeight * 0.8)),
+      );
+      scene.style.transform = `scale(${1 - progress * 0.045}) translateY(${-progress * 10}px)`;
+    });
+  };
+  const schedule = () => {
+    if (!scheduled) {
+      scheduled = true;
+      requestAnimationFrame(render);
+    }
+  };
+  window.addEventListener('scroll', schedule, { passive: true });
+  window.addEventListener('resize', schedule);
+  reduced.addEventListener('change', schedule);
+  render();
+</script>
