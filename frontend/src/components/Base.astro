@@ -63,6 +63,9 @@ const lightFields =
     <link rel="icon" href={favicon} type="image/png" />
     <link rel="apple-touch-icon" href={touchIcon} />
     <link rel="manifest" href={manifest} />
+    <script is:inline>
+      if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+    </script>
     <slot name="head" />
   </head>
   <body
@@ -79,6 +82,8 @@ const lightFields =
     <Toast />
     <Motion />
     <script>
+      window.scrollTo(0, 0);
+      window.addEventListener('pageshow', () => window.scrollTo(0, 0));
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('/sw.js').catch(() => {});

@@ -16,15 +16,15 @@ const links = [
 ];
 ---
 
-<header class="relative z-20 mx-auto flex w-full max-w-[1380px] shrink-0 items-center justify-between gap-4 px-5 pt-5 sm:px-8 sm:pt-7">
-  <div class="flex flex-col justify-center">
+<header class="relative z-20 mx-auto grid w-full max-w-[1380px] shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-4 px-5 pt-5 sm:px-8 sm:pt-7">
+  <div class="flex flex-col justify-center justify-self-start">
     <Brand href={signedIn ? dashboardHref : en ? '/en' : '/'} tone="light" />
     <span class="mt-1 hidden text-xs leading-tight text-[#8b5b1e] lg:block">
-      {en ? 'A clear place for what you do.' : 'Um lugar claro para mostrar o que você faz.'}
+      {en ? 'Vira your idea out there.' : 'Vira sua ideia no mundo.'}
     </span>
   </div>
   <nav
-    class="hidden h-10 items-center gap-7 rounded-full border border-[#d8ae73] bg-white/95 px-6 text-sm text-[#605448] shadow-[0_8px_30px_-22px_rgba(131,85,21,0.35)] backdrop-blur-md md:flex"
+    class="hidden h-10 items-center gap-7 justify-self-center rounded-full border border-[#d8ae73] bg-white/95 px-6 text-sm text-[#605448] shadow-[0_8px_30px_-22px_rgba(131,85,21,0.35)] backdrop-blur-md md:flex"
     aria-label={en ? 'Main navigation' : 'Navegação principal'}
   >
     {links.map((link) => (
@@ -33,15 +33,15 @@ const links = [
       </a>
     ))}
   </nav>
-  <div class="ml-auto md:hidden">
-    <MobileNavigation
-      label={en ? 'Navigation' : 'Navegação'}
-      lang={en ? 'en' : 'pt'}
-      iconOnly
-      links={links}
-    />
-  </div>
-  <div class="flex items-center gap-2 sm:gap-4">
+  <div class="flex items-center justify-self-end gap-2 sm:gap-4">
+    <div class="md:hidden">
+      <MobileNavigation
+        label={en ? 'Navigation' : 'Navegação'}
+        lang={en ? 'en' : 'pt'}
+        iconOnly
+        links={links}
+      />
+    </div>
     <a
       href={dashboardHref}
       class="btn h-10 min-h-10 rounded-full border border-[#b88333] bg-white px-4 font-semibold text-[#6f4716] shadow-none transition-colors hover:border-[#9b6823] hover:bg-[#fff9ef] sm:px-5"
