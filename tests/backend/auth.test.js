@@ -173,16 +173,17 @@ describe('Email authentication and password lifecycle', () => {
     ).toBe(200);
   });
 
-  it('limits password brute force without disclosing whether an account exists', async () => {
+  it('asks for consent to create an account and rate-limits password attempts', async () => {
     const { email } = await customer();
     const existing = await password(
       request('/api/auth/password', { email, password: 'unknown-password' }),
     );
+    expect(existing.status).toBe(401);
     const missing = await password(
       request('/api/auth/password', { email: 'absent@example.test', password: 'unknown-password' }),
     );
-    expect(existing.status).toBe(401);
-    expect(await existing.text()).toBe(await missing.text());
+    expect(missing.status).toBe(400);
+    expect(await missing.text()).toContain('consent');
     for (let i = 1; i < 10; i++)
       expect(
         (await password(request('/api/auth/password', { email, password: 'unknown-password' })))

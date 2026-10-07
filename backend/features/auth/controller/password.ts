@@ -6,6 +6,7 @@ import {
   establishLogin,
   loginLimits,
   normalizeEmail,
+  passwordRecord,
   rateLimited,
 } from '../service/credentials';
 import { json, readJson } from '@backend/platform/http';
@@ -24,17 +25,31 @@ export const POST = async (request: Request): Promise<Response> => {
   const fail = () =>
     json({ error: 'E-mail ou senha inválidos. / Invalid email or password.' }, 401);
   if (typeof body.password !== 'string' || body.password.length > 128) return fail();
+  const accepted = body.acceptTerms === true || body.acceptTerms === 'true';
   const row = await env.DB.prepare(
     'SELECT password_hash, salt, iterations FROM auth_passwords WHERE email = ?',
   )
     .bind(email)
     .first<{ password_hash: string; salt: string; iterations: number }>();
-  const actual = await derivePassword(
-    body.password,
-    row?.salt ?? '00000000000000000000000000000000',
-    row?.iterations ?? 100_000,
-  );
-  if (!equalHashes(actual, row?.password_hash ?? '0'.repeat(64)) || !row) return fail();
-  const accepted = body.acceptTerms === true || body.acceptTerms === 'true';
+  if (!row) {
+    const [existing, admin] = await Promise.all([
+      env.DB.prepare('SELECT 1 FROM users WHERE email = ?').bind(email).first(),
+      env.DB.prepare('SELECT 1 FROM admin_accounts WHERE email = ?').bind(email).first(),
+    ]);
+    if (existing || admin) return fail();
+    if (!accepted)
+      return json(
+        {
+          error:
+            'Esta conta ainda não existe. Aceite os Termos de Uso e a Política de Privacidade para criá-la.',
+          consent: true,
+        },
+        400,
+      );
+    const password = await passwordRecord(body.password);
+    return establishLogin(email, request, password, true);
+  }
+  const actual = await derivePassword(body.password, row.salt, row.iterations);
+  if (!equalHashes(actual, row.password_hash)) return fail();
   return establishLogin(email, request, undefined, accepted);
 };

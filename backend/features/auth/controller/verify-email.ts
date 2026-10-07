@@ -1,3 +1,4 @@
+import { env } from 'cloudflare:workers';
 import { sameOrigin } from '../service/session';
 import {
   consumeCode,
@@ -28,6 +29,22 @@ export const POST = async (request: Request): Promise<Response> => {
       { error: 'A senha deve ter entre 12 e 128 caracteres. / Use 12–128 characters.' },
       400,
     );
+  const accepted = body.acceptTerms === true || body.acceptTerms === 'true';
+  if (purpose === 'login' && !accepted) {
+    const [existing, admin] = await Promise.all([
+      env.DB.prepare('SELECT id FROM users WHERE email = ?').bind(email).first(),
+      env.DB.prepare('SELECT email FROM admin_accounts WHERE email = ?').bind(email).first(),
+    ]);
+    if (!existing && !admin)
+      return json(
+        {
+          error:
+            'Esta conta ainda não existe. Aceite os Termos de Uso e a Política de Privacidade para criá-la.',
+          consent: true,
+        },
+        400,
+      );
+  }
   if (
     typeof body.code !== 'string' ||
     !/^\d{6}$/.test(body.code) ||
@@ -39,6 +56,5 @@ export const POST = async (request: Request): Promise<Response> => {
     );
   const password =
     purpose === 'password' ? await passwordRecord(body.password as string) : undefined;
-  const accepted = body.acceptTerms === true || body.acceptTerms === 'true';
   return establishLogin(email, request, password, accepted);
 };

@@ -12,8 +12,12 @@ async function errorMessage(response: Response): Promise<string> {
 
 async function readJson<T>(response: Response): Promise<T> {
   if (!response.ok) {
-    const error = new Error(await errorMessage(response));
-    reportError(error, `Erro ${response.status}`);
+    const body = await response.json().catch(() => null);
+    const error = Object.assign(
+      new Error(typeof body?.error === 'string' ? body.error : `Erro ${response.status}`),
+      { data: body },
+    );
+    if (!body?.consent) reportError(error, `Erro ${response.status}`);
     throw error;
   }
   return (await response.json()) as T;
