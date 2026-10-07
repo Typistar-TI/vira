@@ -24,9 +24,6 @@ const lastLogin =
     Astro.request.headers.get('cookie') || '',
   )?.[1] ?? '';
 const lastUsed = en ? 'Last used' : 'Último acesso';
-const highlights = en
-  ? ['Editable blocks', 'Custom domain', 'AI assistant']
-  : ['Blocos editáveis', 'Domínio próprio', 'Assistente de IA'];
 ---
 
 <Base
@@ -38,25 +35,8 @@ const highlights = en
   <main class="grid min-h-dvh bg-white text-[#17130d] lg:grid-cols-2">
     <section
       aria-label={en ? 'About Vira' : 'Sobre o Vira'}
-      class="relative flex flex-col items-center justify-center gap-5 overflow-hidden bg-[radial-gradient(130%_120%_at_15%_0%,#fff8ec_0%,#fff4df_46%,#f1ddbd_100%)] px-8 py-14 text-center lg:min-h-dvh"
+      class="relative flex flex-col items-center justify-center gap-8 overflow-hidden bg-[radial-gradient(130%_120%_at_15%_0%,#fff8ec_0%,#fff4df_46%,#f1ddbd_100%)] px-8 py-14 text-center lg:min-h-dvh"
     >
-      <div
-        aria-hidden="true"
-        class="pointer-events-none absolute -left-20 top-10 h-72 w-72 animate-float rounded-full bg-[#ffd79a] opacity-60 blur-[90px]"
-      ></div>
-      <div
-        aria-hidden="true"
-        class="pointer-events-none absolute bottom-[-4rem] right-[-4rem] h-72 w-72 animate-float-slow rounded-full bg-[#f3c27c] opacity-50 blur-[90px]"
-      ></div>
-      <span
-        aria-hidden="true"
-        class="pointer-events-none absolute left-[14%] top-[24%] h-2 w-2 animate-float rounded-full bg-[#e2b06a] opacity-70"
-      ></span>
-      <span
-        aria-hidden="true"
-        class="pointer-events-none absolute bottom-[20%] right-[18%] h-1.5 w-1.5 animate-float-slow rounded-full bg-[#d8ae73] opacity-70"
-      ></span>
-
       <a
         href={en ? '/en' : '/'}
         aria-label="Vira"
@@ -67,7 +47,7 @@ const highlights = en
           alt="Vira"
           width="1586"
           height="992"
-          class="w-[52vw] max-w-[240px] animate-float select-none object-contain mix-blend-multiply lg:w-[64%] lg:max-w-[400px]"
+          class="w-[58vw] max-w-[280px] animate-float select-none object-contain mix-blend-multiply lg:w-[68%] lg:max-w-[440px]"
         />
       </a>
       <img
@@ -75,18 +55,8 @@ const highlights = en
         alt=""
         width="122"
         height="50"
-        class="relative h-10 w-auto object-contain mix-blend-multiply lg:h-12"
+        class="relative h-11 w-auto object-contain mix-blend-multiply lg:h-14"
       />
-      <p class="relative mt-1 text-base text-[#6f5a3a] lg:text-lg">
-        {en ? 'Put your idea out there.' : 'Coloque sua ideia no mundo.'}
-      </p>
-      <ul class="relative mt-1 flex flex-wrap items-center justify-center gap-2.5">
-        {highlights.map((item) => (
-          <li class="rounded-full border border-[#e2cba6] bg-white/60 px-4 py-2 text-sm font-medium text-[#6f4716] backdrop-blur">
-            {item}
-          </li>
-        ))}
-      </ul>
     </section>
 
     <section class="flex items-center justify-center bg-[#fffdf9] px-5 py-12 sm:px-12 lg:min-h-dvh lg:py-20">
@@ -96,7 +66,7 @@ const highlights = en
         data-reset={reset ? 'true' : undefined}
         data-email-ready={emailReady ? 'true' : undefined}
         aria-label={en ? 'Sign in' : 'Entrar'}
-        class="w-full max-w-[440px] rounded-[26px] border border-[#ead8bf] bg-white/80 p-7 text-center backdrop-blur-xl sm:p-9 [&_[hidden]]:hidden! [&_form]:text-left [&_label]:mb-2 [&_label]:block [&_label]:text-base [&_label]:font-semibold [&_.input]:w-full [&_.input]:text-base"
+        class="w-full max-w-[500px] rounded-[26px] border border-[#ead8bf] bg-white/80 p-7 text-center backdrop-blur-xl sm:p-9 [&_[hidden]]:hidden! [&_form]:text-left [&_label]:mb-2 [&_label]:block [&_label]:text-base [&_label]:font-semibold [&_.input]:w-full [&_.input]:text-base"
         style="box-shadow:0 50px 120px -55px rgba(70,40,5,0.45)"
       >
         <img
@@ -148,9 +118,9 @@ const highlights = en
             <input
               id="accept-terms"
               type="checkbox"
-              class="checkbox checkbox-sm mt-0.5 shrink-0 border border-[#b88333]"
+              class="checkbox checkbox-primary mt-0 shrink-0 border border-[#b88333]"
             />
-            <span class="text-sm leading-5 text-[#625a51]">
+            <span class="text-sm leading-6 text-[#625a51]">
               {en ? 'I accept the ' : 'Aceito os '}
               <a class="font-semibold text-[#8b5b1e] underline" href={en ? '/en/terms' : '/termos'}>
                 {en ? 'Terms of Use' : 'Termos de Uso'}
@@ -252,7 +222,7 @@ const highlights = en
           </button>
         )}
         <div
-          class="mt-6 flex flex-col items-stretch gap-3"
+          class="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2"
           aria-label={en ? 'Other sign-in methods' : 'Outras formas de entrar'}
         >
           <div class="relative">
