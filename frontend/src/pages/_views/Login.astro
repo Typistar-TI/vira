@@ -27,18 +27,26 @@ const error = url.searchParams.get('error')?.slice(0, 150);
   noindex
   appearance="light"
 >
-  <main class="relative flex min-h-dvh flex-col overflow-hidden bg-[#fff4df] text-[#17130d]">
-    <div
-      aria-hidden="true"
-      class="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_90%_at_50%_0%,#ffffff_0%,#fff6e8_45%,#f3e0c2_100%)]"
-    ></div>
+  <main class="relative flex min-h-dvh flex-col overflow-hidden bg-[#fbf3e6] text-[#17130d]">
     <img
       src="/vira-hero-light.webp"
       alt=""
       aria-hidden="true"
-      class="pointer-events-none absolute left-1/2 top-[6%] w-[150%] max-w-none -translate-x-1/2 select-none object-contain opacity-[0.05] sm:w-[75%]"
+      class="pointer-events-none absolute inset-0 h-full w-full select-none object-cover object-center opacity-90 mix-blend-multiply"
     />
-    <header class="relative z-10 mx-auto flex w-full max-w-[1180px] items-center justify-between px-5 py-5 sm:px-8">
+    <div
+      aria-hidden="true"
+      class="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-[#fff4df]/20 to-[#fff4df]/70"
+    ></div>
+    <div
+      aria-hidden="true"
+      class="pointer-events-none absolute -left-24 top-8 h-72 w-72 animate-float rounded-full bg-[#e6b06a] opacity-40 blur-3xl"
+    ></div>
+    <div
+      aria-hidden="true"
+      class="pointer-events-none absolute bottom-[-4rem] left-1/3 h-80 w-80 animate-float-slow rounded-full bg-[#f0cf9c] opacity-50 blur-3xl"
+    ></div>
+    <header class="relative z-20 mx-auto flex w-full max-w-[1180px] items-center justify-between px-5 py-5 sm:px-8">
       <a
         href={en ? '/en' : '/'}
         class="inline-flex items-center gap-2 no-underline"
@@ -61,19 +69,19 @@ const error = url.searchParams.get('error')?.slice(0, 150);
       </a>
       <a
         href={en ? '/en' : '/'}
-        class="text-sm font-semibold text-[#8b5b1e] transition-colors hover:text-[#6f4716]"
+        class="rounded-full border border-white/70 bg-white/60 px-4 py-2 text-sm font-semibold text-[#8b5b1e] backdrop-blur transition-colors hover:bg-white/80"
       >
         {en ? 'Back to site' : 'Voltar ao site'}
       </a>
     </header>
-    <div class="relative z-10 flex flex-1 items-center justify-center px-5 pb-14 pt-2 sm:px-8">
+    <div class="relative z-10 flex flex-1 items-center justify-center px-5 pb-14 pt-2 sm:px-8 lg:justify-end lg:pr-16 xl:pr-28">
       <section
         data-login
         data-login-scope={scope}
         data-reset={reset ? 'true' : undefined}
         data-email-ready={emailReady ? 'true' : undefined}
         aria-label={en ? 'Sign in' : 'Entrar'}
-        class="w-full max-w-[440px] rounded-[28px] border border-[#ead8bf] bg-white/95 p-7 text-center shadow-[0_50px_110px_-60px_rgba(131,85,21,0.55)] backdrop-blur sm:p-9 [&_[hidden]]:hidden! [&_form]:text-left [&_label]:mb-2 [&_label]:block [&_label]:text-base [&_label]:font-semibold [&_.input]:w-full [&_.input]:text-base"
+        class="w-full max-w-[430px] rounded-[30px] border border-white/70 bg-white/55 p-7 text-center shadow-[0_50px_120px_-55px_rgba(70,40,5,0.65)] backdrop-blur-2xl sm:p-9 [&_[hidden]]:hidden! [&_form]:text-left [&_label]:mb-2 [&_label]:block [&_label]:text-base [&_label]:font-semibold [&_.input]:w-full [&_.input]:bg-white/80 [&_.input]:text-base"
       >
         <img
           src="/vira-hero-light.webp"
@@ -82,7 +90,7 @@ const error = url.searchParams.get('error')?.slice(0, 150);
           height="992"
           class="mx-auto h-16 w-auto select-none object-contain mix-blend-multiply sm:h-20"
         />
-        <span class="mt-4 inline-flex items-center gap-2 rounded-full border border-[#ead8bf] bg-[#fff9ef] px-3.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.16em] text-[#8b5b1e]">
+        <span class="mt-4 inline-flex items-center gap-2 rounded-full border border-[#ead8bf] bg-white/70 px-3.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.16em] text-[#8b5b1e]">
           {scope === 'admin'
             ? en
               ? 'Administration'
@@ -94,13 +102,13 @@ const error = url.searchParams.get('error')?.slice(0, 150);
         <h1 class="mt-4 font-[Outfit] text-3xl leading-tight tracking-tight sm:text-4xl">
           {en ? 'Welcome to Vira.' : 'Boas-vindas ao Vira.'}
         </h1>
-        <p class="mt-2.5 mb-7 text-base text-[#625a51]">
+        <p class="mt-2.5 mb-7 text-base text-[#5f5548]">
           {en ? 'Sign in to continue.' : 'Entre na sua conta para continuar.'}
         </p>
         <p
           data-login-description
           hidden
-          class="mb-5 text-base text-[#625a51]"
+          class="mb-5 text-base text-[#5f5548]"
           aria-live="polite"
         ></p>
         <form id="login-start" class="space-y-4">
