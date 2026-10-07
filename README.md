@@ -8,7 +8,7 @@ O Vira é uma plataforma para criar e publicar páginas de vendas. O mesmo proje
 - Acesso por código de seis dígitos enviado ao e-mail, e-mail e senha, ou conta Google.
 - Edição, prévia e publicação de uma página de vendas por conta, com cinco opções de layout (Guardião, Central, Perfil, Estúdio e Clássico) e tipografia configurável (Outfit, Bricolage Grotesque, Inter, Instrument Serif e Gilda Display).
 - Assistente de IA em cada página publicada: responde perguntas simples dos visitantes com base no conteúdo cadastrado no banco de dados, em português ou inglês.
-- Teste gratuito de um dia e planos mensal, anual e vitalício.
+- Teste gratuito de um dia e planos mensal e anual.
 - Publicação em subdomínio da plataforma ou em domínio próprio.
 - Upload de imagens, métricas básicas e gerenciamento da conta.
 - Instalação como PWA da plataforma, dos painéis e de cada página pública, inclusive em domínio próprio. Cada cliente pode configurar nome do aplicativo, favicon, ícone e cores do seu site.

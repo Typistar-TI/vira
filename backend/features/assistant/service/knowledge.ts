@@ -181,7 +181,7 @@ export function viraKnowledge(en: boolean, prices: PriceRow[]): string {
         'What it is: a platform to create, edit and publish pages without code, with a personal AI assistant included.',
         'Main features: pages assembled from editable blocks (hero, about, services, gallery, numbers, steps, experience, testimonials, FAQ, video, map, contact and footer), each with style variants; live editing of texts, images, logo, colors and font; publishing on a free Vira subdomain or on the customer own domain; image uploads; basic analytics; installable PWA; and a personal AI assistant, on by default, that answers visitor questions using the content stored for that site.',
         'How it works: sign in with email and password, a code or Google; the account starts with a ready page and address; add, remove and reorder blocks and publish in the dashboard.',
-        'Trial and plans: one day free without a card; then Monthly, Yearly or Lifetime.',
+        'Trial and plans: one day free without a card; then Monthly or Yearly.',
         priceNote,
         'The AI assistant answers simple questions about the business using only the content the owner filled in, and is available to every account with active access.',
       ].join('\n')
@@ -190,7 +190,7 @@ export function viraKnowledge(en: boolean, prices: PriceRow[]): string {
         'O que é: uma plataforma para criar, editar e publicar páginas sem programar, com uma assistente de IA própria incluída.',
         'Principais recursos: páginas montadas com blocos editáveis (herói, sobre, serviços, galeria, números, passos, experiência, depoimentos, perguntas frequentes, vídeo, mapa, contato e rodapé), cada um com variações de estilo; edição ao vivo de textos, imagens, logo, cores e fonte; publicação em subdomínio Vira gratuito ou em domínio próprio; envio de imagens; estatísticas básicas; PWA instalável; e uma assistente de IA, ligada por padrão, que responde perguntas dos visitantes usando o conteúdo cadastrado daquela página.',
         'Como funciona: entre com e-mail e senha, código ou Google; a conta já começa com uma página e um endereço prontos; adicione, remova e reordene blocos e publique no painel.',
-        'Teste e planos: um dia grátis sem cartão; depois Mensal, Anual ou Vitalício.',
+        'Teste e planos: um dia grátis sem cartão; depois Mensal ou Anual.',
         priceNote,
         'A assistente de IA responde perguntas simples sobre o negócio usando apenas o conteúdo preenchido pelo responsável e fica disponível para toda conta com acesso ativo.',
       ].join('\n');

@@ -112,7 +112,6 @@ const t = en
       plans: 'Plan and billing',
       monthly: 'Monthly',
       yearly: 'Yearly',
-      lifetime: 'Lifetime',
       portal: 'Manage subscription',
       domain: 'Custom domain',
       domainHint: 'Available after payment. Use an address such as www.example.com.',
@@ -221,7 +220,6 @@ const t = en
       plans: 'Plano e cobrança',
       monthly: 'Mensal',
       yearly: 'Anual',
-      lifetime: 'Vitalício',
       portal: 'Gerenciar assinatura',
       domain: 'Domínio próprio',
       domainHint: 'Disponível após o pagamento. Use um endereço como www.exemplo.com.br.',
@@ -610,14 +608,6 @@ const trialLeft = en
                 disabled={!priceReady.yearly_brl}
               >
                 {t.yearly} · <span data-amount>{priceText('yearly')}</span>
-              </button>
-              <button
-                class="btn btn-outline"
-                data-plan="lifetime"
-                data-label={t.lifetime}
-                disabled={!priceReady.lifetime_brl}
-              >
-                {t.lifetime} · <span data-amount>{priceText('lifetime')}</span>
               </button>
             </div>
             <label for="currency">{en ? 'Checkout currency' : 'Moeda da compra'}</label>

@@ -17,12 +17,14 @@ interface Props {
 const { lang } = Astro.props;
 const en = lang === 'en';
 const domain = await getRootDomain();
-const dashboardHref = (await sessionAdmin(Astro.request))
-  ? '/admin'
-  : (await sessionUser(Astro.request))
-    ? '/app'
-    : '/login';
-const signedIn = dashboardHref !== '/login';
+const [adminSession, userSession] = await Promise.all([
+  sessionAdmin(Astro.request),
+  sessionUser(Astro.request),
+]);
+const hasAdmin = Boolean(adminSession);
+const hasUser = Boolean(userSession);
+const signedIn = hasAdmin || hasUser;
+const dashboardHref = hasUser ? '/app' : hasAdmin ? '/admin' : '/login';
 const prices = await getPublicPrices();
 const { createdCount, projects } = await getPublicShowcase();
 const count = new Intl.NumberFormat(en ? 'en-US' : 'pt-BR').format(createdCount);
@@ -47,16 +49,26 @@ const displayPrice = (plan: Plan) => {
       }).format(row.amount_minor / 100)
     : null;
 };
-const planPrices = (['monthly', 'yearly', 'lifetime'] as const).map(displayPrice);
-const planReady = (['monthly', 'yearly', 'lifetime'] as const).map((plan) =>
-  prices.some(
+const planPrices = { monthly: displayPrice('monthly'), yearly: displayPrice('yearly') };
+const planReady = {
+  monthly: prices.some(
     (item) =>
-      item.plan === plan &&
+      item.plan === 'monthly' &&
       item.currency === currency &&
       item.active === 1 &&
       item.stripe_price_id?.startsWith('price_'),
   ),
-);
+  yearly: prices.some(
+    (item) =>
+      item.plan === 'yearly' &&
+      item.currency === currency &&
+      item.active === 1 &&
+      item.stripe_price_id?.startsWith('price_'),
+  ),
+};
+const anyPlanReady = planReady.monthly || planReady.yearly;
+const planHref =
+  dashboardHref === '/admin' ? '/admin' : dashboardHref === '/app' ? '/app/plano' : '/login';
 const t = en
   ? {
       nav: 'Start free',
@@ -114,10 +126,9 @@ const t = en
       plansText: 'Start without a card. Pick a plan when you are ready.',
       monthly: 'Monthly',
       yearly: 'Yearly',
-      lifetime: 'Lifetime',
+      planName: 'Vira plan',
       monthlyDesc: 'Keep your page live with a flexible monthly subscription.',
       yearlyDesc: 'One annual payment for a full year.',
-      lifetimeDesc: 'Pay once and keep access to your page.',
       comingSoon: 'Coming soon',
       included: [
         'One published page',
@@ -189,10 +200,9 @@ const t = en
       plansText: 'Comece sem cartão. Escolha um plano quando estiver pronto.',
       monthly: 'Mensal',
       yearly: 'Anual',
-      lifetime: 'Vitalício',
+      planName: 'Plano Vira',
       monthlyDesc: 'Mantenha sua página no ar com uma assinatura flexível.',
       yearlyDesc: 'Um pagamento para o ano inteiro.',
-      lifetimeDesc: 'Pague uma vez e mantenha o acesso à sua página.',
       comingSoon: 'Em breve',
       included: [
         'Uma página publicada',
@@ -234,7 +244,13 @@ const heroScript = [
   <div class="min-h-screen overflow-x-clip bg-white text-[#17130d]">
     <main>
       <div class="marketing-first-screen flex h-[100svh] box-border flex-col border-b border-[#d8ae73]">
-        <SiteHeader lang={lang} signedIn={signedIn} dashboardHref={dashboardHref} />
+        <SiteHeader
+          lang={lang}
+          signedIn={signedIn}
+          dashboardHref={dashboardHref}
+          hasAdmin={hasAdmin}
+          hasUser={hasUser}
+        />
         <section
           data-marketing-hero
           class="relative isolate mx-auto flex min-h-0 w-full max-w-[1380px] flex-1 flex-col overflow-hidden px-5 pb-20 pt-5 sm:px-8 lg:pt-8 [@media(max-height:640px)]:pb-16 [@media(max-height:640px)]:pt-2"
@@ -304,65 +320,98 @@ const heroScript = [
           </h2>
           <p class="mt-2.5 text-sm text-[#625a51]">{t.plansText}</p>
         </div>
-        <div class="grid gap-4 lg:grid-cols-3">
-          {[t.monthly, t.yearly, t.lifetime].map((name, i) => (
-            <article
-              data-reveal
-              class="flex min-w-0 flex-col rounded-[22px] border border-[#d8ae73] bg-white px-6 py-8 sm:px-8 sm:py-10"
+        <div
+          data-plans
+          data-prices={JSON.stringify(planPrices)}
+          data-descs={JSON.stringify({ monthly: t.monthlyDesc, yearly: t.yearlyDesc })}
+          data-units={JSON.stringify({
+            monthly: en ? '/ month' : '/mês',
+            yearly: en ? '/ year' : '/ano',
+          })}
+          class="mx-auto w-full max-w-[560px]"
+        >
+          <div class="flex justify-center">
+            <div
+              class="inline-flex rounded-full border border-[#d8ae73] bg-[#fff9ef] p-1 text-sm"
+              role="group"
+              aria-label={en ? 'Billing period' : 'Periodicidade'}
             >
-              <div class="flex items-center justify-between">
-                <span class="font-mono text-[11px] uppercase tracking-[0.16em] text-[#9b6823]">
-                  {i === 2
-                    ? en
-                      ? 'One payment'
-                      : 'Pagamento único'
-                    : en
-                      ? 'Subscription'
-                      : 'Assinatura'}
-                </span>
-                {i === 1 && <span class="h-1.5 w-1.5 rounded-full bg-[#b88333]"></span>}
-              </div>
-              <h3 class="mt-6 font-['Outfit',sans-serif] text-2xl font-medium tracking-[-0.04em]">
-                {name}
-              </h3>
-              <p class="mt-3 max-w-[34ch] leading-relaxed text-[#625a51]">
-                {[t.monthlyDesc, t.yearlyDesc, t.lifetimeDesc][i]}
+              <button
+                type="button"
+                data-plan-period="monthly"
+                aria-pressed="true"
+                class="rounded-full px-5 py-2 font-medium text-[#8b5b1e] transition-colors aria-pressed:bg-white aria-pressed:text-[#17130d] aria-pressed:shadow-sm"
+              >
+                {t.monthly}
+              </button>
+              <button
+                type="button"
+                data-plan-period="yearly"
+                aria-pressed="false"
+                class="rounded-full px-5 py-2 font-medium text-[#8b5b1e] transition-colors aria-pressed:bg-white aria-pressed:text-[#17130d] aria-pressed:shadow-sm"
+              >
+                {t.yearly}
+              </button>
+            </div>
+          </div>
+
+          <article
+            data-reveal
+            class="mt-6 rounded-[22px] border border-[#d8ae73] bg-white px-6 py-8 sm:px-8 sm:py-10"
+          >
+            <div class="flex items-center justify-between gap-3">
+              <span class="font-mono text-[11px] uppercase tracking-[0.16em] text-[#9b6823]">
+                {en ? 'Subscription' : 'Assinatura'}
+              </span>
+              <span
+                data-plan-savings
+                hidden
+                class="rounded-full bg-[#fff4df] px-3 py-1 text-[11px] font-semibold text-[#8b5b1e]"
+              >
+                {en ? '2 months free' : '2 meses grátis'}
+              </span>
+            </div>
+            <h3 class="mt-6 font-['Outfit',sans-serif] text-2xl font-medium tracking-[-0.04em]">
+              {t.planName}
+            </h3>
+            <p data-plan-desc class="mt-3 max-w-[42ch] leading-relaxed text-[#625a51]">
+              {t.monthlyDesc}
+            </p>
+            <p class="mt-8 flex flex-wrap items-end gap-x-2 gap-y-1 border-b border-[#d8ae73] pb-6">
+              <span
+                data-plan-price
+                class="font-['Outfit',sans-serif] text-[clamp(2rem,3.4vw,3rem)] font-medium leading-none tracking-[-0.05em] tabular-nums"
+              >
+                {planPrices.monthly ?? t.comingSoon}
+              </span>
+              <span data-plan-unit class="mb-1 text-sm text-[#625a51]">
+                {en ? '/ month' : '/mês'}
+              </span>
+            </p>
+            <ul class="mt-8 mb-0 grid gap-3 text-sm text-[#4f473e] sm:grid-cols-2">
+              {t.included.map((item) => (
+                <li class="flex gap-3">
+                  <span class="text-[#9b6823]" aria-hidden="true">
+                    ↗
+                  </span>
+                  {item}
+                </li>
+              ))}
+            </ul>
+            {anyPlanReady ? (
+              <a
+                href={planHref}
+                class="btn mt-8 h-12 w-full rounded-full border border-[#a66f27] bg-[#b88333] font-semibold text-white shadow-none hover:bg-[#9b6823]"
+              >
+                {t.select}
+                <span aria-hidden="true">↗</span>
+              </a>
+            ) : (
+              <p class="mt-8 rounded-full bg-[#f5f2eb] px-5 py-3 text-center text-sm text-[#8b8174]">
+                {t.comingSoon}
               </p>
-              <p class="mt-8 border-b border-[#d8ae73] pb-6 font-['Outfit',sans-serif] text-[clamp(2rem,3.4vw,3rem)] font-medium leading-none tracking-[-0.05em] tabular-nums">
-                {planPrices[i] ?? t.comingSoon}
-              </p>
-              <ul class="mt-8 mb-0 space-y-3 text-sm text-[#4f473e]">
-                {t.included.map((item) => (
-                  <li class="flex gap-3">
-                    <span class="text-[#9b6823]" aria-hidden="true">
-                      ↗
-                    </span>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-              {planPrices[i] && planReady[i] && (
-                <a
-                  href={
-                    dashboardHref === '/admin'
-                      ? '/admin'
-                      : dashboardHref === '/app'
-                        ? '/app/plano'
-                        : '/login'
-                  }
-                  class:list={[
-                    'btn mt-8 h-12 w-full rounded-full font-semibold shadow-none',
-                    i === 1
-                      ? 'border border-[#a66f27] bg-[#b88333] text-white hover:bg-[#9b6823]'
-                      : 'border border-[#b88333] bg-white text-[#6f4716] hover:border-[#9b6823] hover:bg-[#fff9ef]',
-                  ]}
-                >
-                  {t.select}
-                  <span aria-hidden="true">↗</span>
-                </a>
-              )}
-            </article>
-          ))}
+            )}
+          </article>
         </div>
       </section>
     </main>
@@ -373,4 +422,36 @@ const heroScript = [
 
 <script>
   import '@frontend/pages/_scripts/assistant-chat';
+</script>
+
+<script>
+  const plans = document.querySelector<HTMLElement>('[data-plans]');
+  if (plans) {
+    const priceEl = plans.querySelector<HTMLElement>('[data-plan-price]');
+    const descEl = plans.querySelector<HTMLElement>('[data-plan-desc]');
+    const unitEl = plans.querySelector<HTMLElement>('[data-plan-unit]');
+    const savings = plans.querySelector<HTMLElement>('[data-plan-savings]');
+    const parse = (value: string | undefined): Record<string, string> => {
+      try {
+        return value ? (JSON.parse(value) as Record<string, string>) : {};
+      } catch {
+        return {};
+      }
+    };
+    const prices = parse(plans.dataset.prices);
+    const descs = parse(plans.dataset.descs);
+    const units = parse(plans.dataset.units);
+    const setPeriod = (period: string) => {
+      plans.querySelectorAll<HTMLButtonElement>('[data-plan-period]').forEach((button) => {
+        button.setAttribute('aria-pressed', String(button.dataset.planPeriod === period));
+      });
+      if (priceEl) priceEl.textContent = prices[period] || '';
+      if (descEl) descEl.textContent = descs[period] || '';
+      if (unitEl) unitEl.textContent = units[period] || '';
+      if (savings) savings.hidden = period !== 'yearly';
+    };
+    plans.querySelectorAll<HTMLButtonElement>('[data-plan-period]').forEach((button) => {
+      button.addEventListener('click', () => setPeriod(button.dataset.planPeriod || 'monthly'));
+    });
+  }
 </script>

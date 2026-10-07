@@ -11,12 +11,14 @@ interface Props {
 }
 const { lang } = Astro.props;
 const en = lang === 'en';
-const dashboardHref = (await sessionAdmin(Astro.request))
-  ? '/admin'
-  : (await sessionUser(Astro.request))
-    ? '/app'
-    : '/login';
-const signedIn = dashboardHref !== '/login';
+const [adminSession, userSession] = await Promise.all([
+  sessionAdmin(Astro.request),
+  sessionUser(Astro.request),
+]);
+const hasAdmin = Boolean(adminSession);
+const hasUser = Boolean(userSession);
+const signedIn = hasAdmin || hasUser;
+const dashboardHref = hasUser ? '/app' : hasAdmin ? '/admin' : '/login';
 const [controller, contact, email, termsPt, termsEn] = await Promise.all([
   getSetting('PRIVACY_CONTROLLER_NAME'),
   getSetting('CONTACT_EMAIL'),
@@ -31,7 +33,13 @@ const body = policy.trim() ? policy.trim().split(/\n{2,}/) : [];
 
 <Base title={en ? 'Terms of Use · Vira' : 'Termos de Uso · Vira'} lang={lang} appearance="light">
   <div class="min-h-screen bg-white text-[#17130d]">
-    <SiteHeader lang={lang} signedIn={signedIn} dashboardHref={dashboardHref} />
+    <SiteHeader
+      lang={lang}
+      signedIn={signedIn}
+      dashboardHref={dashboardHref}
+      hasAdmin={hasAdmin}
+      hasUser={hasUser}
+    />
     <main class="mx-auto max-w-[1380px] px-5 pb-16 pt-10 sm:px-8">
       <article class="w-full break-words">
         <span class="text-xs font-extrabold uppercase tracking-[0.15em] text-[#17130d]">Vira</span>
