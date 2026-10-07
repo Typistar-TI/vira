@@ -66,7 +66,6 @@ const planReady = {
       item.stripe_price_id?.startsWith('price_'),
   ),
 };
-const anyPlanReady = planReady.monthly || planReady.yearly;
 const planHref =
   dashboardHref === '/admin' ? '/admin' : dashboardHref === '/app' ? '/app/plano' : '/login';
 const t = en
@@ -126,7 +125,6 @@ const t = en
       plansText: 'Start without a card. Pick a plan when you are ready.',
       monthly: 'Monthly',
       yearly: 'Yearly',
-      planName: 'Vira plan',
       monthlyDesc: 'Keep your page live with a flexible monthly subscription.',
       yearlyDesc: 'One annual payment for a full year.',
       comingSoon: 'Coming soon',
@@ -200,7 +198,6 @@ const t = en
       plansText: 'Comece sem cartão. Escolha um plano quando estiver pronto.',
       monthly: 'Mensal',
       yearly: 'Anual',
-      planName: 'Plano Vira',
       monthlyDesc: 'Mantenha sua página no ar com uma assinatura flexível.',
       yearlyDesc: 'Um pagamento para o ano inteiro.',
       comingSoon: 'Em breve',
@@ -320,98 +317,92 @@ const heroScript = [
           </h2>
           <p class="mt-2.5 text-sm text-[#625a51]">{t.plansText}</p>
         </div>
-        <div
-          data-plans
-          data-prices={JSON.stringify(planPrices)}
-          data-descs={JSON.stringify({ monthly: t.monthlyDesc, yearly: t.yearlyDesc })}
-          data-units={JSON.stringify({
-            monthly: en ? '/ month' : '/mês',
-            yearly: en ? '/ year' : '/ano',
-          })}
-          class="mx-auto w-full max-w-[560px]"
-        >
-          <div class="flex justify-center">
-            <div
-              class="inline-flex rounded-full border border-[#d8ae73] bg-[#fff9ef] p-1 text-sm"
-              role="group"
-              aria-label={en ? 'Billing period' : 'Periodicidade'}
-            >
-              <button
-                type="button"
-                data-plan-period="monthly"
-                aria-pressed="true"
-                class="rounded-full px-5 py-2 font-medium text-[#8b5b1e] transition-colors aria-pressed:bg-white aria-pressed:text-[#17130d] aria-pressed:shadow-sm"
-              >
-                {t.monthly}
-              </button>
-              <button
-                type="button"
-                data-plan-period="yearly"
-                aria-pressed="false"
-                class="rounded-full px-5 py-2 font-medium text-[#8b5b1e] transition-colors aria-pressed:bg-white aria-pressed:text-[#17130d] aria-pressed:shadow-sm"
-              >
-                {t.yearly}
-              </button>
-            </div>
-          </div>
-
+        <div class="mx-auto grid max-w-[900px] gap-4 sm:grid-cols-2">
           <article
             data-reveal
-            class="mt-6 rounded-[22px] border border-[#d8ae73] bg-white px-6 py-8 sm:px-8 sm:py-10"
+            class="flex flex-col rounded-[22px] border border-[#d8ae73] bg-white px-6 py-8 sm:px-8"
           >
-            <div class="flex items-center justify-between gap-3">
-              <span class="font-mono text-[11px] uppercase tracking-[0.16em] text-[#9b6823]">
-                {en ? 'Subscription' : 'Assinatura'}
-              </span>
-              <span
-                data-plan-savings
-                hidden
-                class="rounded-full bg-[#fff4df] px-3 py-1 text-[11px] font-semibold text-[#8b5b1e]"
-              >
-                {en ? '2 months free' : '2 meses grátis'}
-              </span>
-            </div>
-            <h3 class="mt-6 font-['Outfit',sans-serif] text-2xl font-medium tracking-[-0.04em]">
-              {t.planName}
+            <span class="font-mono text-[11px] uppercase tracking-[0.16em] text-[#9b6823]">
+              {en ? 'Subscription' : 'Assinatura'}
+            </span>
+            <h3 class="mt-5 font-['Outfit',sans-serif] text-2xl font-medium tracking-[-0.04em]">
+              {t.monthly}
             </h3>
-            <p data-plan-desc class="mt-3 max-w-[42ch] leading-relaxed text-[#625a51]">
-              {t.monthlyDesc}
-            </p>
-            <p class="mt-8 flex flex-wrap items-end gap-x-2 gap-y-1 border-b border-[#d8ae73] pb-6">
-              <span
-                data-plan-price
-                class="font-['Outfit',sans-serif] text-[clamp(2rem,3.4vw,3rem)] font-medium leading-none tracking-[-0.05em] tabular-nums"
-              >
+            <p class="mt-6 flex flex-wrap items-end gap-x-2 border-b border-[#ead8bf] pb-6">
+              <span class="font-['Outfit',sans-serif] text-[clamp(2rem,3.2vw,2.8rem)] font-medium leading-none tracking-[-0.05em] tabular-nums">
                 {planPrices.monthly ?? t.comingSoon}
               </span>
-              <span data-plan-unit class="mb-1 text-sm text-[#625a51]">
-                {en ? '/ month' : '/mês'}
-              </span>
+              <span class="mb-1 text-sm text-[#625a51]">{en ? '/ month' : '/mês'}</span>
             </p>
-            <ul class="mt-8 mb-0 grid gap-3 text-sm text-[#4f473e] sm:grid-cols-2">
-              {t.included.map((item) => (
-                <li class="flex gap-3">
-                  <span class="text-[#9b6823]" aria-hidden="true">
-                    ↗
-                  </span>
-                  {item}
-                </li>
-              ))}
-            </ul>
-            {anyPlanReady ? (
+            <p class="mt-5 text-sm leading-relaxed text-[#625a51]">{t.monthlyDesc}</p>
+            {planReady.monthly ? (
               <a
                 href={planHref}
-                class="btn mt-8 h-12 w-full rounded-full border border-[#a66f27] bg-[#b88333] font-semibold text-white shadow-none hover:bg-[#9b6823]"
+                class="btn mt-7 h-12 w-full rounded-full border border-[#b88333] bg-white font-semibold text-[#6f4716] shadow-none hover:border-[#9b6823] hover:bg-[#fff9ef]"
               >
                 {t.select}
                 <span aria-hidden="true">↗</span>
               </a>
             ) : (
-              <p class="mt-8 rounded-full bg-[#f5f2eb] px-5 py-3 text-center text-sm text-[#8b8174]">
+              <span class="mt-7 grid h-12 w-full cursor-not-allowed place-items-center rounded-full border border-[#e5ded2] bg-[#f5f2eb] text-sm font-semibold text-[#8b8174]">
                 {t.comingSoon}
-              </p>
+              </span>
             )}
           </article>
+
+          <article
+            data-reveal
+            class="relative flex flex-col rounded-[22px] border-2 border-[#b88333] bg-[#fffdf9] px-6 py-8 shadow-[0_30px_70px_-55px_#80531888] sm:px-8"
+          >
+            <span class="absolute -top-3 right-6 rounded-full bg-[#b88333] px-3 py-1 text-[11px] font-semibold text-white">
+              {en ? '2 months free' : '2 meses grátis'}
+            </span>
+            <span class="font-mono text-[11px] uppercase tracking-[0.16em] text-[#9b6823]">
+              {en ? 'Subscription' : 'Assinatura'}
+            </span>
+            <h3 class="mt-5 font-['Outfit',sans-serif] text-2xl font-medium tracking-[-0.04em]">
+              {t.yearly}
+            </h3>
+            <p class="mt-6 flex flex-wrap items-end gap-x-2 border-b border-[#ead8bf] pb-6">
+              <span class="font-['Outfit',sans-serif] text-[clamp(2rem,3.2vw,2.8rem)] font-medium leading-none tracking-[-0.05em] tabular-nums">
+                {planPrices.yearly ?? t.comingSoon}
+              </span>
+              <span class="mb-1 text-sm text-[#625a51]">{en ? '/ year' : '/ano'}</span>
+            </p>
+            <p class="mt-5 text-sm leading-relaxed text-[#625a51]">{t.yearlyDesc}</p>
+            {planReady.yearly ? (
+              <a
+                href={planHref}
+                class="btn mt-7 h-12 w-full rounded-full border border-[#a66f27] bg-[#b88333] font-semibold text-white shadow-none hover:bg-[#9b6823]"
+              >
+                {t.select}
+                <span aria-hidden="true">↗</span>
+              </a>
+            ) : (
+              <span class="mt-7 grid h-12 w-full cursor-not-allowed place-items-center rounded-full border border-[#e5ded2] bg-[#f5f2eb] text-sm font-semibold text-[#8b8174]">
+                {t.comingSoon}
+              </span>
+            )}
+          </article>
+        </div>
+
+        <div
+          data-reveal
+          class="mx-auto mt-6 max-w-[900px] rounded-[22px] border border-[#ead8bf] bg-[#fcfaf6] px-6 py-8 sm:px-8"
+        >
+          <p class="font-mono text-[11px] uppercase tracking-[0.18em] text-[#9b6823]">
+            {en ? 'Included in both plans' : 'Incluído nos dois planos'}
+          </p>
+          <ul class="mt-5 grid gap-3 text-sm text-[#4f473e] sm:grid-cols-2">
+            {t.included.map((item) => (
+              <li class="flex gap-3">
+                <span class="text-[#9b6823]" aria-hidden="true">
+                  ↗
+                </span>
+                {item}
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
     </main>
@@ -422,36 +413,4 @@ const heroScript = [
 
 <script>
   import '@frontend/pages/_scripts/assistant-chat';
-</script>
-
-<script>
-  const plans = document.querySelector<HTMLElement>('[data-plans]');
-  if (plans) {
-    const priceEl = plans.querySelector<HTMLElement>('[data-plan-price]');
-    const descEl = plans.querySelector<HTMLElement>('[data-plan-desc]');
-    const unitEl = plans.querySelector<HTMLElement>('[data-plan-unit]');
-    const savings = plans.querySelector<HTMLElement>('[data-plan-savings]');
-    const parse = (value: string | undefined): Record<string, string> => {
-      try {
-        return value ? (JSON.parse(value) as Record<string, string>) : {};
-      } catch {
-        return {};
-      }
-    };
-    const prices = parse(plans.dataset.prices);
-    const descs = parse(plans.dataset.descs);
-    const units = parse(plans.dataset.units);
-    const setPeriod = (period: string) => {
-      plans.querySelectorAll<HTMLButtonElement>('[data-plan-period]').forEach((button) => {
-        button.setAttribute('aria-pressed', String(button.dataset.planPeriod === period));
-      });
-      if (priceEl) priceEl.textContent = prices[period] || '';
-      if (descEl) descEl.textContent = descs[period] || '';
-      if (unitEl) unitEl.textContent = units[period] || '';
-      if (savings) savings.hidden = period !== 'yearly';
-    };
-    plans.querySelectorAll<HTMLButtonElement>('[data-plan-period]').forEach((button) => {
-      button.addEventListener('click', () => setPeriod(button.dataset.planPeriod || 'monthly'));
-    });
-  }
 </script>
