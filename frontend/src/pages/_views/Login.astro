@@ -24,6 +24,9 @@ const lastLogin =
     Astro.request.headers.get('cookie') || '',
   )?.[1] ?? '';
 const lastUsed = en ? 'Last used' : 'Último acesso';
+const highlights = en
+  ? ['Editable blocks', 'Custom domain', 'AI assistant']
+  : ['Blocos editáveis', 'Domínio próprio', 'Assistente de IA'];
 ---
 
 <Base
@@ -32,7 +35,7 @@ const lastUsed = en ? 'Last used' : 'Último acesso';
   noindex
   appearance="light"
 >
-  <main class="relative flex min-h-dvh flex-col items-center justify-center gap-10 overflow-hidden bg-[#fff4df] px-5 py-10 text-[#17130d] lg:flex-row lg:gap-16 lg:px-16">
+  <main class="relative flex min-h-dvh flex-col items-center justify-center gap-12 overflow-hidden bg-[#fff4df] px-5 py-10 text-[#17130d] lg:flex-row lg:justify-between lg:gap-20 lg:px-20">
     <div
       aria-hidden="true"
       class="pointer-events-none absolute -left-32 top-[-6rem] h-[24rem] w-[24rem] animate-float rounded-full bg-[#ffd79a] opacity-60 blur-[90px]"
@@ -45,33 +48,68 @@ const lastUsed = en ? 'Last used' : 'Último acesso';
       aria-hidden="true"
       class="pointer-events-none absolute bottom-[-8rem] left-1/3 h-[26rem] w-[26rem] animate-float rounded-full bg-[#ffe9c6] opacity-70 blur-[100px]"
     ></div>
-    <a href={en ? '/en' : '/'} aria-label="Vira" class="inline-flex no-underline">
+    <span
+      aria-hidden="true"
+      class="pointer-events-none absolute left-[10%] top-[20%] h-2 w-2 animate-float rounded-full bg-[#e2b06a] opacity-70"
+    ></span>
+    <span
+      aria-hidden="true"
+      class="pointer-events-none absolute bottom-[16%] left-[26%] h-1.5 w-1.5 animate-float-slow rounded-full bg-[#d8ae73] opacity-70"
+    ></span>
+    <span
+      aria-hidden="true"
+      class="pointer-events-none absolute right-[12%] top-[26%] h-1.5 w-1.5 animate-float rounded-full bg-[#e2b06a] opacity-60"
+    ></span>
+    <span
+      aria-hidden="true"
+      class="pointer-events-none absolute bottom-[22%] right-[24%] h-2.5 w-2.5 animate-float-slow rounded-full bg-[#eec489] opacity-60"
+    ></span>
+
+    <div class="relative flex w-full max-w-[540px] flex-1 flex-col items-center text-center">
+      <a href={en ? '/en' : '/'} aria-label="Vira" class="inline-flex no-underline">
+        <img
+          src="/vira-hero-light.webp"
+          alt="Vira"
+          width="1586"
+          height="992"
+          class="relative w-[58vw] max-w-[320px] animate-float select-none object-contain mix-blend-multiply lg:w-[86%] lg:max-w-[460px]"
+        />
+      </a>
       <img
-        src="/vira-hero-light.webp"
-        alt="Vira"
-        width="1586"
-        height="992"
-        class="relative z-10 w-[46vw] max-w-[520px] animate-float select-none object-contain mix-blend-multiply max-lg:w-[68vw] max-lg:max-w-[320px]"
+        src="/vira-wordmark-amber.png"
+        alt=""
+        width="122"
+        height="50"
+        class="mt-1 h-11 w-auto object-contain mix-blend-multiply lg:h-12"
       />
-    </a>
+      <p class="mt-6 hidden text-lg text-[#6f5a3a] lg:block">
+        {en ? 'Put your idea out there.' : 'Coloque sua ideia no mundo.'}
+      </p>
+      <ul class="mt-7 hidden flex-wrap items-center justify-center gap-2.5 lg:flex">
+        {highlights.map((item) => (
+          <li class="rounded-full border border-[#e2cba6] bg-white/60 px-4 py-2 text-sm font-medium text-[#6f4716] backdrop-blur">
+            {item}
+          </li>
+        ))}
+      </ul>
+    </div>
+
     <section
       data-login
       data-login-scope={scope}
       data-reset={reset ? 'true' : undefined}
       data-email-ready={emailReady ? 'true' : undefined}
       aria-label={en ? 'Sign in' : 'Entrar'}
-      class="relative z-10 w-full max-w-[400px] rounded-[26px] border border-white/75 bg-white/60 p-7 text-center backdrop-blur-2xl sm:p-9 [&_[hidden]]:hidden! [&_form]:text-left [&_label]:mb-2 [&_label]:block [&_label]:text-base [&_label]:font-semibold [&_.input]:w-full [&_.input]:bg-white/80 [&_.input]:text-base"
+      class="relative z-10 w-full max-w-[420px] rounded-[26px] border border-white/75 bg-white/60 p-7 text-center backdrop-blur-2xl sm:p-9 [&_[hidden]]:hidden! [&_form]:text-left [&_label]:mb-2 [&_label]:block [&_label]:text-base [&_label]:font-semibold [&_.input]:w-full [&_.input]:bg-white/80 [&_.input]:text-base"
       style="box-shadow:0 50px 120px -55px rgba(70,40,5,0.55)"
     >
-      <a href={en ? '/en' : '/'} class="inline-flex no-underline" aria-label="Vira">
-        <img
-          src="/vira-wordmark-amber.png"
-          alt="Vira"
-          width="122"
-          height="50"
-          class="h-8 w-auto object-contain"
-        />
-      </a>
+      <img
+        src="/vira-wordmark-amber.png"
+        alt="Vira"
+        width="122"
+        height="50"
+        class="mx-auto h-8 w-auto object-contain"
+      />
       <h1 class="mt-6 font-[Outfit] text-3xl leading-tight tracking-tight">
         {en ? 'Welcome to Vira.' : 'Boas-vindas ao Vira.'}
       </h1>
@@ -105,11 +143,11 @@ const lastUsed = en ? 'Last used' : 'Último acesso';
             required={!reset}
           />
         </div>
-        <label class="mt-1 flex items-start gap-2 text-left">
+        <label class="mt-1 flex! items-start gap-2.5 text-left">
           <input
             id="accept-terms"
             type="checkbox"
-            class="checkbox checkbox-sm mt-0 shrink-0 border border-[#b88333]"
+            class="checkbox checkbox-sm mt-0.5 shrink-0 border border-[#b88333]"
           />
           <span class="text-sm leading-5 text-[#625a51]">
             {en ? 'I accept the ' : 'Aceito os '}
@@ -135,7 +173,7 @@ const lastUsed = en ? 'Last used' : 'Último acesso';
           <button
             data-start-button
             type="submit"
-            class="btn w-full rounded-full border-[#a66f27] bg-[#b88333] text-white hover:bg-[#9b6823]"
+            class="btn h-11 min-h-11 w-full rounded-full border-[#a66f27] bg-[#b88333] text-white hover:bg-[#9b6823]"
           >
             {reset ? (en ? 'Send code' : 'Enviar código') : en ? 'Sign in' : 'Entrar'}
           </button>
@@ -190,7 +228,7 @@ const lastUsed = en ? 'Last used' : 'Último acesso';
         </div>
         <button
           type="submit"
-          class="btn w-full rounded-full border-[#a66f27] bg-[#b88333] text-white hover:bg-[#9b6823]"
+          class="btn h-11 min-h-11 w-full rounded-full border-[#a66f27] bg-[#b88333] text-white hover:bg-[#9b6823]"
         >
           {en ? 'Continue' : 'Continuar'}
         </button>
@@ -213,17 +251,28 @@ const lastUsed = en ? 'Last used' : 'Último acesso';
         </button>
       )}
       <div
-        class="mt-6 flex flex-wrap items-center justify-center gap-3"
+        class="mt-6 flex flex-col items-stretch gap-3"
         aria-label={en ? 'Other sign-in methods' : 'Outras formas de entrar'}
       >
         <div class="relative">
           {lastLogin === 'google' && (
-            <span class="absolute -top-2 right-2 z-10 rounded-full bg-[#b88333] px-2 py-0.5 text-[10px] font-semibold text-white shadow-sm">
+            <span class="absolute -top-2 right-3 z-10 rounded-full bg-[#b88333] px-2 py-0.5 text-[10px] font-semibold text-white shadow-sm">
               {lastUsed}
             </span>
           )}
-          {!clientId && (
-            <button type="button" disabled class="btn btn-ghost h-10 min-h-10 rounded-full px-5">
+          {clientId ? (
+            <div
+              data-google-button
+              data-client-id={clientId}
+              data-login-uri={googleLoginUrl(url)}
+              class="flex min-h-10 w-full items-center justify-center"
+            ></div>
+          ) : (
+            <button
+              type="button"
+              disabled
+              class="btn btn-ghost h-10 min-h-10 w-full rounded-full px-5"
+            >
               <svg aria-hidden="true" width="18" height="18" viewBox="0 0 48 48">
                 <path
                   fill="#4285F4"
@@ -245,30 +294,10 @@ const lastUsed = en ? 'Last used' : 'Último acesso';
               {en ? 'Sign in with Google' : 'Entrar com Google'}
             </button>
           )}
-          {clientId && (
-            <div>
-              <div
-                id="g_id_onload"
-                data-client_id={clientId}
-                data-login_uri={googleLoginUrl(url)}
-                data-ux_mode="redirect"
-                data-auto_prompt="false"
-              ></div>
-              <div
-                class="g_id_signin"
-                data-type="standard"
-                data-theme="outline"
-                data-size="large"
-                data-text="signin_with"
-                data-shape="pill"
-                data-logo_alignment="left"
-              ></div>
-            </div>
-          )}
         </div>
         <div class="relative">
           {lastLogin === 'code' && (
-            <span class="absolute -top-2 right-2 z-10 rounded-full bg-[#b88333] px-2 py-0.5 text-[10px] font-semibold text-white shadow-sm">
+            <span class="absolute -top-2 right-3 z-10 rounded-full bg-[#b88333] px-2 py-0.5 text-[10px] font-semibold text-white shadow-sm">
               {lastUsed}
             </span>
           )}
@@ -277,7 +306,7 @@ const lastUsed = en ? 'Last used' : 'Último acesso';
             data-login-mode="code"
             aria-pressed="false"
             disabled={!emailReady}
-            class="btn btn-ghost h-10 min-h-10 rounded-full bg-[#fff4df] px-5 font-medium text-[#6f4716] aria-pressed:bg-[#fff4df] aria-pressed:text-[#6f4716]"
+            class="btn btn-ghost h-10 min-h-10 w-full rounded-full bg-[#fff4df] px-5 font-medium text-[#6f4716] aria-pressed:bg-[#fff4df] aria-pressed:text-[#6f4716]"
           >
             <svg
               aria-hidden="true"
@@ -346,6 +375,39 @@ const lastUsed = en ? 'Last used' : 'Último acesso';
     const rememberMethod = (method: 'code' | 'password') => {
       document.cookie = `vira_last_login=${method}; Path=/; Max-Age=31536000; SameSite=Lax`;
     };
+    type GoogleId = {
+      initialize: (options: Record<string, unknown>) => void;
+      renderButton: (element: HTMLElement, options: Record<string, unknown>) => void;
+    };
+    const googleButton = root.querySelector<HTMLElement>('[data-google-button]');
+    const renderGoogle = () => {
+      const accounts = (window as unknown as { google?: { accounts?: { id?: GoogleId } } }).google
+        ?.accounts?.id;
+      if (!googleButton || !accounts) return false;
+      const width = Math.min(400, Math.max(200, Math.round(googleButton.clientWidth)));
+      accounts.initialize({
+        client_id: googleButton.dataset.clientId,
+        ux_mode: 'redirect',
+        login_uri: googleButton.dataset.loginUri,
+        auto_select: false,
+      });
+      accounts.renderButton(googleButton, {
+        type: 'standard',
+        theme: 'outline',
+        size: 'large',
+        text: 'signin_with',
+        shape: 'pill',
+        logo_alignment: 'left',
+        width,
+      });
+      return true;
+    };
+    if (googleButton && !renderGoogle()) {
+      let tries = 0;
+      const timer = window.setInterval(() => {
+        if (renderGoogle() || ++tries > 60) window.clearInterval(timer);
+      }, 100);
+    }
     const cooldown = () => {
       const seconds = Math.max(0, Math.ceil((resendAt - Date.now()) / 1000));
       resend.disabled = busy || seconds > 0;
