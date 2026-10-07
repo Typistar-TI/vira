@@ -3,6 +3,7 @@ import { createRemoteJWKSet, jwtVerify } from 'jose';
 import {
   createAdminSession,
   createSession,
+  lastLoginCookie,
   loginScope,
   sha256,
 } from '@backend/features/auth/service/session';
@@ -87,24 +88,17 @@ export const POST = async (request: Request): Promise<Response> => {
         .bind(sub, admin.email)
         .run();
     }
-    if (isAdmin)
-      return new Response(null, {
-        status: 303,
-        headers: {
-          location: '/admin',
-          'set-cookie': await createAdminSession(admin!.email),
-          'cache-control': 'no-store',
-        },
-      });
+    if (isAdmin) {
+      const headers = new Headers({ location: '/admin', 'cache-control': 'no-store' });
+      headers.append('set-cookie', await createAdminSession(admin!.email));
+      headers.append('set-cookie', lastLoginCookie('google'));
+      return new Response(null, { status: 303, headers });
+    }
     const user = await getOrCreateGoogleUser(sub, email, languageFromRequest(request));
-    return new Response(null, {
-      status: 303,
-      headers: {
-        location: '/app',
-        'set-cookie': await createSession(user.id),
-        'cache-control': 'no-store',
-      },
-    });
+    const headers = new Headers({ location: '/app', 'cache-control': 'no-store' });
+    headers.append('set-cookie', await createSession(user.id));
+    headers.append('set-cookie', lastLoginCookie('google'));
+    return new Response(null, { status: 303, headers });
   } catch {
     return failLogin('Não foi possível entrar com Google. Tente novamente');
   }

@@ -19,6 +19,11 @@ const legalReady = Boolean(controller && contact);
 const reset = url.searchParams.get('password') === '1';
 const scope = url.searchParams.get('next') === 'admin' ? 'admin' : 'app';
 const error = url.searchParams.get('error')?.slice(0, 150);
+const lastLogin =
+  /(?:^|;\s*)vira_last_login=(google|code|password)/.exec(
+    Astro.request.headers.get('cookie') || '',
+  )?.[1] ?? '';
+const lastUsed = en ? 'Last used' : 'Último acesso';
 ---
 
 <Base
@@ -27,137 +32,106 @@ const error = url.searchParams.get('error')?.slice(0, 150);
   noindex
   appearance="light"
 >
-  <main class="relative flex min-h-dvh flex-col overflow-hidden bg-[#fbf3e6] text-[#17130d]">
-    <img
-      src="/vira-hero-light.webp"
-      alt=""
-      aria-hidden="true"
-      class="pointer-events-none absolute inset-0 h-full w-full select-none object-cover object-center opacity-90 mix-blend-multiply"
-    />
+  <main class="relative flex min-h-dvh flex-col items-center justify-center gap-10 overflow-hidden bg-[#fff4df] px-5 py-10 text-[#17130d] lg:flex-row lg:gap-16 lg:px-16">
     <div
       aria-hidden="true"
-      class="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-[#fff4df]/20 to-[#fff4df]/70"
+      class="pointer-events-none absolute -left-32 top-[-6rem] h-[24rem] w-[24rem] animate-float rounded-full bg-[#ffd79a] opacity-60 blur-[90px]"
     ></div>
     <div
       aria-hidden="true"
-      class="pointer-events-none absolute -left-24 top-8 h-72 w-72 animate-float rounded-full bg-[#e6b06a] opacity-40 blur-3xl"
+      class="pointer-events-none absolute right-[-6rem] top-1/4 h-[22rem] w-[22rem] animate-float-slow rounded-full bg-[#f3c27c] opacity-50 blur-[90px]"
     ></div>
     <div
       aria-hidden="true"
-      class="pointer-events-none absolute bottom-[-4rem] left-1/3 h-80 w-80 animate-float-slow rounded-full bg-[#f0cf9c] opacity-50 blur-3xl"
+      class="pointer-events-none absolute bottom-[-8rem] left-1/3 h-[26rem] w-[26rem] animate-float rounded-full bg-[#ffe9c6] opacity-70 blur-[100px]"
     ></div>
-    <header class="relative z-20 mx-auto flex w-full max-w-[1180px] items-center justify-between px-5 py-5 sm:px-8">
-      <a
-        href={en ? '/en' : '/'}
-        class="inline-flex items-center gap-2 no-underline"
-        aria-label="Vira"
-      >
-        <img
-          src="/vira-mark-amber.png"
-          alt=""
-          width="40"
-          height="40"
-          class="h-8 w-8 object-contain"
-        />
+    <a href={en ? '/en' : '/'} aria-label="Vira" class="inline-flex no-underline">
+      <img
+        src="/vira-hero-light.webp"
+        alt="Vira"
+        width="1586"
+        height="992"
+        class="relative z-10 w-[46vw] max-w-[520px] animate-float select-none object-contain mix-blend-multiply max-lg:w-[68vw] max-lg:max-w-[320px]"
+      />
+    </a>
+    <section
+      data-login
+      data-login-scope={scope}
+      data-reset={reset ? 'true' : undefined}
+      data-email-ready={emailReady ? 'true' : undefined}
+      aria-label={en ? 'Sign in' : 'Entrar'}
+      class="relative z-10 w-full max-w-[400px] rounded-[26px] border border-white/75 bg-white/60 p-7 text-center backdrop-blur-2xl sm:p-9 [&_[hidden]]:hidden! [&_form]:text-left [&_label]:mb-2 [&_label]:block [&_label]:text-base [&_label]:font-semibold [&_.input]:w-full [&_.input]:bg-white/80 [&_.input]:text-base"
+      style="box-shadow:0 50px 120px -55px rgba(70,40,5,0.55)"
+    >
+      <a href={en ? '/en' : '/'} class="inline-flex no-underline" aria-label="Vira">
         <img
           src="/vira-wordmark-amber.png"
-          alt=""
+          alt="Vira"
           width="122"
           height="50"
-          class="h-7 w-auto object-contain"
+          class="h-8 w-auto object-contain"
         />
       </a>
-      <a
-        href={en ? '/en' : '/'}
-        class="rounded-full border border-white/70 bg-white/60 px-4 py-2 text-sm font-semibold text-[#8b5b1e] backdrop-blur transition-colors hover:bg-white/80"
-      >
-        {en ? 'Back to site' : 'Voltar ao site'}
-      </a>
-    </header>
-    <div class="relative z-10 flex flex-1 items-center justify-center px-5 pb-14 pt-2 sm:px-8 lg:justify-end lg:pr-16 xl:pr-28">
-      <section
-        data-login
-        data-login-scope={scope}
-        data-reset={reset ? 'true' : undefined}
-        data-email-ready={emailReady ? 'true' : undefined}
-        aria-label={en ? 'Sign in' : 'Entrar'}
-        class="w-full max-w-[430px] rounded-[30px] border border-white/70 bg-white/55 p-7 text-center shadow-[0_50px_120px_-55px_rgba(70,40,5,0.65)] backdrop-blur-2xl sm:p-9 [&_[hidden]]:hidden! [&_form]:text-left [&_label]:mb-2 [&_label]:block [&_label]:text-base [&_label]:font-semibold [&_.input]:w-full [&_.input]:bg-white/80 [&_.input]:text-base"
-      >
-        <img
-          src="/vira-hero-light.webp"
-          alt="Vira"
-          width="1586"
-          height="992"
-          class="mx-auto h-16 w-auto select-none object-contain mix-blend-multiply sm:h-20"
-        />
-        <span class="mt-4 inline-flex items-center gap-2 rounded-full border border-[#ead8bf] bg-white/70 px-3.5 py-1.5 font-mono text-[11px] uppercase tracking-[0.16em] text-[#8b5b1e]">
-          {scope === 'admin'
-            ? en
-              ? 'Administration'
-              : 'Administração'
-            : en
-              ? '1 day free'
-              : '1 dia grátis'}
-        </span>
-        <h1 class="mt-4 font-[Outfit] text-3xl leading-tight tracking-tight sm:text-4xl">
-          {en ? 'Welcome to Vira.' : 'Boas-vindas ao Vira.'}
-        </h1>
-        <p class="mt-2.5 mb-7 text-base text-[#5f5548]">
-          {en ? 'Sign in to continue.' : 'Entre na sua conta para continuar.'}
-        </p>
-        <p
-          data-login-description
-          hidden
-          class="mb-5 text-base text-[#5f5548]"
-          aria-live="polite"
-        ></p>
-        <form id="login-start" class="space-y-4">
-          <div>
-            <label for="login-email">E-mail</label>
-            <input
-              id="login-email"
-              name="email"
-              type="email"
-              autocomplete="username"
-              maxlength="320"
-              class="input input-bordered"
-              required
-            />
-          </div>
-          <div data-password-login hidden={reset}>
-            <label for="login-password">{en ? 'Password' : 'Senha'}</label>
-            <input
-              id="login-password"
-              name="password"
-              type="password"
-              autocomplete="current-password"
-              maxlength="128"
-              class="input input-bordered"
-              disabled={reset}
-              required={!reset}
-            />
-          </div>
-          <label class="mt-1 flex items-start gap-2 text-left">
-            <input
-              id="accept-terms"
-              type="checkbox"
-              class="checkbox checkbox-sm mt-0 shrink-0 border border-[#b88333]"
-            />
-            <span class="text-sm leading-5 text-[#625a51]">
-              {en ? 'I accept the ' : 'Aceito os '}
-              <a class="font-semibold text-[#8b5b1e] underline" href={en ? '/en/terms' : '/termos'}>
-                {en ? 'Terms of Use' : 'Termos de Uso'}
-              </a>
-              {en ? ' and the ' : ' e a '}
-              <a
-                class="font-semibold text-[#8b5b1e] underline"
-                href={en ? '/en/privacy' : '/privacidade'}
-              >
-                {en ? 'Privacy Policy' : 'Política de Privacidade'}
-              </a>
-              .
+      <h1 class="mt-6 font-[Outfit] text-3xl leading-tight tracking-tight">
+        {en ? 'Welcome to Vira.' : 'Boas-vindas ao Vira.'}
+      </h1>
+      <p class="mt-2.5 mb-7 text-base text-[#6f5a3a]">
+        {en ? 'Sign in to continue.' : 'Entre na sua conta para continuar.'}
+      </p>
+      <p data-login-description hidden class="mb-5 text-base text-[#6f5a3a]" aria-live="polite"></p>
+      <form id="login-start" class="space-y-4">
+        <div>
+          <label for="login-email">E-mail</label>
+          <input
+            id="login-email"
+            name="email"
+            type="email"
+            autocomplete="username"
+            maxlength="320"
+            class="input input-bordered"
+            required
+          />
+        </div>
+        <div data-password-login hidden={reset}>
+          <label for="login-password">{en ? 'Password' : 'Senha'}</label>
+          <input
+            id="login-password"
+            name="password"
+            type="password"
+            autocomplete="current-password"
+            maxlength="128"
+            class="input input-bordered"
+            disabled={reset}
+            required={!reset}
+          />
+        </div>
+        <label class="mt-1 flex items-start gap-2 text-left">
+          <input
+            id="accept-terms"
+            type="checkbox"
+            class="checkbox checkbox-sm mt-0 shrink-0 border border-[#b88333]"
+          />
+          <span class="text-sm leading-5 text-[#625a51]">
+            {en ? 'I accept the ' : 'Aceito os '}
+            <a class="font-semibold text-[#8b5b1e] underline" href={en ? '/en/terms' : '/termos'}>
+              {en ? 'Terms of Use' : 'Termos de Uso'}
+            </a>
+            {en ? ' and the ' : ' e a '}
+            <a
+              class="font-semibold text-[#8b5b1e] underline"
+              href={en ? '/en/privacy' : '/privacidade'}
+            >
+              {en ? 'Privacy Policy' : 'Política de Privacidade'}
+            </a>
+            .
+          </span>
+        </label>
+        <div class="relative">
+          {lastLogin === 'password' && (
+            <span class="absolute -top-2 right-3 z-10 rounded-full bg-[#b88333] px-2 py-0.5 text-[10px] font-semibold text-white shadow-sm">
+              {lastUsed}
             </span>
-          </label>
+          )}
           <button
             data-start-button
             type="submit"
@@ -165,82 +139,89 @@ const error = url.searchParams.get('error')?.slice(0, 150);
           >
             {reset ? (en ? 'Send code' : 'Enviar código') : en ? 'Sign in' : 'Entrar'}
           </button>
-        </form>
-        <form id="login-code" hidden class="space-y-4">
-          <p data-code-recipient class="text-base text-[#625a51]"></p>
-          <div>
-            <label for="login-code-input">{en ? '6-digit code' : 'Código de 6 dígitos'}</label>
-            <input
-              id="login-code-input"
-              name="code"
-              type="text"
-              inputmode="numeric"
-              autocomplete="one-time-code"
-              pattern="[0-9]{6}"
-              minlength="6"
-              maxlength="6"
-              required
-              class="input input-bordered text-center font-mono text-2xl tracking-[0.3em]"
-            />
-          </div>
-          <div data-new-password hidden>
-            <label for="new-password">{en ? 'New password' : 'Nova senha'}</label>
-            <input
-              id="new-password"
-              name="password"
-              type="password"
-              autocomplete="new-password"
-              minlength="12"
-              maxlength="128"
-              disabled
-              class="input input-bordered"
-            />
-            <label for="confirm-password" class="mt-4">
-              {en ? 'Repeat password' : 'Repita a senha'}
-            </label>
-            <input
-              id="confirm-password"
-              type="password"
-              autocomplete="new-password"
-              minlength="12"
-              maxlength="128"
-              disabled
-              class="input input-bordered"
-            />
-            <p class="mt-2 text-sm text-[#625a51]">
-              {en
-                ? 'Use 12–128 characters. A passphrase works well.'
-                : 'Use de 12 a 128 caracteres. Uma frase longa funciona bem.'}
-            </p>
-          </div>
-          <button
-            type="submit"
-            class="btn w-full rounded-full border-[#a66f27] bg-[#b88333] text-white hover:bg-[#9b6823]"
-          >
-            {en ? 'Continue' : 'Continuar'}
-          </button>
-          <div class="flex justify-between gap-3 text-base text-[#8b5b1e]">
-            <button type="button" data-resend disabled>
-              {en ? 'Resend code' : 'Reenviar código'}
-            </button>
-            <button type="button" data-change-email>
-              {en ? 'Change email' : 'Trocar e-mail'}
-            </button>
-          </div>
-        </form>
-        {emailReady && (
-          <button
-            type="button"
-            data-password-reset
-            class="mt-5 text-base font-semibold text-[#8b5b1e] hover:underline"
-          >
-            {en ? 'Create or recover password' : 'Criar ou recuperar senha'}
-          </button>
-        )}
-        <div
-          class="mt-6 flex flex-wrap items-center justify-center gap-3"
-          aria-label={en ? 'Other sign-in methods' : 'Outras formas de entrar'}
+        </div>
+      </form>
+      <form id="login-code" hidden class="space-y-4">
+        <p data-code-recipient class="text-base text-[#625a51]"></p>
+        <div>
+          <label for="login-code-input">{en ? '6-digit code' : 'Código de 6 dígitos'}</label>
+          <input
+            id="login-code-input"
+            name="code"
+            type="text"
+            inputmode="numeric"
+            autocomplete="one-time-code"
+            pattern="[0-9]{6}"
+            minlength="6"
+            maxlength="6"
+            required
+            class="input input-bordered text-center font-mono text-2xl tracking-[0.3em]"
+          />
+        </div>
+        <div data-new-password hidden>
+          <label for="new-password">{en ? 'New password' : 'Nova senha'}</label>
+          <input
+            id="new-password"
+            name="password"
+            type="password"
+            autocomplete="new-password"
+            minlength="12"
+            maxlength="128"
+            disabled
+            class="input input-bordered"
+          />
+          <label for="confirm-password" class="mt-4">
+            {en ? 'Repeat password' : 'Repita a senha'}
+          </label>
+          <input
+            id="confirm-password"
+            type="password"
+            autocomplete="new-password"
+            minlength="12"
+            maxlength="128"
+            disabled
+            class="input input-bordered"
+          />
+          <p class="mt-2 text-sm text-[#625a51]">
+            {en
+              ? 'Use 12–128 characters. A passphrase works well.'
+              : 'Use de 12 a 128 caracteres. Uma frase longa funciona bem.'}
+          </p>
+        </div>
+        <button
+          type="submit"
+          class="btn w-full rounded-full border-[#a66f27] bg-[#b88333] text-white hover:bg-[#9b6823]"
         >
+          {en ? 'Continue' : 'Continuar'}
+        </button>
+        <div class="flex justify-between gap-3 text-base text-[#8b5b1e]">
+          <button type="button" data-resend disabled>
+            {en ? 'Resend code' : 'Reenviar código'}
+          </button>
+          <button type="button" data-change-email>
+            {en ? 'Change email' : 'Trocar e-mail'}
+          </button>
+        </div>
+      </form>
+      {emailReady && (
+        <button
+          type="button"
+          data-password-reset
+          class="mt-5 text-base font-semibold text-[#8b5b1e] hover:underline"
+        >
+          {en ? 'Create or recover password' : 'Criar ou recuperar senha'}
+        </button>
+      )}
+      <div
+        class="mt-6 flex flex-wrap items-center justify-center gap-3"
+        aria-label={en ? 'Other sign-in methods' : 'Outras formas de entrar'}
+      >
+        <div class="relative">
+          {lastLogin === 'google' && (
+            <span class="absolute -top-2 right-2 z-10 rounded-full bg-[#b88333] px-2 py-0.5 text-[10px] font-semibold text-white shadow-sm">
+              {lastUsed}
+            </span>
+          )}
           {!clientId && (
             <button type="button" disabled class="btn btn-ghost h-10 min-h-10 rounded-full px-5">
               <svg aria-hidden="true" width="18" height="18" viewBox="0 0 48 48">
@@ -284,6 +265,13 @@ const error = url.searchParams.get('error')?.slice(0, 150);
               ></div>
             </div>
           )}
+        </div>
+        <div class="relative">
+          {lastLogin === 'code' && (
+            <span class="absolute -top-2 right-2 z-10 rounded-full bg-[#b88333] px-2 py-0.5 text-[10px] font-semibold text-white shadow-sm">
+              {lastUsed}
+            </span>
+          )}
           <button
             type="button"
             data-login-mode="code"
@@ -306,31 +294,31 @@ const error = url.searchParams.get('error')?.slice(0, 150);
             {en ? 'Email' : 'E-mail'}
           </button>
         </div>
-        <button
-          type="button"
-          data-login-mode="password"
-          hidden
-          class="btn btn-outline btn-sm mt-3 w-full rounded-full text-[#6f4716]"
-        >
-          {en ? 'Back to password sign-in' : 'Voltar para entrar com senha'}
-        </button>
-        {!emailReady && (
-          <p class="mt-5 text-base text-[#625a51]">
-            {en
-              ? 'Email codes are currently unavailable. Use your existing password or Google.'
-              : 'Códigos por e-mail indisponíveis no momento. Use sua senha já cadastrada ou Google.'}
-          </p>
-        )}
-        {!legalReady && url.searchParams.get('next') !== 'admin' && (
-          <p class="alert alert-error mt-5">
-            {en
-              ? 'New registrations are temporarily unavailable.'
-              : 'Novos cadastros estão temporariamente indisponíveis.'}
-          </p>
-        )}
-        {error && <input type="hidden" id="login-error" value={error} />}
-      </section>
-    </div>
+      </div>
+      <button
+        type="button"
+        data-login-mode="password"
+        hidden
+        class="btn btn-outline btn-sm mt-3 w-full rounded-full text-[#6f4716]"
+      >
+        {en ? 'Back to password sign-in' : 'Voltar para entrar com senha'}
+      </button>
+      {!emailReady && (
+        <p class="mt-5 text-base text-[#625a51]">
+          {en
+            ? 'Email codes are currently unavailable. Use your existing password or Google.'
+            : 'Códigos por e-mail indisponíveis no momento. Use sua senha já cadastrada ou Google.'}
+        </p>
+      )}
+      {!legalReady && url.searchParams.get('next') !== 'admin' && (
+        <p class="alert alert-error mt-5">
+          {en
+            ? 'New registrations are temporarily unavailable.'
+            : 'Novos cadastros estão temporariamente indisponíveis.'}
+        </p>
+      )}
+      {error && <input type="hidden" id="login-error" value={error} />}
+    </section>
   </main>
   {clientId && <script src="https://accounts.google.com/gsi/client" async defer></script>}
 
@@ -355,6 +343,9 @@ const error = url.searchParams.get('error')?.slice(0, 150);
     let purpose: 'login' | 'password' = 'login';
     let busy = false;
     let resendAt = 0;
+    const rememberMethod = (method: 'code' | 'password') => {
+      document.cookie = `vira_last_login=${method}; Path=/; Max-Age=31536000; SameSite=Lax`;
+    };
     const cooldown = () => {
       const seconds = Math.max(0, Math.ceil((resendAt - Date.now()) / 1000));
       resend.disabled = busy || seconds > 0;
@@ -432,6 +423,7 @@ const error = url.searchParams.get('error')?.slice(0, 150);
         const email = emailInput.value.trim();
         if (mode === 'password') {
           const result = await passwordLogin(email, oldPassword.value, scope);
+          rememberMethod('password');
           location.assign(result.redirect);
           return;
         }
@@ -477,6 +469,7 @@ const error = url.searchParams.get('error')?.slice(0, 150);
           scope,
           accepted,
         );
+        rememberMethod('code');
         location.assign(result.redirect);
       } catch (error) {
         reportError(error, en ? 'Unable to verify code' : 'Falha ao validar código');

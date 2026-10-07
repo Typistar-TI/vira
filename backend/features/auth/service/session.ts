@@ -51,6 +51,10 @@ export async function createAdminSession(email: string): Promise<string> {
   return `${adminSessionName}=${token}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${30 * 86400}`;
 }
 
+export function lastLoginCookie(method: 'google' | 'code' | 'password'): string {
+  return `vira_last_login=${method}; Path=/; Max-Age=31536000; SameSite=Lax`;
+}
+
 export async function getSessionAdmin(
   request: Request,
 ): Promise<{ id: string; email: string; displayName: string } | null> {
