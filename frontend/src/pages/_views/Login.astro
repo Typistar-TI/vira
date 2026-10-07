@@ -1,6 +1,5 @@
 ---
 import Base from '@frontend/components/Base.astro';
-import Brand from '@frontend/components/Brand.astro';
 import { getSetting } from '@frontend/api/config/setting';
 import { googleLoginUrl } from '@frontend/api/auth/google-url';
 import { emailLoginEnabled } from '@frontend/api/config/email-login-enabled';
@@ -31,13 +30,24 @@ const error = url.searchParams.get('error')?.slice(0, 150);
   <main class="grid min-h-dvh bg-white text-[#17130d] lg:grid-cols-2">
     <section
       aria-label={en ? 'About Vira' : 'Sobre o Vira'}
-      class="flex items-center justify-center bg-[#fff4df] px-6 py-12 text-center sm:px-12 lg:min-h-dvh lg:py-20"
+      class="relative flex items-center justify-center overflow-hidden bg-[#fff4df] px-6 py-12 text-center sm:px-12 lg:min-h-dvh lg:py-20"
     >
-      <div class="w-full max-w-[520px]">
-        <div class="flex justify-center">
-          <Brand tone="light" />
-        </div>
-        <h1 class="mt-10 font-[Outfit] text-4xl leading-tight tracking-tight sm:text-5xl lg:mt-14">
+      <div class="relative w-full max-w-[520px]">
+        <img
+          src="/vira-hero-light.webp"
+          alt="Vira"
+          width="1586"
+          height="992"
+          class="mx-auto w-[58%] max-w-[300px] select-none object-contain mix-blend-multiply lg:w-[74%] lg:max-w-[360px]"
+        />
+        <img
+          src="/vira-wordmark-amber.png"
+          alt=""
+          width="122"
+          height="50"
+          class="mx-auto mt-1 h-[42px] w-auto object-contain sm:h-[52px]"
+        />
+        <h1 class="mt-8 font-[Outfit] text-3xl leading-tight tracking-tight sm:text-4xl">
           {en ? 'Your page and your AI assistant.' : 'Sua página e sua assistente de IA.'}
         </h1>
       </div>
