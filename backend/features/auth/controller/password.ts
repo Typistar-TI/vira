@@ -35,5 +35,6 @@ export const POST = async (request: Request): Promise<Response> => {
     row?.iterations ?? 100_000,
   );
   if (!equalHashes(actual, row?.password_hash ?? '0'.repeat(64)) || !row) return fail();
-  return establishLogin(email, request);
+  const accepted = body.acceptTerms === true || body.acceptTerms === 'true';
+  return establishLogin(email, request, undefined, accepted);
 };
