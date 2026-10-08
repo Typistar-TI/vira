@@ -577,10 +577,16 @@ const trialLeft = en
                   <summary class="cursor-pointer font-semibold">{t.metrics}</summary>
                   <div class="mt-3 grid grid-cols-2 gap-3">
                     <p>
-                      <strong id="metric-views">—</strong> · {t.views}
+                      <strong id="metric-views">
+                        <span class="inline-block h-4 w-10 animate-pulse rounded bg-[#efe8dc] align-middle"></span>
+                      </strong>{' '}
+                      · {t.views}
                     </p>
                     <p>
-                      <strong id="metric-clicks">—</strong> · {t.clicks}
+                      <strong id="metric-clicks">
+                        <span class="inline-block h-4 w-10 animate-pulse rounded bg-[#efe8dc] align-middle"></span>
+                      </strong>{' '}
+                      · {t.clicks}
                     </p>
                   </div>
                 </details>
@@ -645,7 +651,9 @@ const trialLeft = en
             <p class="text-sm text-[#625a51] mt-3">
               CNAME: <code>connect.{domain}</code>
             </p>
-            <p id="domain-status" class="alert alert-info my-3 [hidden]:hidden" hidden></p>
+            <p id="domain-status" class="alert alert-info my-3">
+              <span class="inline-block h-4 w-40 animate-pulse rounded bg-[#efe8dc] align-middle"></span>
+            </p>
           </section>
         )}
         {section === 'conta' && (
@@ -1147,23 +1155,30 @@ const trialLeft = en
         }
       });
     if (document.querySelector('#metric-views')) {
-      const metrics = getMetrics();
-      metrics
+      getMetrics()
         .then((data) => {
           document.querySelector('#metric-views')!.textContent = String(data.views ?? 0);
           document.querySelector('#metric-clicks')!.textContent = String(data.clicks ?? 0);
         })
-        .catch(() => {});
+        .catch(() => {
+          document.querySelector('#metric-views')!.textContent = '—';
+          document.querySelector('#metric-clicks')!.textContent = '—';
+        });
     }
     if (document.querySelector('#domain-status')) {
       domainStatus()
         .then((data) => {
-          if (!data.domain) return;
           const node = document.querySelector<HTMLElement>('#domain-status')!;
-          node.hidden = false;
+          if (!data.domain) {
+            node.hidden = true;
+            return;
+          }
           node.textContent = `${data.domain.hostname}: ${data.domain.status}/${data.domain.sslStatus}`;
         })
-        .catch(() => {});
+        .catch(() => {
+          const node = document.querySelector<HTMLElement>('#domain-status');
+          if (node) node.hidden = true;
+        });
     }
     document
       .querySelector<HTMLAnchorElement>('#export-data')

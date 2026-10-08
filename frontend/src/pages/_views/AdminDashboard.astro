@@ -3,6 +3,7 @@ import Base from '@frontend/components/Base.astro';
 import AdminHeader from '@frontend/components/AdminHeader.astro';
 import ResponsiveTables from '@frontend/components/ResponsiveTables.astro';
 import PreviewStudio from '@frontend/components/PreviewStudio.astro';
+import Pager from '@frontend/components/Pager.astro';
 import { adminDashboard } from '@frontend/api/admin/dashboard';
 
 const { url, admin, section = 'visao' } = Astro.props;
@@ -17,11 +18,16 @@ const navigation = [
   { key: 'logs', href: '/admin/logs', label: 'Logs' },
 ];
 
+const roleFilter = ['admin', 'customer'].includes(url.searchParams.get('role') || '')
+  ? (url.searchParams.get('role') as string)
+  : '';
 const logFilters = {
   kind: (url.searchParams.get('kind') || '').trim().slice(0, 20),
   level: (url.searchParams.get('level') || '').trim().slice(0, 20),
   actor: (url.searchParams.get('actor') || '').trim().slice(0, 80),
   ip: (url.searchParams.get('ip') || '').trim().slice(0, 45),
+  role: roleFilter,
+  page: Math.max(1, Math.floor(Number(url.searchParams.get('page')) || 1)),
 };
 
 const {
@@ -35,45 +41,12 @@ const {
   counts,
   signups,
   clients,
-  users,
-  admins,
+  people,
+  page,
+  pages,
   domain,
   clientDetail,
 } = await adminDashboard(search, section, logFilters);
-const roleFilter = ['admin', 'customer'].includes(url.searchParams.get('role') || '')
-  ? (url.searchParams.get('role') as string)
-  : '';
-const people = [
-  ...users.map((row) => ({
-    role: 'customer' as const,
-    id: row.id,
-    email: row.email ?? '',
-    name: '',
-    plan: row.plan,
-    createdAt: row.created_at,
-    trialEndsAt: row.trial_ends_at,
-    accessUntil: row.access_until,
-    expiredAt: row.expired_at,
-    activeSessions: row.active_sessions,
-    sites: row.sites,
-    google: Boolean(row.google_sub),
-  })),
-  ...admins.map((row) => ({
-    role: 'admin' as const,
-    id: row.email,
-    email: row.email,
-    name: row.display_name,
-    plan: 'admin',
-    createdAt: row.created_at,
-    trialEndsAt: null,
-    accessUntil: null,
-    expiredAt: null,
-    activeSessions: row.active_sessions,
-    sites: 0,
-    google: Boolean(row.google_sub),
-  })),
-];
-const peopleFiltered = roleFilter ? people.filter((person) => person.role === roleFilter) : people;
 const dateInput = (time: number | null) =>
   time ? new Date(time * 1000).toISOString().slice(0, 10) : '';
 const consentLabels: Record<string, string> = {
@@ -89,6 +62,8 @@ const pagantes = counts.monthly_active + counts.yearly_active;
 const siteTotal = counts.published + counts.drafts;
 const publishedPct = siteTotal ? counts.published / siteTotal : 0;
 const pagantesPct = counts.users ? pagantes / counts.users : 0;
+const publicationRate = siteTotal ? Math.round((counts.published / siteTotal) * 100) : 0;
+const conversionRate = counts.users ? Math.round((pagantes / counts.users) * 100) : 0;
 const stats = [
   { value: counts.users, label: 'Clientes', href: '/admin/usuarios' },
   { value: counts.new_users_7d, label: 'Novos (7 dias)', href: '/admin/usuarios' },
@@ -277,14 +252,10 @@ const deliveryStatus: Record<string, string> = {
             <h1>Painel do Vira</h1>
           </div>
 
-          <form method="get" class="mb-8">
+          <form method="get" data-filter-form class="mb-8">
             <label class="flex w-full max-w-[440px] flex-col gap-1 text-sm">
               <span class="text-[#625a51]">Cliente</span>
-              <select
-                name="q"
-                data-client-filter
-                class="select select-bordered h-11 w-full rounded-lg"
-              >
+              <select name="q" class="select select-bordered h-11 w-full rounded-lg">
                 <option value="">Todos os clientes</option>
                 {clients.map((client) => (
                   <option value={client.slug} selected={client.slug === search}>
@@ -294,11 +265,6 @@ const deliveryStatus: Record<string, string> = {
                 ))}
               </select>
             </label>
-            <noscript>
-              <button class="btn mt-3 h-10 rounded-lg border-0 bg-[#17130d] text-white">
-                Filtrar
-              </button>
-            </noscript>
           </form>
 
           {clientDetail?.found && (
@@ -485,8 +451,12 @@ const deliveryStatus: Record<string, string> = {
             <div class="rounded-2xl border border-[#ead8bd] bg-white p-6">
               <h2 class="mb-5 font-[Outfit] text-xl">Sites publicados</h2>
               <div class="flex flex-wrap items-center gap-6">
-                <div class="relative h-[176px] w-[176px] shrink-0">
+                <div
+                  class="tooltip relative h-[168px] w-[168px] shrink-0"
+                  data-tip={`Publicados: ${counts.published} · Rascunhos: ${counts.drafts}`}
+                >
                   <svg viewBox="0 0 120 120" class="h-full w-full -rotate-90">
+                    <title>Publicados: {counts.published} · Rascunhos: {counts.drafts}</title>
                     <circle
                       cx="60"
                       cy="60"
@@ -513,24 +483,42 @@ const deliveryStatus: Record<string, string> = {
                     <span class="mt-1 text-xs text-[#625a51]">publicados</span>
                   </div>
                 </div>
-                <ul class="space-y-3 text-sm text-[#625a51]">
-                  <li class="flex items-center gap-2">
-                    <span class="h-3 w-3 shrink-0 rounded-sm bg-[#b88333]"></span>
-                    Publicados: <strong class="text-[#17130d]">{counts.published}</strong>
-                  </li>
-                  <li class="flex items-center gap-2">
-                    <span class="h-3 w-3 shrink-0 rounded-sm bg-[#eee7dc]"></span>
-                    Rascunhos: <strong class="text-[#17130d]">{counts.drafts}</strong>
-                  </li>
-                </ul>
+                <dl class="min-w-[190px] flex-1 divide-y divide-[#f0e6d5] text-sm">
+                  <div class="flex items-center justify-between gap-3 py-2">
+                    <dt class="text-[#625a51]">Publicados</dt>
+                    <dd class="font-semibold tabular-nums text-[#17130d]">{counts.published}</dd>
+                  </div>
+                  <div class="flex items-center justify-between gap-3 py-2">
+                    <dt class="text-[#625a51]">Rascunhos</dt>
+                    <dd class="font-semibold tabular-nums text-[#17130d]">{counts.drafts}</dd>
+                  </div>
+                  <div class="flex items-center justify-between gap-3 py-2">
+                    <dt class="text-[#625a51]">Total de páginas</dt>
+                    <dd class="font-semibold tabular-nums text-[#17130d]">{siteTotal}</dd>
+                  </div>
+                  <div class="flex items-center justify-between gap-3 py-2">
+                    <dt class="text-[#625a51]">Taxa de publicação</dt>
+                    <dd class="font-semibold tabular-nums text-[#b88333]">{publicationRate}%</dd>
+                  </div>
+                  <div class="flex items-center justify-between gap-3 py-2">
+                    <dt class="text-[#625a51]">Domínios ativos</dt>
+                    <dd class="font-semibold tabular-nums text-[#17130d]">
+                      {counts.domains_active}
+                    </dd>
+                  </div>
+                </dl>
               </div>
             </div>
 
             <div class="rounded-2xl border border-[#ead8bd] bg-white p-6">
               <h2 class="mb-5 font-[Outfit] text-xl">Clientes pagantes</h2>
               <div class="flex flex-wrap items-center gap-6">
-                <div class="relative h-[176px] w-[176px] shrink-0">
+                <div
+                  class="tooltip relative h-[168px] w-[168px] shrink-0"
+                  data-tip={`Pagantes: ${pagantes} · Testes: ${counts.trials_active}`}
+                >
                   <svg viewBox="0 0 120 120" class="h-full w-full -rotate-90">
+                    <title>Pagantes: {pagantes} · Testes: {counts.trials_active}</title>
                     <circle
                       cx="60"
                       cy="60"
@@ -557,20 +545,34 @@ const deliveryStatus: Record<string, string> = {
                     <span class="mt-1 text-xs text-[#625a51]">pagantes</span>
                   </div>
                 </div>
-                <ul class="space-y-3 text-sm text-[#625a51]">
-                  <li class="flex items-center gap-2">
-                    <span class="h-3 w-3 shrink-0 rounded-sm bg-[#b88333]"></span>
-                    Mensal: <strong class="text-[#17130d]">{counts.monthly_active}</strong>
-                  </li>
-                  <li class="flex items-center gap-2">
-                    <span class="h-3 w-3 shrink-0 rounded-sm bg-[#d8ae73]"></span>
-                    Anual: <strong class="text-[#17130d]">{counts.yearly_active}</strong>
-                  </li>
-                  <li class="flex items-center gap-2">
-                    <span class="h-3 w-3 shrink-0 rounded-sm bg-[#eee7dc]"></span>
-                    Testes: <strong class="text-[#17130d]">{counts.trials_active}</strong>
-                  </li>
-                </ul>
+                <dl class="min-w-[190px] flex-1 divide-y divide-[#f0e6d5] text-sm">
+                  <div class="flex items-center justify-between gap-3 py-2">
+                    <dt class="text-[#625a51]">Mensal</dt>
+                    <dd class="font-semibold tabular-nums text-[#17130d]">
+                      {counts.monthly_active}
+                    </dd>
+                  </div>
+                  <div class="flex items-center justify-between gap-3 py-2">
+                    <dt class="text-[#625a51]">Anual</dt>
+                    <dd class="font-semibold tabular-nums text-[#17130d]">
+                      {counts.yearly_active}
+                    </dd>
+                  </div>
+                  <div class="flex items-center justify-between gap-3 py-2">
+                    <dt class="text-[#625a51]">Testes ativos</dt>
+                    <dd class="font-semibold tabular-nums text-[#17130d]">
+                      {counts.trials_active}
+                    </dd>
+                  </div>
+                  <div class="flex items-center justify-between gap-3 py-2">
+                    <dt class="text-[#625a51]">Total de clientes</dt>
+                    <dd class="font-semibold tabular-nums text-[#17130d]">{counts.users}</dd>
+                  </div>
+                  <div class="flex items-center justify-between gap-3 py-2">
+                    <dt class="text-[#625a51]">Conversão</dt>
+                    <dd class="font-semibold tabular-nums text-[#b88333]">{conversionRate}%</dd>
+                  </div>
+                </dl>
               </div>
             </div>
           </div>
@@ -588,8 +590,8 @@ const deliveryStatus: Record<string, string> = {
             <div class="flex h-44 items-end gap-1.5">
               {days.map((item) => (
                 <div
-                  class="flex flex-1 flex-col items-center gap-2"
-                  title={`${item.day}: ${item.total}`}
+                  class="tooltip flex flex-1 flex-col items-center gap-2"
+                  data-tip={`${item.day}: ${item.total}`}
                 >
                   <span class="text-[10px] font-semibold tabular-nums text-[#9b6823]">
                     {item.total || ''}
@@ -753,10 +755,7 @@ const deliveryStatus: Record<string, string> = {
             </div>
             <div class="mt-4 flex flex-wrap items-center gap-3">
               <span class="mr-auto text-sm text-[#625a51]" data-price-status></span>
-              <button
-                class="btn rounded-lg border-0 bg-[#17130d] text-white hover:bg-[#2a241b]"
-                type="submit"
-              >
+              <button class="btn btn-primary rounded-lg" type="submit">
                 Salvar alterações
               </button>
             </div>
@@ -854,10 +853,7 @@ const deliveryStatus: Record<string, string> = {
             ))}
             <div class="flex flex-wrap items-center gap-3 pt-2">
               <span class="mr-auto text-sm text-[#625a51]" data-save-status></span>
-              <button
-                class="btn rounded-lg border-0 bg-[#17130d] text-white hover:bg-[#2a241b]"
-                type="submit"
-              >
+              <button class="btn btn-primary rounded-lg" type="submit">
                 Salvar alterações
               </button>
             </div>
@@ -1032,6 +1028,7 @@ const deliveryStatus: Record<string, string> = {
                 <p class="py-3 text-sm text-[#625a51]">Nenhum envio registrado.</p>
               )}
             </div>
+            <Pager page={page} pages={pages} base="/admin/emails" />
           </div>
         </section>
       )}
@@ -1047,7 +1044,12 @@ const deliveryStatus: Record<string, string> = {
               dados da conta.
             </p>
           </div>
-          <form method="get" action="/admin/usuarios" class="mb-5 flex flex-wrap items-end gap-3">
+          <form
+            method="get"
+            action="/admin/usuarios"
+            data-filter-form
+            class="mb-5 flex flex-wrap items-end gap-3"
+          >
             <label class="flex flex-col gap-1 text-sm">
               <span class="text-[#625a51]">Tipo</span>
               <select name="role" class="select select-bordered h-10 rounded-lg">
@@ -1073,9 +1075,6 @@ const deliveryStatus: Record<string, string> = {
                 maxlength="80"
               />
             </label>
-            <button class="btn h-10 rounded-lg border-0 bg-[#17130d] text-white hover:bg-[#2a241b]">
-              Filtrar
-            </button>
             {(search || roleFilter) && (
               <a href="/admin/usuarios" class="btn btn-ghost h-10 rounded-lg">
                 Limpar
@@ -1099,7 +1098,7 @@ const deliveryStatus: Record<string, string> = {
                 </tr>
               </thead>
               <tbody>
-                {peopleFiltered.map((person) => (
+                {people.map((person) => (
                   <>
                     <tr>
                       <td>
@@ -1122,12 +1121,12 @@ const deliveryStatus: Record<string, string> = {
                         {person.role === 'admin'
                           ? '—'
                           : date(
-                              person.accessUntil ??
-                                (person.plan === 'trial' ? person.trialEndsAt : null),
+                              person.access_until ??
+                                (person.plan === 'trial' ? person.trial_ends_at : null),
                             )}
                       </td>
-                      <td>{date(person.createdAt)}</td>
-                      <td>{person.activeSessions}</td>
+                      <td>{date(person.created_at)}</td>
+                      <td>{person.active_sessions}</td>
                       <td>{person.role === 'admin' ? '—' : person.sites}</td>
                       <td>
                         <button
@@ -1201,7 +1200,7 @@ const deliveryStatus: Record<string, string> = {
                                 class="input input-bordered"
                                 name="trial_ends_at"
                                 type="date"
-                                value={dateInput(person.trialEndsAt)}
+                                value={dateInput(person.trial_ends_at)}
                               />
                             </label>
                             <label class="flex flex-col gap-1 text-sm">
@@ -1210,7 +1209,7 @@ const deliveryStatus: Record<string, string> = {
                                 class="input input-bordered"
                                 name="access_until"
                                 type="date"
-                                value={dateInput(person.accessUntil)}
+                                value={dateInput(person.access_until)}
                               />
                             </label>
                             <label class="flex flex-col gap-1 text-sm">
@@ -1219,7 +1218,7 @@ const deliveryStatus: Record<string, string> = {
                                 class="input input-bordered"
                                 name="expired_at"
                                 type="date"
-                                value={dateInput(person.expiredAt)}
+                                value={dateInput(person.expired_at)}
                               />
                             </label>
                             <button class="btn btn-primary" type="submit">
@@ -1234,7 +1233,7 @@ const deliveryStatus: Record<string, string> = {
                 ))}
               </tbody>
             </table>
-            {peopleFiltered.length === 0 && (
+            {people.length === 0 && (
               <p class="my-2 text-[#625a51]">
                 {search || roleFilter
                   ? 'Nenhuma conta corresponde ao filtro.'
@@ -1242,6 +1241,12 @@ const deliveryStatus: Record<string, string> = {
               </p>
             )}
           </div>
+          <Pager
+            page={page}
+            pages={pages}
+            base="/admin/usuarios"
+            query={{ q: search, role: roleFilter }}
+          />
         </section>
       )}
       {section === 'dominios' && (
@@ -1280,6 +1285,7 @@ const deliveryStatus: Record<string, string> = {
               <p class="my-2 text-[#625a51]">Nenhum domínio de cliente conectado ainda.</p>
             )}
           </div>
+          <Pager page={page} pages={pages} base="/admin/dominios" query={{ q: search }} />
         </section>
       )}
       {section === 'logs' && (
@@ -1291,7 +1297,7 @@ const deliveryStatus: Record<string, string> = {
             <h1>Logs</h1>
             <p>Acessos, ações administrativas, cobrança, domínios e eventos de segurança.</p>
           </div>
-          <form method="get" class="mb-5 flex flex-wrap items-end gap-3">
+          <form method="get" data-filter-form class="mb-5 flex flex-wrap items-end gap-3">
             <label class="flex flex-col gap-1 text-sm">
               <span class="text-[#625a51]">Tipo</span>
               <select name="kind" class="select select-bordered h-10 rounded-lg">
@@ -1340,9 +1346,6 @@ const deliveryStatus: Record<string, string> = {
                 maxlength="45"
               />
             </label>
-            <button class="btn h-10 rounded-lg border-0 bg-[#17130d] text-white hover:bg-[#2a241b]">
-              Filtrar
-            </button>
             {(logFilters.kind || logFilters.level || logFilters.actor || logFilters.ip) && (
               <a href="/admin/logs" class="btn btn-ghost h-10 rounded-lg">
                 Limpar
@@ -1394,6 +1397,17 @@ const deliveryStatus: Record<string, string> = {
               <p class="py-4 text-sm text-[#625a51]">Nenhum registro para este filtro.</p>
             )}
           </div>
+          <Pager
+            page={page}
+            pages={pages}
+            base="/admin/logs"
+            query={{
+              kind: logFilters.kind,
+              level: logFilters.level,
+              actor: logFilters.actor,
+              ip: logFilters.ip,
+            }}
+          />
         </section>
       )}
     </main>
@@ -1408,9 +1422,25 @@ const deliveryStatus: Record<string, string> = {
     import { updateEmailTemplate } from '@frontend/api/admin/update-email-template';
     import { updateUser } from '@frontend/api/admin/update-user';
     import { reportError } from '@frontend/components/toast';
-    document
-      .querySelectorAll<HTMLSelectElement>('[data-client-filter]')
-      .forEach((select) => select.addEventListener('change', () => select.form?.requestSubmit()));
+    const debounce = (fn: () => void, ms: number) => {
+      let timer = 0;
+      return () => {
+        window.clearTimeout(timer);
+        timer = window.setTimeout(fn, ms);
+      };
+    };
+    document.querySelectorAll<HTMLFormElement>('[data-filter-form]').forEach((form) => {
+      const navigate = () => {
+        (window as unknown as { viraShowRouteSkeleton?: () => void }).viraShowRouteSkeleton?.();
+        form.requestSubmit();
+      };
+      form
+        .querySelectorAll<HTMLSelectElement>('select')
+        .forEach((select) => select.addEventListener('change', navigate));
+      form
+        .querySelectorAll<HTMLInputElement>('input')
+        .forEach((input) => input.addEventListener('input', debounce(navigate, 450)));
+    });
     const settingsForm = document.getElementById('settings-form') as HTMLFormElement | null;
     settingsForm?.addEventListener('submit', async (event) => {
       event.preventDefault();

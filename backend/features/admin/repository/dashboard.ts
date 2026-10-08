@@ -1,17 +1,20 @@
 import { env } from 'cloudflare:workers';
 import { rootDomain } from '@backend/platform/config';
 
-export interface LogFilters {
+export interface AdminFilters {
   kind?: string;
   level?: string;
   actor?: string;
   ip?: string;
+  role?: string;
+  page?: number;
 }
+export type LogFilters = AdminFilters;
 
 export async function getAdminDashboard(
   search: string,
   section: string = 'visao',
-  filters: LogFilters = {},
+  filters: AdminFilters = {},
 ) {
   const logKinds = ['auth', 'admin', 'billing', 'site', 'domain', 'security', 'system'];
   const levels = ['info', 'warning', 'critical'];
@@ -19,19 +22,26 @@ export async function getAdminDashboard(
   const levelFilter = filters.level && levels.includes(filters.level) ? filters.level : '';
   const actorFilter = (filters.actor ?? '').trim().slice(0, 80);
   const ipFilter = (filters.ip ?? '').trim().slice(0, 45);
+  const roleFilter = ['customer', 'admin'].includes(filters.role ?? '') ? filters.role! : '';
+  const page = Math.max(1, Math.min(2000, Math.floor(Number(filters.page) || 1)));
+  const pageSize = section === 'logs' ? 50 : section === 'emails' ? 10 : 25;
+  const offset = (page - 1) * pageSize;
   const [
     settingsResult,
     pricesResult,
     customersResult,
     domainsResult,
+    domainsCountResult,
     logsResult,
+    logsCountResult,
     emailTemplatesResult,
     emailOutboxResult,
+    outboxCountResult,
     counts,
     signupsResult,
     clientsResult,
-    usersResult,
-    adminsResult,
+    peopleResult,
+    peopleCountResult,
     domain,
   ] = await Promise.all([
     section === 'visao' || section === 'configuracoes'
@@ -75,15 +85,21 @@ export async function getAdminDashboard(
     section === 'dominios'
       ? env.DB.prepare(
           `SELECT d.hostname, d.status, d.ssl_status, d.created_at, u.email, s.slug FROM domains d
-        JOIN sites s ON s.id = d.site_id JOIN users u ON u.id = s.user_id ORDER BY d.created_at DESC LIMIT 100`,
-        ).all<{
-          hostname: string;
-          status: string;
-          ssl_status: string;
-          created_at: number;
-          email: string | null;
-          slug: string;
-        }>()
+        JOIN sites s ON s.id = d.site_id JOIN users u ON u.id = s.user_id
+        ORDER BY d.created_at DESC LIMIT ? OFFSET ?`,
+        )
+          .bind(pageSize, offset)
+          .all<{
+            hostname: string;
+            status: string;
+            ssl_status: string;
+            created_at: number;
+            email: string | null;
+            slug: string;
+          }>()
+      : null,
+    section === 'dominios'
+      ? env.DB.prepare('SELECT count(*) AS n FROM domains').first<{ n: number }>()
       : null,
     section === 'logs'
       ? env.DB.prepare(
@@ -92,7 +108,7 @@ export async function getAdminDashboard(
            WHERE (? = '' OR kind = ?) AND (? = '' OR severity = ?)
              AND (? = '' OR actor_id LIKE ? OR target LIKE ?)
              AND (? = '' OR ip LIKE ?)
-           ORDER BY created_at DESC LIMIT 200`,
+           ORDER BY created_at DESC LIMIT ? OFFSET ?`,
         )
           .bind(
             kindFilter,
@@ -104,6 +120,8 @@ export async function getAdminDashboard(
             `%${actorFilter}%`,
             ipFilter,
             `%${ipFilter}%`,
+            pageSize,
+            offset,
           )
           .all<{
             created_at: number;
@@ -116,6 +134,26 @@ export async function getAdminDashboard(
             ip: string | null;
             user_agent: string | null;
           }>()
+      : null,
+    section === 'logs'
+      ? env.DB.prepare(
+          `SELECT count(*) AS n FROM logs
+           WHERE (? = '' OR kind = ?) AND (? = '' OR severity = ?)
+             AND (? = '' OR actor_id LIKE ? OR target LIKE ?)
+             AND (? = '' OR ip LIKE ?)`,
+        )
+          .bind(
+            kindFilter,
+            kindFilter,
+            levelFilter,
+            levelFilter,
+            actorFilter,
+            `%${actorFilter}%`,
+            `%${actorFilter}%`,
+            ipFilter,
+            `%${ipFilter}%`,
+          )
+          .first<{ n: number }>()
       : null,
     section === 'emails'
       ? env.DB.prepare(
@@ -130,15 +168,20 @@ export async function getAdminDashboard(
       : null,
     section === 'emails'
       ? env.DB.prepare(
-          'SELECT template_key, recipient, status, created_at, sent_at, last_error FROM email_outbox ORDER BY created_at DESC LIMIT 20',
-        ).all<{
-          template_key: string;
-          recipient: string;
-          status: string;
-          created_at: number;
-          sent_at: number | null;
-          last_error: string | null;
-        }>()
+          'SELECT template_key, recipient, status, created_at, sent_at, last_error FROM email_outbox ORDER BY created_at DESC LIMIT ? OFFSET ?',
+        )
+          .bind(pageSize, offset)
+          .all<{
+            template_key: string;
+            recipient: string;
+            status: string;
+            created_at: number;
+            sent_at: number | null;
+            last_error: string | null;
+          }>()
+      : null,
+    section === 'emails'
+      ? env.DB.prepare('SELECT count(*) AS n FROM email_outbox').first<{ n: number }>()
       : null,
     section === 'visao'
       ? env.DB.prepare(
@@ -186,25 +229,34 @@ export async function getAdminDashboard(
       : null,
     section === 'usuarios'
       ? env.DB.prepare(
-          `SELECT id, email, phone, plan, created_at, trial_ends_at, access_until, expired_at,
-           stripe_customer_id, stripe_subscription_id, google_sub,
-           (SELECT count(*) FROM sessions s WHERE s.user_id = users.id AND s.expires_at > unixepoch()) AS active_sessions,
-           (SELECT count(*) FROM sites si WHERE si.user_id = users.id) AS sites
-           FROM users WHERE (? = '' OR COALESCE(email, '') LIKE ?)
-           ORDER BY created_at DESC LIMIT 300`,
+          `SELECT * FROM (
+            SELECT 'customer' AS role, u.id AS id, u.email AS email, u.plan AS plan,
+              u.created_at AS created_at, u.trial_ends_at AS trial_ends_at,
+              u.access_until AS access_until, u.expired_at AS expired_at,
+              '' AS name, u.google_sub AS google_sub,
+              (SELECT count(*) FROM sessions s WHERE s.user_id = u.id AND s.expires_at > unixepoch()) AS active_sessions,
+              (SELECT count(*) FROM sites si WHERE si.user_id = u.id) AS sites
+            FROM users u
+            UNION ALL
+            SELECT 'admin', a.email, a.email, 'admin', a.created_at, NULL, NULL, NULL,
+              a.display_name, a.google_sub,
+              (SELECT count(*) FROM admin_sessions s WHERE s.admin_email = a.email AND s.expires_at > unixepoch()), 0
+            FROM admin_accounts a
+          )
+          WHERE (? = '' OR role = ?) AND (? = '' OR COALESCE(email, '') LIKE ?)
+          ORDER BY created_at DESC LIMIT ? OFFSET ?`,
         )
-          .bind(search, `%${search}%`)
+          .bind(roleFilter, roleFilter, search, `%${search}%`, pageSize, offset)
           .all<{
+            role: 'customer' | 'admin';
             id: string;
             email: string | null;
-            phone: string;
             plan: string;
             created_at: number;
-            trial_ends_at: number;
+            trial_ends_at: number | null;
             access_until: number | null;
             expired_at: number | null;
-            stripe_customer_id: string | null;
-            stripe_subscription_id: string | null;
+            name: string;
             google_sub: string | null;
             active_sessions: number;
             sites: number;
@@ -212,22 +264,28 @@ export async function getAdminDashboard(
       : null,
     section === 'usuarios'
       ? env.DB.prepare(
-          `SELECT a.email, a.display_name, a.created_at, a.google_sub,
-           (SELECT count(*) FROM admin_sessions s WHERE s.admin_email = a.email AND s.expires_at > unixepoch()) AS active_sessions
-           FROM admin_accounts a WHERE (? = '' OR a.email LIKE ?) ORDER BY a.created_at`,
+          `SELECT count(*) AS n FROM (
+            SELECT 'customer' AS role, u.email AS email FROM users u
+            UNION ALL SELECT 'admin', a.email FROM admin_accounts a
+          ) WHERE (? = '' OR role = ?) AND (? = '' OR COALESCE(email, '') LIKE ?)`,
         )
-          .bind(search, `%${search}%`)
-          .all<{
-            email: string;
-            display_name: string;
-            created_at: number;
-            google_sub: string | null;
-            active_sessions: number;
-          }>()
+          .bind(roleFilter, roleFilter, search, `%${search}%`)
+          .first<{ n: number }>()
       : null,
     rootDomain(),
   ]);
   const clientDetail = section === 'visao' && search ? await getClientDetail(search) : null;
+  const total =
+    section === 'usuarios'
+      ? (peopleCountResult?.n ?? 0)
+      : section === 'dominios'
+        ? (domainsCountResult?.n ?? 0)
+        : section === 'logs'
+          ? (logsCountResult?.n ?? 0)
+          : section === 'emails'
+            ? (outboxCountResult?.n ?? 0)
+            : 0;
+  const pages = Math.max(1, Math.ceil(total / pageSize));
   return {
     settings: settingsResult?.results ?? [],
     prices: pricesResult?.results ?? [],
@@ -238,8 +296,9 @@ export async function getAdminDashboard(
     emailOutbox: emailOutboxResult?.results ?? [],
     signups: signupsResult?.results ?? [],
     clients: clientsResult?.results ?? [],
-    users: usersResult?.results ?? [],
-    admins: adminsResult?.results ?? [],
+    people: peopleResult?.results ?? [],
+    page,
+    pages,
     counts: counts ?? {
       users: 0,
       new_users_7d: 0,

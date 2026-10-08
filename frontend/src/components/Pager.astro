@@ -1,0 +1,56 @@
+---
+interface Props {
+  page: number;
+  pages: number;
+  base: string;
+  query?: Record<string, string>;
+}
+const { page, pages, base, query = {} } = Astro.props;
+const href = (target: number) => {
+  const params = new URLSearchParams(query);
+  if (target <= 1) params.delete('page');
+  else params.set('page', String(target));
+  const qs = params.toString();
+  return qs ? `${base}?${qs}` : base;
+};
+const first = Math.max(1, Math.min(page - 2, pages - 4));
+const last = Math.min(pages, first + 4);
+const numbers: number[] = [];
+for (let i = first; i <= last; i += 1) numbers.push(i);
+---
+
+{pages > 1 && (
+  <nav
+    class="mt-4 flex flex-wrap items-center justify-between gap-3"
+    aria-label="Paginação / Pagination"
+  >
+    <span class="text-sm text-[#625a51]">
+      Página {page} de {pages}
+    </span>
+    <div class="join">
+      <a
+        class:list={['btn btn-sm join-item', page <= 1 && 'btn-disabled']}
+        href={href(page - 1)}
+        aria-disabled={page <= 1}
+      >
+        ‹
+      </a>
+      {numbers.map((number) => (
+        <a
+          class:list={['btn btn-sm join-item', number === page && 'btn-active']}
+          href={href(number)}
+          aria-current={number === page ? 'page' : undefined}
+        >
+          {number}
+        </a>
+      ))}
+      <a
+        class:list={['btn btn-sm join-item', page >= pages && 'btn-disabled']}
+        href={href(page + 1)}
+        aria-disabled={page >= pages}
+      >
+        ›
+      </a>
+    </div>
+  </nav>
+)}
