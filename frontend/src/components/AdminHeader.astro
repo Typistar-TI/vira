@@ -14,9 +14,9 @@ const navigation = [
   { key: 'precos', href: '/admin/precos', label: 'Preços' },
   { key: 'configuracoes', href: '/admin/configuracoes', label: 'Configurações' },
   { key: 'emails', href: '/admin/emails', label: 'E-mails' },
-  { key: 'clientes', href: '/admin/clientes', label: 'Clientes' },
+  { key: 'usuarios', href: '/admin/usuarios', label: 'Usuários' },
   { key: 'dominios', href: '/admin/dominios', label: 'Domínios' },
-  { key: 'atividade', href: '/admin/atividade', label: 'Atividade' },
+  { key: 'logs', href: '/admin/logs', label: 'Logs' },
 ];
 ---
 
@@ -39,7 +39,7 @@ const navigation = [
           ]}
         >
           {section === item.key && (
-            <span class="pointer-events-none absolute inset-0 -z-10 rounded-full bg-[#fff4df] [view-transition-name:admin-active-tab]"></span>
+            <span class="pointer-events-none absolute inset-x-2 -bottom-1 h-[3px] rounded-full bg-[#b88333] [view-transition-name:admin-active-tab]"></span>
           )}
           <span>{item.label}</span>
         </a>

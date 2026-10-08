@@ -5,6 +5,7 @@ import {
   type Plan,
 } from '@backend/features/billing/service/billing';
 import { isResponse, json, readJson, requireUser } from '@backend/platform/http';
+import { logEvent } from '@backend/features/logs/repository/logs';
 
 export const POST = async (request: Request): Promise<Response> => {
   const user = await requireUser(request);
@@ -14,14 +15,9 @@ export const POST = async (request: Request): Promise<Response> => {
       plan: Plan;
       currency: Currency;
     };
-    if (!['monthly', 'yearly', 'lifetime'].includes(plan) || !['brl', 'usd'].includes(currency))
+    if (!['monthly', 'yearly'].includes(plan) || !['brl', 'usd'].includes(currency))
       return json({ error: 'Plano inválido' }, 400);
-    if (user.plan === 'lifetime') return json({ error: 'Você já tem acesso vitalício' }, 400);
-    if (
-      plan !== 'lifetime' &&
-      user.stripe_subscription_id &&
-      (user.plan === 'monthly' || user.plan === 'yearly')
-    ) {
+    if (user.stripe_subscription_id && (user.plan === 'monthly' || user.plan === 'yearly')) {
       return json({ error: 'Gerencie ou altere sua assinatura atual no portal de cobrança' }, 400);
     }
     const price = await priceFor(plan, currency);
@@ -31,15 +27,13 @@ export const POST = async (request: Request): Promise<Response> => {
       !stripePrice.active ||
       stripePrice.currency !== currency ||
       stripePrice.unit_amount !== price.amount_minor ||
-      (plan === 'lifetime'
-        ? !!stripePrice.recurring
-        : stripePrice.recurring?.interval !== (plan === 'monthly' ? 'month' : 'year'))
+      stripePrice.recurring?.interval !== (plan === 'monthly' ? 'month' : 'year')
     ) {
       return json({ error: 'O preço cadastrado não confere com o Stripe' }, 409);
     }
     const origin = new URL(request.url).origin;
     const session = await stripeClient.checkout.sessions.create({
-      mode: plan === 'lifetime' ? 'payment' : 'subscription',
+      mode: 'subscription',
       payment_method_types: ['card'],
       customer: user.stripe_customer_id || undefined,
       client_reference_id: user.id,
@@ -47,6 +41,13 @@ export const POST = async (request: Request): Promise<Response> => {
       success_url: `${origin}/app?payment=success`,
       cancel_url: `${origin}/app?payment=cancel`,
       metadata: { user_id: user.id, plan },
+    });
+    await logEvent(request, {
+      kind: 'billing',
+      action: 'checkout_started',
+      actorType: 'user',
+      actorId: user.email ?? user.id,
+      target: `${plan}:${currency}`,
     });
     return json({ url: session.url });
   } catch (error) {

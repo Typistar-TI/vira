@@ -129,6 +129,13 @@
 ::view-transition-old(admin-navigation) {
   opacity: 0;
 }
+::view-transition-old(admin-active-tab),
+::view-transition-new(admin-active-tab) {
+  animation: none;
+}
+::view-transition-old(admin-active-tab) {
+  opacity: 0;
+}
 ::view-transition-group(admin-active-tab) {
   animation-duration: 0.42s;
   animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);

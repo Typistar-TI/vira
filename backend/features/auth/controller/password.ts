@@ -10,6 +10,7 @@ import {
   rateLimited,
 } from '../service/credentials';
 import { json, readJson } from '@backend/platform/http';
+import { logEvent } from '@backend/features/logs/repository/logs';
 
 export const POST = async (request: Request): Promise<Response> => {
   if (!sameOrigin(request)) return json({ error: 'Origem inválida' }, 403);
@@ -22,8 +23,18 @@ export const POST = async (request: Request): Promise<Response> => {
   const email = normalizeEmail(body.email);
   if (!email) return json({ error: 'Informe um e-mail válido' }, 400);
   if (!(await loginLimits(request, email, 'password'))) return rateLimited();
-  const fail = () =>
-    json({ error: 'E-mail ou senha inválidos. / Invalid email or password.' }, 401);
+  const fail = async () => {
+    await logEvent(request, {
+      kind: 'security',
+      action: 'login_failed',
+      severity: 'warning',
+      actorType: 'visitor',
+      actorId: email,
+      target: email,
+      metadata: { method: 'password' },
+    });
+    return json({ error: 'E-mail ou senha inválidos. / Invalid email or password.' }, 401);
+  };
   if (typeof body.password !== 'string' || body.password.length > 128) return fail();
   const accepted = body.acceptTerms === true || body.acceptTerms === 'true';
   const row = await env.DB.prepare(

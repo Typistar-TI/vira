@@ -1,5 +1,6 @@
 import { normalizeDisplayName } from '../service/profile';
 import { saveDisplayName } from '../repository/profile';
+import { logEvent } from '@backend/features/logs/repository/logs';
 import { isResponse, json, readJson, requireAdmin } from '@backend/platform/http';
 
 export const POST = async (request: Request): Promise<Response> => {
@@ -10,6 +11,13 @@ export const POST = async (request: Request): Promise<Response> => {
     const displayName = normalizeDisplayName(body.displayName);
     if (!displayName) return json({ error: 'Informe um nome de até 80 caracteres.' }, 400);
     await saveDisplayName(admin, displayName);
+    await logEvent(request, {
+      kind: 'admin',
+      action: 'update_profile',
+      actorType: 'admin',
+      actorId: admin.id,
+      target: admin.email,
+    });
     return json({ ok: true, displayName });
   } catch {
     return json({ error: 'Não foi possível salvar o nome.' }, 400);

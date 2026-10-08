@@ -6,6 +6,7 @@ import {
   type EmailKind,
 } from '@backend/features/emails/service/emails';
 import { setting } from '@backend/platform/config';
+import { logEvent } from '@backend/features/logs/repository/logs';
 import { isResponse, json, readJson, requireAdmin } from '@backend/platform/http';
 
 export const POST = async (request: Request): Promise<Response> => {
@@ -25,14 +26,19 @@ export const POST = async (request: Request): Promise<Response> => {
     const current = await templateFor(key);
     if (current.enabled === Number(enabled) && current.subject === subject && current.html === html)
       return json({ ok: true });
-    await env.DB.batch([
-      env.DB.prepare(
-        'UPDATE email_templates SET enabled = ?, subject = ?, html = ?, updated_at = unixepoch() WHERE key = ?',
-      ).bind(Number(enabled), subject, html, key),
-      env.DB.prepare(
-        'INSERT INTO admin_audit (id, actor_id, action, target) VALUES (?, ?, ?, ?)',
-      ).bind(crypto.randomUUID(), admin.id, 'update_email_template', key),
-    ]);
+    await env.DB.prepare(
+      'UPDATE email_templates SET enabled = ?, subject = ?, html = ?, updated_at = unixepoch() WHERE key = ?',
+    )
+      .bind(Number(enabled), subject, html, key)
+      .run();
+    await logEvent(request, {
+      kind: 'admin',
+      action: 'update_email_template',
+      actorType: 'admin',
+      actorId: admin.id,
+      target: key,
+      metadata: { enabled },
+    });
     return json({ ok: true });
   } catch (error) {
     return json({ error: error instanceof Error ? error.message : 'Falha ao salvar' }, 400);

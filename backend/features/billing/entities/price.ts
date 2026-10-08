@@ -1,4 +1,4 @@
-export type Plan = 'monthly' | 'yearly' | 'lifetime';
+export type Plan = 'monthly' | 'yearly';
 export type Currency = 'brl' | 'usd';
 export interface PriceRow {
   plan: Plan;

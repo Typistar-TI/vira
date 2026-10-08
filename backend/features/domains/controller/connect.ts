@@ -8,6 +8,7 @@ import {
   normalizeDomain,
 } from '@backend/features/domains/service/domains';
 import { isResponse, json, readJson, requireUser } from '@backend/platform/http';
+import { logEvent } from '@backend/features/logs/repository/logs';
 
 export const POST = async (request: Request): Promise<Response> => {
   const user = await requireUser(request);
@@ -64,6 +65,13 @@ export const POST = async (request: Request): Promise<Response> => {
       throw error;
     }
     if (current?.cloudflare_id) await deleteHostname(current.cloudflare_id).catch(() => {});
+    await logEvent(request, {
+      kind: 'domain',
+      action: current ? 'domain_updated' : 'domain_connected',
+      actorType: 'user',
+      actorId: user.email ?? user.id,
+      target: hostname,
+    });
     return json({ ok: true, hostname, target: `connect.${await rootDomain()}` });
   } catch (error) {
     return json(

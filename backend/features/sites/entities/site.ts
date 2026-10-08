@@ -409,7 +409,6 @@ export function hasAccess(user: {
 }): boolean {
   const now = Math.floor(Date.now() / 1000);
   return (
-    user.plan === 'lifetime' ||
     (user.plan === 'trial' && user.trial_ends_at > now) ||
     ((user.plan === 'monthly' || user.plan === 'yearly') && (user.access_until ?? 0) > now)
   );

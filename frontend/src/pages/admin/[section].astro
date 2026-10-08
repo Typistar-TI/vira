@@ -6,7 +6,7 @@ const section = Astro.params.section;
 if (section === 'visao') return Astro.redirect('/admin');
 if (
   !section ||
-  !['precos', 'configuracoes', 'emails', 'clientes', 'dominios', 'atividade'].includes(section)
+  !['precos', 'configuracoes', 'emails', 'usuarios', 'dominios', 'logs'].includes(section)
 )
   return Astro.rewrite('/404');
 const admin = await sessionAdmin(Astro.request);

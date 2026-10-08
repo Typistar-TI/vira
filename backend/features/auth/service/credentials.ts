@@ -4,6 +4,7 @@ import { createAdminSession, createSession, loginScope, sha256 } from './session
 import { consumeLimit, getOrCreateEmailUser } from '../repository/users';
 import { languageFromRequest } from './language';
 import { clientIp, json } from '@backend/platform/http';
+import { logEvent } from '@backend/features/logs/repository/logs';
 
 export type CodePurpose = 'login' | 'password';
 const ITERATIONS = 100_000; // Workers Web Crypto's supported PBKDF2 iteration ceiling.
@@ -123,6 +124,7 @@ export async function establishLogin(
   request: Request,
   password?: Awaited<ReturnType<typeof passwordRecord>>,
   accepted = false,
+  method: 'password' | 'code' | 'google' = 'password',
 ): Promise<Response> {
   const [admin, existing, controller, contact] = await Promise.all([
     env.DB.prepare('SELECT email FROM admin_accounts WHERE email = ?').bind(email).first(),
@@ -131,7 +133,18 @@ export async function establishLogin(
     setting('PRIVACY_CONTACT_EMAIL'),
   ]);
   const adminLogin = loginScope(request) === 'admin';
-  if (adminLogin && !admin) return json({ error: 'Acesso administrativo não autorizado' }, 403);
+  if (adminLogin && !admin) {
+    await logEvent(request, {
+      kind: 'security',
+      action: 'login_denied',
+      severity: 'warning',
+      actorType: 'admin',
+      actorId: email,
+      target: email,
+      metadata: { method, reason: 'admin_not_authorized' },
+    });
+    return json({ error: 'Acesso administrativo não autorizado' }, 403);
+  }
   if (!existing && !adminLogin && (!controller || !contact))
     return json({ error: 'Cadastro temporariamente indisponível' }, 403);
   let user: { id: string } | null = null;
@@ -169,6 +182,15 @@ export async function establishLogin(
       env.DB.prepare('DELETE FROM admin_sessions WHERE admin_email = ?').bind(email),
     ]);
   }
+  const created = !adminLogin && !existing;
+  await logEvent(request, {
+    kind: adminLogin ? 'admin' : 'auth',
+    action: created ? 'signup' : 'login',
+    actorType: adminLogin ? 'admin' : 'user',
+    actorId: email,
+    target: email,
+    metadata: { method },
+  });
   return json({ redirect: adminLogin ? '/admin' : '/app' }, 200, {
     'set-cookie': adminLogin ? await createAdminSession(email) : await createSession(user!.id),
     'cache-control': 'no-store',

@@ -1,18 +1,33 @@
 import { env } from 'cloudflare:workers';
 import { rootDomain } from '@backend/platform/config';
 
-export async function getAdminDashboard(search: string, section: string = 'visao') {
+export interface LogFilters {
+  kind?: string;
+  level?: string;
+}
+
+export async function getAdminDashboard(
+  search: string,
+  section: string = 'visao',
+  filters: LogFilters = {},
+) {
+  const logKinds = ['auth', 'admin', 'billing', 'site', 'domain', 'security', 'system'];
+  const levels = ['info', 'warning', 'critical'];
+  const kindFilter = filters.kind && logKinds.includes(filters.kind) ? filters.kind : '';
+  const levelFilter = filters.level && levels.includes(filters.level) ? filters.level : '';
   const [
     settingsResult,
     pricesResult,
     customersResult,
     domainsResult,
-    auditResult,
+    logsResult,
     emailTemplatesResult,
     emailOutboxResult,
     counts,
     signupsResult,
     clientsResult,
+    usersResult,
+    adminsResult,
     domain,
   ] = await Promise.all([
     section === 'visao' || section === 'configuracoes'
@@ -33,11 +48,11 @@ export async function getAdminDashboard(search: string, section: string = 'visao
           active: number;
         }>()
       : null,
-    section === 'clientes' || section === 'visao'
+    section === 'visao'
       ? env.DB.prepare(
           `SELECT u.email, u.plan, u.created_at, u.trial_ends_at, u.access_until, u.stripe_subscription_id, s.slug, s.published_at,
         d.hostname, d.status AS domain_status FROM users u JOIN sites s ON s.user_id = u.id
-        LEFT JOIN domains d ON d.site_id = s.id WHERE u.email LIKE ? OR s.slug LIKE ? ORDER BY u.created_at DESC LIMIT ${section === 'visao' ? 6 : 50}`,
+        LEFT JOIN domains d ON d.site_id = s.id WHERE u.email LIKE ? OR s.slug LIKE ? ORDER BY u.created_at DESC LIMIT 6`,
         )
           .bind(`%${search}%`, `%${search}%`)
           .all<{
@@ -66,10 +81,25 @@ export async function getAdminDashboard(search: string, section: string = 'visao
           slug: string;
         }>()
       : null,
-    section === 'atividade'
+    section === 'logs'
       ? env.DB.prepare(
-          'SELECT action, target, created_at FROM admin_audit ORDER BY created_at DESC LIMIT 10',
-        ).all<{ action: string; target: string; created_at: number }>()
+          `SELECT created_at, kind, severity, actor_type, actor_id, action, target, ip, user_agent
+           FROM logs
+           WHERE (? = '' OR kind = ?) AND (? = '' OR severity = ?)
+           ORDER BY created_at DESC LIMIT 200`,
+        )
+          .bind(kindFilter, kindFilter, levelFilter, levelFilter)
+          .all<{
+            created_at: number;
+            kind: string;
+            severity: string;
+            actor_type: string | null;
+            actor_id: string | null;
+            action: string;
+            target: string | null;
+            ip: string | null;
+            user_agent: string | null;
+          }>()
       : null,
     section === 'emails'
       ? env.DB.prepare(
@@ -102,7 +132,6 @@ export async function getAdminDashboard(search: string, section: string = 'visao
             (SELECT count(*) FROM users WHERE plan = 'trial' AND trial_ends_at > unixepoch()) AS trials_active,
             (SELECT count(*) FROM users WHERE plan = 'monthly' AND access_until > unixepoch()) AS monthly_active,
             (SELECT count(*) FROM users WHERE plan = 'yearly' AND access_until > unixepoch()) AS yearly_active,
-            (SELECT count(*) FROM users WHERE plan = 'lifetime') AS lifetime,
             (SELECT count(*) FROM users WHERE plan = 'expired' OR (plan = 'trial' AND trial_ends_at <= unixepoch()) OR (plan IN ('monthly', 'yearly') AND (access_until IS NULL OR access_until <= unixepoch()))) AS access_ended,
             (SELECT count(*) FROM sites WHERE published_at IS NOT NULL) AS published,
             (SELECT count(*) FROM sites WHERE published_at IS NULL) AS drafts,
@@ -117,7 +146,6 @@ export async function getAdminDashboard(search: string, section: string = 'visao
           trials_active: number;
           monthly_active: number;
           yearly_active: number;
-          lifetime: number;
           access_ended: number;
           published: number;
           drafts: number;
@@ -140,25 +168,68 @@ export async function getAdminDashboard(search: string, section: string = 'visao
            ORDER BY u.created_at DESC LIMIT 300`,
         ).all<{ email: string | null; slug: string }>()
       : null,
-    section === 'clientes' ? rootDomain() : '',
+    section === 'usuarios'
+      ? env.DB.prepare(
+          `SELECT id, email, phone, plan, created_at, trial_ends_at, access_until, expired_at,
+           stripe_customer_id, stripe_subscription_id, google_sub,
+           (SELECT count(*) FROM sessions s WHERE s.user_id = users.id AND s.expires_at > unixepoch()) AS active_sessions,
+           (SELECT count(*) FROM sites si WHERE si.user_id = users.id) AS sites
+           FROM users WHERE (? = '' OR COALESCE(email, '') LIKE ?)
+           ORDER BY created_at DESC LIMIT 300`,
+        )
+          .bind(search, `%${search}%`)
+          .all<{
+            id: string;
+            email: string | null;
+            phone: string;
+            plan: string;
+            created_at: number;
+            trial_ends_at: number;
+            access_until: number | null;
+            expired_at: number | null;
+            stripe_customer_id: string | null;
+            stripe_subscription_id: string | null;
+            google_sub: string | null;
+            active_sessions: number;
+            sites: number;
+          }>()
+      : null,
+    section === 'usuarios'
+      ? env.DB.prepare(
+          `SELECT a.email, a.display_name, a.created_at, a.google_sub,
+           (SELECT count(*) FROM admin_sessions s WHERE s.admin_email = a.email AND s.expires_at > unixepoch()) AS active_sessions
+           FROM admin_accounts a WHERE (? = '' OR a.email LIKE ?) ORDER BY a.created_at`,
+        )
+          .bind(search, `%${search}%`)
+          .all<{
+            email: string;
+            display_name: string;
+            created_at: number;
+            google_sub: string | null;
+            active_sessions: number;
+          }>()
+      : null,
+    rootDomain(),
   ]);
+  const clientDetail = section === 'visao' && search ? await getClientDetail(search) : null;
   return {
     settings: settingsResult?.results ?? [],
     prices: pricesResult?.results ?? [],
     customers: customersResult?.results ?? [],
     domains: domainsResult?.results ?? [],
-    audit: auditResult?.results ?? [],
+    logs: logsResult?.results ?? [],
     emailTemplates: emailTemplatesResult?.results ?? [],
     emailOutbox: emailOutboxResult?.results ?? [],
     signups: signupsResult?.results ?? [],
     clients: clientsResult?.results ?? [],
+    users: usersResult?.results ?? [],
+    admins: adminsResult?.results ?? [],
     counts: counts ?? {
       users: 0,
       new_users_7d: 0,
       trials_active: 0,
       monthly_active: 0,
       yearly_active: 0,
-      lifetime: 0,
       access_ended: 0,
       published: 0,
       drafts: 0,
@@ -169,5 +240,89 @@ export async function getAdminDashboard(search: string, section: string = 'visao
       emails_sent_30d: 0,
     },
     domain,
+    clientDetail,
+  };
+}
+
+async function getClientDetail(term: string) {
+  const account = await env.DB.prepare(
+    `SELECT u.id, u.email, u.phone, u.plan, u.created_at, u.trial_ends_at, u.access_until, u.expired_at,
+      u.stripe_customer_id, u.stripe_subscription_id, u.google_sub,
+      s.id AS site_id, s.slug, s.published_at, s.created_at AS site_created_at,
+      (SELECT count(*) FROM sessions se WHERE se.user_id = u.id AND se.expires_at > unixepoch()) AS active_sessions,
+      (SELECT count(*) FROM media_assets m WHERE m.site_id = s.id) AS media
+     FROM users u JOIN sites s ON s.user_id = u.id
+     WHERE s.slug = ? OR u.email = ? LIMIT 1`,
+  )
+    .bind(term, term)
+    .first<{
+      id: string;
+      email: string | null;
+      phone: string;
+      plan: string;
+      created_at: number;
+      trial_ends_at: number;
+      access_until: number | null;
+      expired_at: number | null;
+      stripe_customer_id: string | null;
+      stripe_subscription_id: string | null;
+      google_sub: string | null;
+      site_id: string;
+      slug: string;
+      published_at: number | null;
+      site_created_at: number;
+      active_sessions: number;
+      media: number;
+    }>();
+  if (!account) return { found: false as const };
+  const actor = account.email ?? account.id;
+  const [domains, emails, emailCounts, logs, consents, assistant] = await Promise.all([
+    env.DB.prepare(
+      'SELECT hostname, status, ssl_status, created_at FROM domains WHERE site_id = ? ORDER BY created_at DESC',
+    )
+      .bind(account.site_id)
+      .all<{ hostname: string; status: string; ssl_status: string; created_at: number }>(),
+    env.DB.prepare(
+      'SELECT template_key, status, created_at, sent_at FROM email_outbox WHERE recipient = ? ORDER BY created_at DESC LIMIT 15',
+    )
+      .bind(actor)
+      .all<{ template_key: string; status: string; created_at: number; sent_at: number | null }>(),
+    env.DB.prepare(
+      'SELECT status, count(*) AS total FROM email_outbox WHERE recipient = ? GROUP BY status',
+    )
+      .bind(actor)
+      .all<{ status: string; total: number }>(),
+    env.DB.prepare(
+      'SELECT created_at, kind, severity, action, target, ip FROM logs WHERE actor_id = ? ORDER BY created_at DESC LIMIT 15',
+    )
+      .bind(actor)
+      .all<{
+        created_at: number;
+        kind: string;
+        severity: string;
+        action: string;
+        target: string | null;
+        ip: string | null;
+      }>(),
+    env.DB.prepare(
+      'SELECT kind, created_at FROM consents WHERE user_id = ? ORDER BY created_at DESC LIMIT 10',
+    )
+      .bind(account.id)
+      .all<{ kind: string; created_at: number }>(),
+    env.DB.prepare(
+      'SELECT count(*) AS messages, count(DISTINCT conversation_id) AS conversations FROM assistant_messages WHERE site_id = ?',
+    )
+      .bind(account.site_id)
+      .first<{ messages: number; conversations: number }>(),
+  ]);
+  return {
+    found: true as const,
+    account,
+    domains: domains.results,
+    emails: emails.results,
+    emailCounts: emailCounts.results,
+    logs: logs.results,
+    consents: consents.results,
+    assistant: assistant ?? { messages: 0, conversations: 0 },
   };
 }

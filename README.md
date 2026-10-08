@@ -66,7 +66,7 @@ Envios são limitados a um por minuto e três por hora por endereço, dez por ho
 
 Execute `npm test` para os testes comportamentais com **Vitest e Cloudflare Workers Pool**, no runtime workerd, com D1/R2 locais e migrações reais. Não há conexão com produção nem entrega de e-mails. A suíte cobre autenticação, sessões, CSRF, concorrência, isolamento entre clientes, publicação, uploads, exportação/exclusão, pagamentos assinados e quotas/histórico de IA. `npm run test:watch` acompanha alterações; `npm run test:auth` filtra autenticação. O deploy executa a suíte inteira antes de migrar o banco ou publicar o Worker. Consulte [SECURITY.md](SECURITY.md) para a revisão e limites das proteções.
 
-O acesso administrativo exige que o e-mail esteja autorizado em `admin_accounts` no D1. As rotas administrativas verificam a permissão em cada requisição e registram mudanças em `admin_audit`.
+O acesso administrativo exige que o e-mail esteja autorizado em `admin_accounts` no D1. As rotas administrativas verificam a permissão em cada requisição e registram tudo na tabela `logs` (com IP e user agent). A tela **Logs** mostra acessos, ações administrativas, cobrança, domínios e eventos de segurança, com filtro por tipo e nível.
 
 Os cookies de acesso duram até 30 dias e pertencem ao hostname principal. Os endereços `www` e `app` da plataforma redirecionam para esse hostname antes de exibir páginas; a landing identifica a sessão ativa e oferece retorno direto ao painel correspondente. Os domínios dos sites dos clientes não recebem o cookie da plataforma.
 

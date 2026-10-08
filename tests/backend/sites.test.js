@@ -85,7 +85,7 @@ it('saves only the authenticated customer draft and rejects foreign images', asy
   expect((await getSiteForUser(a.user.id)).published_json).toBe(own.published_json);
 });
 
-it.each(['trial', 'lifetime', 'expired'])('publishes only with valid access (%s)', async (plan) => {
+it.each(['trial', 'expired'])('publishes only with valid access (%s)', async (plan) => {
   const { cookie, user } = await customer(plan);
   const response = await api.fetch(request('/api/site/publish', {}, { cookie }));
   expect(response.status).toBe(plan === 'expired' ? 403 : 200);
@@ -97,7 +97,6 @@ it.each([
   ['monthly', 1, null, false],
   ['monthly', 1, 9999999999, true],
   ['yearly', 1, 1, false],
-  ['lifetime', 1, null, true],
   ['expired', 9999999999, 9999999999, false],
 ])('enforces plan access boundaries: %s', (plan, trial_ends_at, access_until, expected) => {
   expect(hasAccess({ plan, trial_ends_at, access_until })).toBe(expected);

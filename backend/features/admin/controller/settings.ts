@@ -1,5 +1,6 @@
 import { env } from 'cloudflare:workers';
 import { encrypt } from '@backend/platform/config';
+import { logEvent } from '@backend/features/logs/repository/logs';
 import { isResponse, json, readJson, requireAdmin } from '@backend/platform/http';
 
 const editable = new Set([
@@ -88,14 +89,18 @@ export const POST = async (request: Request): Promise<Response> => {
       return json({ error: 'Segredo de webhook inválido' }, 400);
     if (key === 'AI_MODEL' && !value) return json({ error: 'Informe o modelo de IA' }, 400);
     const stored = row.encrypted && value ? await encrypt(value) : value;
-    await env.DB.batch([
-      env.DB.prepare(
-        'UPDATE app_settings SET value = ?, updated_at = unixepoch() WHERE key = ?',
-      ).bind(stored, key),
-      env.DB.prepare(
-        'INSERT INTO admin_audit (id, actor_id, action, target) VALUES (?, ?, ?, ?)',
-      ).bind(crypto.randomUUID(), admin.id, body.clear ? 'clear_setting' : 'update_setting', key),
-    ]);
+    await env.DB.prepare(
+      'UPDATE app_settings SET value = ?, updated_at = unixepoch() WHERE key = ?',
+    )
+      .bind(stored, key)
+      .run();
+    await logEvent(request, {
+      kind: 'admin',
+      action: body.clear ? 'clear_setting' : 'update_setting',
+      actorType: 'admin',
+      actorId: admin.id,
+      target: key,
+    });
     return json({ ok: true, configured: Boolean(value) });
   } catch (error) {
     return json({ error: error instanceof Error ? error.message : 'Falha ao salvar' }, 400);

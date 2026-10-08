@@ -187,12 +187,11 @@ export function endDate(timestamp: number) {
   return `${pt} / ${en}`;
 }
 
-export function planNames(plan: 'trial' | 'monthly' | 'yearly' | 'lifetime') {
+export function planNames(plan: 'trial' | 'monthly' | 'yearly') {
   const names = {
     trial: { pt: 'teste grátis', en: 'free trial' },
     monthly: { pt: 'mensal', en: 'monthly' },
     yearly: { pt: 'anual', en: 'yearly' },
-    lifetime: { pt: 'vitalício', en: 'lifetime' },
   };
   return names[plan];
 }

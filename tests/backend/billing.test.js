@@ -48,79 +48,35 @@ it.each(['missing', 'forged', 'stale'])(
   },
 );
 
-it.each(['paid', 'unpaid'])(
-  'grants lifetime only after verified paid checkout (%s)',
-  async (payment_status) => {
-    const { user } = await customer();
-    const event = {
-      id: 'evt_' + crypto.randomUUID(),
-      type: 'checkout.session.completed',
-      data: {
-        object: {
-          id: 'cs_test',
-          client_reference_id: user.id,
-          customer: 'cus_test',
-          mode: 'payment',
-          payment_status,
-          payment_intent: 'pi_test',
-          metadata: { plan: 'lifetime' },
-        },
-      },
-    };
-    expect((await webhook(await signedEvent(event))).status).toBe(200);
-    expect(
-      (await env.DB.prepare('SELECT plan FROM users WHERE id = ?').bind(user.id).first()).plan,
-    ).toBe(payment_status === 'paid' ? 'lifetime' : 'trial');
-    expect((await webhook(await signedEvent(event))).status).toBe(200);
-    expect(
-      (
-        await env.DB.prepare('SELECT count(*) AS n FROM stripe_events WHERE id = ?')
-          .bind(event.id)
-          .first()
-      ).n,
-    ).toBe(1);
-    expect(
-      (
-        await env.DB.prepare('SELECT count(*) AS n FROM email_outbox WHERE dedupe_key = ?')
-          .bind('lifetime-created:pi_test')
-          .first()
-      ).n,
-    ).toBe(payment_status === 'paid' ? 1 : 0);
-  },
-);
-
-it('revokes lifetime only for a full refund of the matching payment', async () => {
-  const { user } = await customer('lifetime');
-  await env.DB.prepare(
-    'UPDATE users SET stripe_customer_id = ?, lifetime_payment_intent = ? WHERE id = ?',
-  )
-    .bind('cus_test', 'pi_matching', user.id)
+it('updates the plan from a subscription event', async () => {
+  const { user } = await customer();
+  await env.DB.prepare('UPDATE users SET stripe_customer_id = ? WHERE id = ?')
+    .bind('cus_sub', user.id)
     .run();
-  const charge = {
-    customer: 'cus_test',
-    payment_intent: 'pi_other',
-    refunded: true,
-    amount: 100,
-    amount_refunded: 100,
-  };
-  const event = () => ({
+  await env.DB.prepare(
+    "INSERT OR REPLACE INTO stripe_price_catalog (stripe_price_id, plan, currency, amount_minor) VALUES ('price_month_test', 'monthly', 'brl', 3000)",
+  ).run();
+  const periodEnd = Math.floor(Date.now() / 1000) + 30 * 86400;
+  const event = {
     id: 'evt_' + crypto.randomUUID(),
-    type: 'charge.refunded',
-    data: { object: charge },
-  });
-  expect((await webhook(await signedEvent(event()))).status).toBe(200);
-  expect(
-    (await env.DB.prepare('SELECT plan FROM users WHERE id = ?').bind(user.id).first()).plan,
-  ).toBe('lifetime');
-  charge.payment_intent = 'pi_matching';
-  charge.amount_refunded = 50;
-  expect((await webhook(await signedEvent(event()))).status).toBe(200);
-  expect(
-    (await env.DB.prepare('SELECT plan FROM users WHERE id = ?').bind(user.id).first()).plan,
-  ).toBe('lifetime');
-  charge.amount_refunded = 100;
-  expect((await webhook(await signedEvent(event()))).status).toBe(200);
-  expect(
-    (await env.DB.prepare('SELECT plan FROM users WHERE id = ?').bind(user.id).first()).plan,
-  ).toBe('expired');
+    type: 'customer.subscription.updated',
+    data: {
+      object: {
+        id: 'sub_test',
+        customer: 'cus_sub',
+        status: 'active',
+        cancel_at_period_end: false,
+        items: { data: [{ price: 'price_month_test', current_period_end: periodEnd }] },
+      },
+    },
+  };
+  expect((await webhook(await signedEvent(event))).status).toBe(200);
+  const row = await env.DB.prepare(
+    'SELECT plan, stripe_subscription_id, access_until FROM users WHERE id = ?',
+  )
+    .bind(user.id)
+    .first();
+  expect(row.plan).toBe('monthly');
+  expect(row.stripe_subscription_id).toBe('sub_test');
+  expect(row.access_until).toBe(periodEnd);
 });

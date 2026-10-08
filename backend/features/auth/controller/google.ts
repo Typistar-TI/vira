@@ -11,6 +11,7 @@ import { requiredSetting, setting } from '@backend/platform/config';
 import { consumeLimit, getOrCreateGoogleUser } from '@backend/features/auth/repository/users';
 import { languageFromRequest } from '@backend/features/auth/service/language';
 import { clientIp, readFormData } from '@backend/platform/http';
+import { logEvent } from '@backend/features/logs/repository/logs';
 
 const googleKeys = createRemoteJWKSet(new URL('https://www.googleapis.com/oauth2/v3/certs'));
 
@@ -26,7 +27,17 @@ function fail(message: string, scope: 'app' | 'admin'): Response {
 
 export const POST = async (request: Request): Promise<Response> => {
   const scope = loginScope(request);
-  const failLogin = (message: string) => fail(message, scope);
+  const failLogin = async (message: string) => {
+    await logEvent(request, {
+      kind: 'security',
+      action: 'login_failed',
+      severity: 'warning',
+      actorType: 'visitor',
+      target: scope,
+      metadata: { method: 'google', reason: message },
+    });
+    return fail(message, scope);
+  };
   // A proteção CSRF é feita pelo double-submit do g_csrf_token (cookie + campo),
   // conforme recomendação do Google. Não validamos o header Origin porque o POST
   // vem de accounts.google.com e, em alguns casos, é enviado como "null".
@@ -90,12 +101,28 @@ export const POST = async (request: Request): Promise<Response> => {
       const headers = new Headers({ location: '/admin', 'cache-control': 'no-store' });
       headers.append('set-cookie', await createAdminSession(admin!.email));
       headers.append('set-cookie', lastLoginCookie('google'));
+      await logEvent(request, {
+        kind: 'admin',
+        action: 'login',
+        actorType: 'admin',
+        actorId: admin!.email,
+        target: admin!.email,
+        metadata: { method: 'google' },
+      });
       return new Response(null, { status: 303, headers });
     }
     const user = await getOrCreateGoogleUser(sub, email, languageFromRequest(request));
     const headers = new Headers({ location: '/app', 'cache-control': 'no-store' });
     headers.append('set-cookie', await createSession(user.id));
     headers.append('set-cookie', lastLoginCookie('google'));
+    await logEvent(request, {
+      kind: 'auth',
+      action: 'login',
+      actorType: 'user',
+      actorId: user.email ?? user.id,
+      target: user.email ?? user.id,
+      metadata: { method: 'google' },
+    });
     return new Response(null, { status: 303, headers });
   } catch {
     return failLogin('Não foi possível entrar com Google. Tente novamente');

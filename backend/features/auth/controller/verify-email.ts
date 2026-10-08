@@ -11,6 +11,7 @@ import {
   type CodePurpose,
 } from '../service/credentials';
 import { json, readJson } from '@backend/platform/http';
+import { logEvent } from '@backend/features/logs/repository/logs';
 
 export const POST = async (request: Request): Promise<Response> => {
   if (!sameOrigin(request)) return json({ error: 'Origem inválida' }, 403);
@@ -49,12 +50,30 @@ export const POST = async (request: Request): Promise<Response> => {
     typeof body.code !== 'string' ||
     !/^\d{6}$/.test(body.code) ||
     !(await consumeCode(email, body.code, purpose))
-  )
+  ) {
+    await logEvent(request, {
+      kind: 'security',
+      action: 'login_failed',
+      severity: 'warning',
+      actorType: 'visitor',
+      actorId: email,
+      target: email,
+      metadata: { method: 'code', purpose },
+    });
     return json(
       { error: 'Código inválido ou expirado. Solicite outro código. / Invalid or expired code.' },
       400,
     );
+  }
   const password =
     purpose === 'password' ? await passwordRecord(body.password as string) : undefined;
-  return establishLogin(email, request, password, accepted);
+  if (password)
+    await logEvent(request, {
+      kind: 'auth',
+      action: 'password_set',
+      actorType: 'user',
+      actorId: email,
+      target: email,
+    });
+  return establishLogin(email, request, password, accepted, 'code');
 };

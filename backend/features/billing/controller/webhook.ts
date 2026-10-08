@@ -11,6 +11,7 @@ import {
   siteUrl,
 } from '@backend/features/emails/service/emails';
 import { readText } from '@backend/platform/http';
+import { writeLog } from '@backend/features/logs/repository/logs';
 
 async function updateSubscription(subscription: Stripe.Subscription) {
   const customerId =
@@ -28,7 +29,7 @@ async function updateSubscription(subscription: Stripe.Subscription) {
   if (plan !== 'monthly' && plan !== 'yearly') return;
   await env.DB.prepare(
     `UPDATE users SET stripe_subscription_id = ?, plan = ?, access_until = ?, expired_at = ?, subscription_ending_at = ?
-    WHERE stripe_customer_id = ? AND plan != 'lifetime'`,
+    WHERE stripe_customer_id = ?`,
   )
     .bind(
       subscription.id,
@@ -39,11 +40,24 @@ async function updateSubscription(subscription: Stripe.Subscription) {
       customerId,
     )
     .run();
+  await writeLog({
+    kind: 'billing',
+    action: active ? 'subscription_updated' : 'subscription_expired',
+    severity: active ? 'info' : 'warning',
+    actorType: 'system',
+    actorId: customerId,
+    target: subscription.id,
+    metadata: {
+      plan,
+      status: subscription.status,
+      cancel_at_period_end: subscription.cancel_at_period_end,
+    },
+  });
   if (active) {
     const owner = await env.DB.prepare(
-      'SELECT u.id, u.email, s.slug FROM users u JOIN sites s ON s.user_id = u.id WHERE u.stripe_customer_id = ? AND u.plan != ?',
+      'SELECT u.id, u.email, s.slug FROM users u JOIN sites s ON s.user_id = u.id WHERE u.stripe_customer_id = ?',
     )
-      .bind(customerId, 'lifetime')
+      .bind(customerId)
       .first<{ id: string; email: string | null; slug: string }>();
     if (owner?.email) {
       const [pageUrl, panelUrl] = await Promise.all([siteUrl(owner.slug), dashboardUrl()]);
@@ -86,7 +100,16 @@ async function updateSubscription(subscription: Stripe.Subscription) {
 export const POST = async (request: Request): Promise<Response> => {
   const signature = request.headers.get('stripe-signature');
   const webhookSecret = await setting('STRIPE_WEBHOOK_SECRET');
-  if (!signature || !webhookSecret) return new Response('Missing signature', { status: 400 });
+  if (!signature || !webhookSecret) {
+    await writeLog({
+      kind: 'security',
+      action: 'webhook_rejected',
+      severity: 'warning',
+      actorType: 'system',
+      target: 'missing_signature',
+    });
+    return new Response('Missing signature', { status: 400 });
+  }
   let event: Stripe.Event;
   try {
     event = await (
@@ -99,6 +122,13 @@ export const POST = async (request: Request): Promise<Response> => {
       Stripe.createSubtleCryptoProvider(),
     );
   } catch {
+    await writeLog({
+      kind: 'security',
+      action: 'webhook_rejected',
+      severity: 'warning',
+      actorType: 'system',
+      target: 'invalid_signature',
+    });
     return new Response('Invalid signature', { status: 400 });
   }
   const seen = await env.DB.prepare('SELECT id FROM stripe_events WHERE id = ?')
@@ -115,47 +145,15 @@ export const POST = async (request: Request): Promise<Response> => {
         await env.DB.prepare('UPDATE users SET stripe_customer_id = ? WHERE id = ?')
           .bind(customerId, userId)
           .run();
-        if (
-          session.mode === 'payment' &&
-          session.payment_status === 'paid' &&
-          session.metadata?.plan === 'lifetime'
-        ) {
-          const paymentIntent =
-            typeof session.payment_intent === 'string'
-              ? session.payment_intent
-              : session.payment_intent?.id;
-          const oldSubscription = await env.DB.prepare(
-            'SELECT stripe_subscription_id FROM users WHERE id = ?',
-          )
-            .bind(userId)
-            .first<{ stripe_subscription_id: string | null }>();
-          if (oldSubscription?.stripe_subscription_id)
-            await (await stripe()).subscriptions.cancel(oldSubscription.stripe_subscription_id);
-          await env.DB.prepare(
-            "UPDATE users SET plan = 'lifetime', access_until = NULL, expired_at = NULL, subscription_ending_at = NULL, lifetime_payment_intent = ?, stripe_subscription_id = NULL WHERE id = ?",
-          )
-            .bind(paymentIntent || null, userId)
-            .run();
-          const owner = await env.DB.prepare(
-            'SELECT u.email, s.slug FROM users u JOIN sites s ON s.user_id = u.id WHERE u.id = ?',
-          )
-            .bind(userId)
-            .first<{ email: string | null; slug: string }>();
-          if (owner?.email)
-            await queueEmail(
-              'subscription_created',
-              `lifetime-created:${paymentIntent || session.id}`,
-              owner.email,
-              {
-                email: owner.email,
-                plan: 'vitalício / lifetime',
-                plan_pt: 'vitalício',
-                plan_en: 'lifetime',
-                site_url: await siteUrl(owner.slug),
-                dashboard_url: await dashboardUrl(),
-              },
-            );
-        } else if (session.mode === 'subscription' && session.subscription) {
+        await writeLog({
+          kind: 'billing',
+          action: 'checkout_completed',
+          actorType: 'system',
+          actorId: customerId,
+          target: session.id,
+          metadata: { mode: session.mode, plan: session.metadata?.plan },
+        });
+        if (session.mode === 'subscription' && session.subscription) {
           const id =
             typeof session.subscription === 'string'
               ? session.subscription
@@ -169,26 +167,6 @@ export const POST = async (request: Request): Promise<Response> => {
       event.type === 'customer.subscription.deleted'
     ) {
       await updateSubscription(event.data.object);
-    } else if (event.type === 'charge.refunded') {
-      const charge = event.data.object;
-      if (
-        charge.refunded &&
-        charge.amount_refunded >= charge.amount &&
-        charge.customer &&
-        charge.payment_intent
-      ) {
-        const customerId =
-          typeof charge.customer === 'string' ? charge.customer : charge.customer.id;
-        const paymentIntent =
-          typeof charge.payment_intent === 'string'
-            ? charge.payment_intent
-            : charge.payment_intent.id;
-        await env.DB.prepare(
-          "UPDATE users SET plan = 'expired', access_until = 0, expired_at = ?, lifetime_payment_intent = NULL WHERE stripe_customer_id = ? AND lifetime_payment_intent = ? AND plan = 'lifetime'",
-        )
-          .bind(Math.floor(Date.now() / 1000), customerId, paymentIntent)
-          .run();
-      }
     }
     await env.DB.prepare('INSERT INTO stripe_events (id, created_at) VALUES (?, ?)')
       .bind(event.id, Math.floor(Date.now() / 1000))

@@ -1,5 +1,6 @@
 import { env } from 'cloudflare:workers';
 import { stripe, type Currency, type Plan } from '@backend/features/billing/service/billing';
+import { logEvent } from '@backend/features/logs/repository/logs';
 import { isResponse, json, readJson, requireAdmin } from '@backend/platform/http';
 
 export const GET = async (request: Request): Promise<Response> => {
@@ -21,7 +22,7 @@ export const POST = async (request: Request): Promise<Response> => {
     const active = body.active === true;
     const amount = Number(body.amount_minor);
     const priceId = String(body.stripe_price_id || '').trim();
-    if (!['monthly', 'yearly', 'lifetime'].includes(plan) || !['brl', 'usd'].includes(currency))
+    if (!['monthly', 'yearly'].includes(plan) || !['brl', 'usd'].includes(currency))
       return json({ error: 'Plano ou moeda inválidos' }, 400);
     if (!Number.isSafeInteger(amount) || amount < 0 || amount > 100_000_000)
       return json({ error: 'Preço inválido' }, 400);
@@ -34,9 +35,7 @@ export const POST = async (request: Request): Promise<Response> => {
         !price.active ||
         price.currency !== currency ||
         price.unit_amount !== amount ||
-        (plan === 'lifetime'
-          ? Boolean(price.recurring)
-          : price.recurring?.interval !== (plan === 'monthly' ? 'month' : 'year'))
+        price.recurring?.interval !== (plan === 'monthly' ? 'month' : 'year')
       ) {
         return json({ error: 'O preço na Stripe não corresponde ao plano, moeda ou valor' }, 400);
       }
@@ -63,12 +62,15 @@ export const POST = async (request: Request): Promise<Response> => {
           'INSERT OR IGNORE INTO stripe_price_catalog (stripe_price_id, plan, currency, amount_minor) VALUES (?, ?, ?, ?)',
         ).bind(priceId, plan, currency, amount),
       );
-    queries.push(
-      env.DB.prepare(
-        'INSERT INTO admin_audit (id, actor_id, action, target) VALUES (?, ?, ?, ?)',
-      ).bind(crypto.randomUUID(), admin.id, 'update_price', `${plan}:${currency}`),
-    );
     await env.DB.batch(queries);
+    await logEvent(request, {
+      kind: 'admin',
+      action: 'update_price',
+      actorType: 'admin',
+      actorId: admin.id,
+      target: `${plan}:${currency}`,
+      metadata: { amount, active },
+    });
     return json({ ok: true });
   } catch (error) {
     return json({ error: error instanceof Error ? error.message : 'Falha ao salvar preço' }, 400);

@@ -13,7 +13,7 @@ export async function cleanExpired(environment: WorkerEnv) {
     .bind(now, now, now)
     .run();
   const expired = await environment.DB.prepare(
-    "SELECT id FROM users WHERE expired_at <= ? AND plan != 'lifetime' LIMIT 50",
+    'SELECT id FROM users WHERE expired_at <= ? LIMIT 50',
   )
     .bind(now - 90 * 86400)
     .all<{ id: string }>();

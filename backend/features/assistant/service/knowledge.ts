@@ -151,17 +151,7 @@ function formatMoney(amountMinor: number, currency: string, en: boolean): string
  */
 export function viraKnowledge(en: boolean, prices: PriceRow[]): string {
   const planName = (plan: PriceRow['plan']) =>
-    en
-      ? plan === 'monthly'
-        ? 'Monthly'
-        : plan === 'yearly'
-          ? 'Yearly'
-          : 'Lifetime'
-      : plan === 'monthly'
-        ? 'Mensal'
-        : plan === 'yearly'
-          ? 'Anual'
-          : 'Vitalício';
+    en ? (plan === 'monthly' ? 'Monthly' : 'Yearly') : plan === 'monthly' ? 'Mensal' : 'Anual';
   const active = prices.filter((row) => row.amount_minor && row.amount_minor > 0);
   const priceLines = active
     .map(

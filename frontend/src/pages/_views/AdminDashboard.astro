@@ -12,35 +12,88 @@ const navigation = [
   { key: 'precos', href: '/admin/precos', label: 'Preços' },
   { key: 'configuracoes', href: '/admin/configuracoes', label: 'Configurações' },
   { key: 'emails', href: '/admin/emails', label: 'E-mails' },
-  { key: 'clientes', href: '/admin/clientes', label: 'Clientes' },
+  { key: 'usuarios', href: '/admin/usuarios', label: 'Usuários' },
   { key: 'dominios', href: '/admin/dominios', label: 'Domínios' },
-  { key: 'atividade', href: '/admin/atividade', label: 'Atividade' },
+  { key: 'logs', href: '/admin/logs', label: 'Logs' },
 ];
+
+const logFilters = {
+  kind: (url.searchParams.get('kind') || '').trim().slice(0, 20),
+  level: (url.searchParams.get('level') || '').trim().slice(0, 20),
+};
 
 const {
   settings,
   prices,
   customers,
   domains,
-  audit,
+  logs,
   emailTemplates,
   emailOutbox,
   counts,
   signups,
   clients,
+  users,
+  admins,
   domain,
-} = await adminDashboard(search, section);
-const pagantes = counts.monthly_active + counts.yearly_active + counts.lifetime;
+  clientDetail,
+} = await adminDashboard(search, section, logFilters);
+const roleFilter = ['admin', 'customer'].includes(url.searchParams.get('role') || '')
+  ? (url.searchParams.get('role') as string)
+  : '';
+const people = [
+  ...users.map((row) => ({
+    role: 'customer' as const,
+    id: row.id,
+    email: row.email ?? '',
+    name: '',
+    plan: row.plan,
+    createdAt: row.created_at,
+    trialEndsAt: row.trial_ends_at,
+    accessUntil: row.access_until,
+    expiredAt: row.expired_at,
+    activeSessions: row.active_sessions,
+    sites: row.sites,
+    google: Boolean(row.google_sub),
+  })),
+  ...admins.map((row) => ({
+    role: 'admin' as const,
+    id: row.email,
+    email: row.email,
+    name: row.display_name,
+    plan: 'admin',
+    createdAt: row.created_at,
+    trialEndsAt: null,
+    accessUntil: null,
+    expiredAt: null,
+    activeSessions: row.active_sessions,
+    sites: 0,
+    google: Boolean(row.google_sub),
+  })),
+];
+const peopleFiltered = roleFilter ? people.filter((person) => person.role === roleFilter) : people;
+const dateInput = (time: number | null) =>
+  time ? new Date(time * 1000).toISOString().slice(0, 10) : '';
+const consentLabels: Record<string, string> = {
+  cookies: 'Cookies',
+  terms: 'Termos de Uso',
+  privacy: 'Privacidade',
+};
+const clientEmailCounts: Record<string, number> = {};
+if (clientDetail?.found) {
+  for (const row of clientDetail.emailCounts) clientEmailCounts[row.status] = row.total;
+}
+const pagantes = counts.monthly_active + counts.yearly_active;
 const siteTotal = counts.published + counts.drafts;
 const publishedPct = siteTotal ? counts.published / siteTotal : 0;
 const pagantesPct = counts.users ? pagantes / counts.users : 0;
 const stats = [
-  { value: counts.users, label: 'Clientes', href: '/admin/clientes' },
-  { value: counts.new_users_7d, label: 'Novos (7 dias)', href: '/admin/clientes' },
-  { value: counts.trials_active, label: 'Testes ativos', href: '/admin/clientes' },
-  { value: pagantes, label: 'Pagantes', href: '/admin/clientes' },
-  { value: counts.published, label: 'Sites publicados', href: '/admin/clientes' },
-  { value: counts.drafts, label: 'Rascunhos', href: '/admin/clientes' },
+  { value: counts.users, label: 'Clientes', href: '/admin/usuarios' },
+  { value: counts.new_users_7d, label: 'Novos (7 dias)', href: '/admin/usuarios' },
+  { value: counts.trials_active, label: 'Testes ativos', href: '/admin/usuarios' },
+  { value: pagantes, label: 'Pagantes', href: '/admin/usuarios' },
+  { value: counts.published, label: 'Sites publicados', href: '/admin/usuarios' },
+  { value: counts.drafts, label: 'Rascunhos', href: '/admin/usuarios' },
   { value: counts.domains_active, label: 'Domínios ativos', href: '/admin/dominios' },
   { value: counts.emails_sent_30d, label: 'E-mails (30 dias)', href: '/admin/emails' },
 ];
@@ -110,10 +163,60 @@ const longTextKeys = new Set([
 const planName: Record<string, string> = {
   monthly: 'Mensal',
   yearly: 'Anual',
-  lifetime: 'Vitalício',
+};
+const planLabels: Record<string, string> = {
+  trial: 'Teste',
+  monthly: 'Mensal',
+  yearly: 'Anual',
+  expired: 'Expirado',
 };
 const date = (time: number | null) =>
   time ? new Date(time * 1000).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : '—';
+const dateTime = (time: number | null) =>
+  time ? new Date(time * 1000).toLocaleString('pt-BR', { timeZone: 'UTC', hour12: false }) : '—';
+const logKindLabels: Record<string, string> = {
+  auth: 'Acesso',
+  admin: 'Admin',
+  billing: 'Cobrança',
+  site: 'Site',
+  domain: 'Domínio',
+  security: 'Segurança',
+  system: 'Sistema',
+};
+const logKindOptions = Object.entries(logKindLabels).map(([key, label]) => ({ key, label }));
+const severityLabel: Record<string, string> = {
+  info: 'Info',
+  warning: 'Atenção',
+  critical: 'Crítico',
+};
+const severityClass: Record<string, string> = {
+  info: 'badge-outline border-[#d8ae73] text-[#6f4716]',
+  warning: 'badge-outline border-[#d9a13b] text-[#8a5a12]',
+  critical: 'badge-outline border-[#c98b8b] text-[#a13a3a]',
+};
+const actionLabels: Record<string, string> = {
+  login: 'Entrou',
+  signup: 'Criou a conta',
+  logout: 'Saiu',
+  login_failed: 'Falha de acesso',
+  login_denied: 'Acesso negado',
+  password_set: 'Definiu a senha',
+  update_setting: 'Configuração alterada',
+  clear_setting: 'Configuração limpa',
+  update_price: 'Preço alterado',
+  update_email_template: 'Modelo de e-mail alterado',
+  update_profile: 'Perfil alterado',
+  checkout_started: 'Compra iniciada',
+  checkout_completed: 'Compra concluída',
+  subscription_updated: 'Assinatura atualizada',
+  subscription_expired: 'Assinatura encerrada',
+  webhook_rejected: 'Webhook rejeitado',
+  domain_connected: 'Domínio conectado',
+  domain_updated: 'Domínio atualizado',
+  user_update: 'Usuário alterado',
+  error: 'Erro',
+};
+const actionLabel = (action: string) => actionLabels[action] ?? action;
 const emailLabels: Record<string, string> = {
   login: 'Código de acesso',
   site_created: 'Site criado',
@@ -124,7 +227,7 @@ const emailDescriptions: Record<string, string> = {
   login:
     'Enviado quando o cliente pede um código para entrar ou criar uma senha. Sem ele, o acesso por código fica indisponível.',
   site_created: 'Enviado uma vez, assim que a conta é criada e o site inicial entra no ar.',
-  subscription_created: 'Enviado após a Stripe confirmar o plano mensal, anual ou vitalício.',
+  subscription_created: 'Enviado após a Stripe confirmar o plano mensal ou anual.',
   subscription_ending:
     'Enviado cerca de 12 horas antes do fim do teste ou até 7 dias antes de uma assinatura com cancelamento agendado.',
 };
@@ -196,7 +299,173 @@ const deliveryStatus: Record<string, string> = {
             </noscript>
           </form>
 
-          <div class="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
+          {clientDetail?.found && (
+            <div class="mb-8 rounded-2xl border border-[#ead8bd] bg-white p-6">
+              <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <h2 class="font-[Outfit] text-2xl">{clientDetail.account.slug}</h2>
+                  <p class="text-sm text-[#625a51]">
+                    {clientDetail.account.email ?? 'Conta antiga'}
+                  </p>
+                </div>
+                <span class="badge badge-outline border-[#d8ae73] text-[#6f4716]">
+                  {planLabels[clientDetail.account.plan] ?? clientDetail.account.plan}
+                </span>
+              </div>
+
+              <div class="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                {[
+                  { value: clientDetail.account.active_sessions, label: 'Sessões ativas' },
+                  { value: clientDetail.account.media, label: 'Arquivos' },
+                  { value: clientDetail.domains.length, label: 'Domínios' },
+                  { value: clientDetail.assistant.conversations, label: 'Conversas (IA)' },
+                  { value: clientDetail.assistant.messages, label: 'Mensagens (IA)' },
+                  { value: clientEmailCounts.sent ?? 0, label: 'E-mails enviados' },
+                  { value: clientEmailCounts.failed ?? 0, label: 'Falhas de e-mail' },
+                  { value: clientDetail.consents.length, label: 'Consentimentos' },
+                ].map((item) => (
+                  <div class="rounded-xl border border-[#ead8bd] bg-[#fcfaf6] p-4">
+                    <strong class="block font-[Outfit] text-2xl font-medium tabular-nums text-[#b88333]">
+                      {item.value}
+                    </strong>
+                    <span class="text-xs text-[#625a51]">{item.label}</span>
+                  </div>
+                ))}
+              </div>
+
+              <dl class="grid gap-x-8 gap-y-2 text-sm sm:grid-cols-2 [&_dd]:font-medium [&_dt]:text-[#625a51]">
+                <dt>Cadastro</dt>
+                <dd>{dateTime(clientDetail.account.created_at)}</dd>
+                <dt>Página publicada</dt>
+                <dd>
+                  {clientDetail.account.published_at
+                    ? `Sim · ${date(clientDetail.account.published_at)}`
+                    : 'Rascunho'}
+                </dd>
+                <dt>Teste até</dt>
+                <dd>{date(clientDetail.account.trial_ends_at)}</dd>
+                <dt>Acesso até</dt>
+                <dd>{date(clientDetail.account.access_until)}</dd>
+                <dt>Encerrado em</dt>
+                <dd>{date(clientDetail.account.expired_at)}</dd>
+                <dt>Google vinculado</dt>
+                <dd>{clientDetail.account.google_sub ? 'Sim' : 'Não'}</dd>
+                <dt>Cliente Stripe</dt>
+                <dd>
+                  <code>{clientDetail.account.stripe_customer_id ?? '—'}</code>
+                </dd>
+                <dt>Assinatura Stripe</dt>
+                <dd>
+                  <code>{clientDetail.account.stripe_subscription_id ?? '—'}</code>
+                </dd>
+              </dl>
+
+              {clientDetail.domains.length > 0 && (
+                <div class="mt-6">
+                  <h3 class="mb-2 font-[Outfit] text-lg">Domínios</h3>
+                  <div class="overflow-x-auto border-y border-[#d8ae73] [&_td]:whitespace-nowrap">
+                    <table class="table">
+                      <thead>
+                        <tr>
+                          <th>Domínio</th>
+                          <th>Status</th>
+                          <th>TLS</th>
+                          <th>Adicionado</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {clientDetail.domains.map((row) => (
+                          <tr>
+                            <td>{row.hostname}</td>
+                            <td>{row.status}</td>
+                            <td>{row.ssl_status}</td>
+                            <td>{date(row.created_at)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+
+              <div class="mt-6 grid gap-6 lg:grid-cols-2">
+                <div>
+                  <h3 class="mb-2 font-[Outfit] text-lg">E-mails recentes</h3>
+                  {clientDetail.emails.length > 0 ? (
+                    <ul class="space-y-1 text-sm text-[#625a51]">
+                      {clientDetail.emails.map((row) => (
+                        <li class="flex items-center justify-between gap-3">
+                          <span>{emailLabels[row.template_key] ?? row.template_key}</span>
+                          <span>
+                            {deliveryStatus[row.status] ?? row.status} · {date(row.created_at)}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p class="text-sm text-[#625a51]">Nenhum e-mail registrado.</p>
+                  )}
+                </div>
+                <div>
+                  <h3 class="mb-2 font-[Outfit] text-lg">Consentimentos</h3>
+                  {clientDetail.consents.length > 0 ? (
+                    <ul class="space-y-1 text-sm text-[#625a51]">
+                      {clientDetail.consents.map((row) => (
+                        <li class="flex items-center justify-between gap-3">
+                          <span>{consentLabels[row.kind] ?? row.kind}</span>
+                          <span>{dateTime(row.created_at)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p class="text-sm text-[#625a51]">Nenhum consentimento.</p>
+                  )}
+                </div>
+              </div>
+
+              <div class="mt-6">
+                <h3 class="mb-2 font-[Outfit] text-lg">Logs do cliente</h3>
+                <div class="overflow-x-auto border-y border-[#d8ae73] [&_td]:whitespace-nowrap">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th>Data</th>
+                        <th>Tipo</th>
+                        <th>Ação</th>
+                        <th>Alvo</th>
+                        <th>IP</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {clientDetail.logs.map((row) => (
+                        <tr>
+                          <td>{dateTime(row.created_at)}</td>
+                          <td>{logKindLabels[row.kind] ?? row.kind}</td>
+                          <td>{actionLabel(row.action)}</td>
+                          <td>
+                            <code>{row.target ?? '—'}</code>
+                          </td>
+                          <td>
+                            <code>{row.ip ?? '—'}</code>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {clientDetail.logs.length === 0 && (
+                    <p class="py-3 text-sm text-[#625a51]">Nenhum log para este cliente.</p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div
+            class:list={[
+              'mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4',
+              clientDetail?.found && 'hidden',
+            ]}
+          >
             {stats.map((item) => (
               <a
                 href={item.href}
@@ -210,7 +479,7 @@ const deliveryStatus: Record<string, string> = {
             ))}
           </div>
 
-          <div class="grid gap-4 lg:grid-cols-2">
+          <div class:list={['grid gap-4 lg:grid-cols-2', clientDetail?.found && 'hidden']}>
             <div class="rounded-2xl border border-[#ead8bd] bg-white p-6">
               <h2 class="mb-5 font-[Outfit] text-xl">Sites publicados</h2>
               <div class="flex flex-wrap items-center gap-6">
@@ -296,10 +565,6 @@ const deliveryStatus: Record<string, string> = {
                     Anual: <strong class="text-[#17130d]">{counts.yearly_active}</strong>
                   </li>
                   <li class="flex items-center gap-2">
-                    <span class="h-3 w-3 shrink-0 rounded-sm bg-[#8b5b1e]"></span>
-                    Vitalício: <strong class="text-[#17130d]">{counts.lifetime}</strong>
-                  </li>
-                  <li class="flex items-center gap-2">
                     <span class="h-3 w-3 shrink-0 rounded-sm bg-[#eee7dc]"></span>
                     Testes: <strong class="text-[#17130d]">{counts.trials_active}</strong>
                   </li>
@@ -308,7 +573,12 @@ const deliveryStatus: Record<string, string> = {
             </div>
           </div>
 
-          <div class="mt-4 rounded-2xl border border-[#ead8bd] bg-white p-6">
+          <div
+            class:list={[
+              'mt-4 rounded-2xl border border-[#ead8bd] bg-white p-6',
+              clientDetail?.found && 'hidden',
+            ]}
+          >
             <div class="mb-6 flex flex-wrap items-baseline justify-between gap-2">
               <h2 class="font-[Outfit] text-xl">Novos clientes</h2>
               <span class="text-sm text-[#625a51]">Últimos 14 dias</span>
@@ -340,7 +610,7 @@ const deliveryStatus: Record<string, string> = {
                 {search ? 'Clientes encontrados' : 'Clientes recentes'}
               </h3>
               <a
-                href={`/admin/clientes${search ? `?q=${encodeURIComponent(search)}` : ''}`}
+                href={`/admin/usuarios${search ? `?q=${encodeURIComponent(search)}` : ''}`}
                 class="text-sm font-semibold text-[#8b5b1e] hover:underline"
               >
                 Ver todos ↗
@@ -767,78 +1037,210 @@ const deliveryStatus: Record<string, string> = {
           </div>
         </section>
       )}
-      {section === 'clientes' && (
-        <section id="clientes" class="mb-16 scroll-mt-24">
-          <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#17130d] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#625a51]">
+      {section === 'usuarios' && (
+        <section id="usuarios" class="mb-16 scroll-mt-24">
+          <div class="mb-6 [&_h1]:my-1 [&_h1]:text-3xl [&_h1]:text-[#17130d] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#625a51]">
             <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#9b6823]">
               Contas
             </span>
-            <h2>Clientes e assinaturas</h2>
+            <h1>Usuários</h1>
             <p>
-              Busque por e-mail ou endereço da página. Os planos mudam apenas pelos eventos de
-              cobrança da Stripe.
+              Clientes e administradores. Filtre por tipo e edite plano, datas de acesso e demais
+              dados da conta.
             </p>
           </div>
-          <form
-            class="mb-3.5 flex gap-2 [&_input]:w-full [&_input]:max-w-[360px]"
-            action="/admin/clientes"
-            method="get"
-          >
-            <input
-              class="input input-bordered w-full"
-              name="q"
-              type="search"
-              value={search}
-              placeholder="E-mail ou endereço da página"
-              maxlength="80"
-            />
-            <button class="btn btn-primary" type="submit">
-              Buscar
+          <form method="get" action="/admin/usuarios" class="mb-5 flex flex-wrap items-end gap-3">
+            <label class="flex flex-col gap-1 text-sm">
+              <span class="text-[#625a51]">Tipo</span>
+              <select name="role" class="select select-bordered h-10 rounded-lg">
+                <option value="" selected={!roleFilter}>
+                  Todos
+                </option>
+                <option value="customer" selected={roleFilter === 'customer'}>
+                  Clientes
+                </option>
+                <option value="admin" selected={roleFilter === 'admin'}>
+                  Administradores
+                </option>
+              </select>
+            </label>
+            <label class="flex flex-col gap-1 text-sm">
+              <span class="text-[#625a51]">Buscar</span>
+              <input
+                class="input input-bordered h-10 w-64 rounded-lg"
+                name="q"
+                type="search"
+                value={search}
+                placeholder="E-mail"
+                maxlength="80"
+              />
+            </label>
+            <button class="btn h-10 rounded-lg border-0 bg-[#17130d] text-white hover:bg-[#2a241b]">
+              Filtrar
             </button>
+            {(search || roleFilter) && (
+              <a href="/admin/usuarios" class="btn btn-ghost h-10 rounded-lg">
+                Limpar
+              </a>
+            )}
           </form>
-          <div class="overflow-x-auto border-y border-[#d8ae73] [&_td]:whitespace-nowrap [&_td_small]:block [&_td_small]:text-[#625a51]">
-            <table class="table">
+          <div class="overflow-x-auto border-y border-[#d8ae73] [&_td]:whitespace-nowrap">
+            <table class="table w-full min-w-[880px]">
               <thead>
                 <tr>
-                  <th>E-mail</th>
+                  <th>Pessoa</th>
+                  <th>Tipo</th>
                   <th>Plano</th>
                   <th>Acesso até</th>
                   <th>Cadastro</th>
-                  <th>Página</th>
-                  <th>Assinatura</th>
+                  <th>Sessões</th>
+                  <th>Páginas</th>
+                  <th>
+                    <span class="sr-only">Ação</span>
+                  </th>
                 </tr>
               </thead>
               <tbody>
-                {customers.map((row) => (
-                  <tr>
-                    <td>{row.email ?? 'Conta antiga'}</td>
-                    <td>{row.plan}</td>
-                    <td>
-                      {date(row.access_until ?? (row.plan === 'trial' ? row.trial_ends_at : null))}
-                    </td>
-                    <td>{date(row.created_at)}</td>
-                    <td>
-                      <a
-                        href={`https://${row.slug}.${domain}/`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        {row.slug}
-                      </a>
-                      <small>{row.published_at ? 'Publicada' : 'Rascunho'}</small>
-                    </td>
-                    <td>
-                      <code>{row.stripe_subscription_id ?? '—'}</code>
-                    </td>
-                  </tr>
+                {peopleFiltered.map((person) => (
+                  <>
+                    <tr>
+                      <td>
+                        <span class="font-medium">
+                          {person.email || person.name || 'Conta antiga'}
+                        </span>
+                        {person.role === 'admin' && person.name && (
+                          <small class="block text-[#625a51]">{person.name}</small>
+                        )}
+                      </td>
+                      <td>
+                        <span class="badge badge-sm badge-outline border-[#d8ae73] text-[#6f4716]">
+                          {person.role === 'admin' ? 'Admin' : 'Cliente'}
+                        </span>
+                      </td>
+                      <td>
+                        {person.role === 'admin' ? '—' : (planLabels[person.plan] ?? person.plan)}
+                      </td>
+                      <td>
+                        {person.role === 'admin'
+                          ? '—'
+                          : date(
+                              person.accessUntil ??
+                                (person.plan === 'trial' ? person.trialEndsAt : null),
+                            )}
+                      </td>
+                      <td>{date(person.createdAt)}</td>
+                      <td>{person.activeSessions}</td>
+                      <td>{person.role === 'admin' ? '—' : person.sites}</td>
+                      <td>
+                        <button
+                          class="btn btn-outline btn-sm"
+                          type="button"
+                          data-user-toggle
+                          aria-controls={`user-editor-${person.role}-${person.id}`}
+                          aria-expanded="false"
+                        >
+                          Editar
+                        </button>
+                      </td>
+                    </tr>
+                    <tr
+                      id={`user-editor-${person.role}-${person.id}`}
+                      class="hidden"
+                      data-user-editor-row
+                    >
+                      <td colspan="8" class="bg-[#fffdf9] p-5 sm:p-7">
+                        {person.role === 'admin' ? (
+                          <form
+                            data-user-form
+                            data-type="admin"
+                            data-email={person.email}
+                            class="flex flex-wrap items-end gap-3"
+                          >
+                            <label class="flex flex-col gap-1 text-sm">
+                              <span class="font-semibold text-[#17130d]">Nome de exibição</span>
+                              <input
+                                class="input input-bordered"
+                                name="displayName"
+                                type="text"
+                                maxlength="80"
+                                value={person.name}
+                              />
+                            </label>
+                            <button class="btn btn-primary" type="submit">
+                              Salvar
+                            </button>
+                            <span class="text-sm text-[#625a51]" data-user-status></span>
+                          </form>
+                        ) : (
+                          <form
+                            data-user-form
+                            data-type="user"
+                            data-id={person.id}
+                            class="flex flex-wrap items-end gap-3"
+                          >
+                            <label class="flex flex-col gap-1 text-sm">
+                              <span class="font-semibold text-[#17130d]">E-mail</span>
+                              <input
+                                class="input input-bordered w-64"
+                                name="email"
+                                type="email"
+                                value={person.email}
+                              />
+                            </label>
+                            <label class="flex flex-col gap-1 text-sm">
+                              <span class="font-semibold text-[#17130d]">Plano</span>
+                              <select class="select select-bordered" name="plan">
+                                {['trial', 'monthly', 'yearly', 'expired'].map((plan) => (
+                                  <option value={plan} selected={person.plan === plan}>
+                                    {planLabels[plan] ?? plan}
+                                  </option>
+                                ))}
+                              </select>
+                            </label>
+                            <label class="flex flex-col gap-1 text-sm">
+                              <span class="font-semibold text-[#17130d]">Teste até</span>
+                              <input
+                                class="input input-bordered"
+                                name="trial_ends_at"
+                                type="date"
+                                value={dateInput(person.trialEndsAt)}
+                              />
+                            </label>
+                            <label class="flex flex-col gap-1 text-sm">
+                              <span class="font-semibold text-[#17130d]">Acesso até</span>
+                              <input
+                                class="input input-bordered"
+                                name="access_until"
+                                type="date"
+                                value={dateInput(person.accessUntil)}
+                              />
+                            </label>
+                            <label class="flex flex-col gap-1 text-sm">
+                              <span class="font-semibold text-[#17130d]">Encerrado em</span>
+                              <input
+                                class="input input-bordered"
+                                name="expired_at"
+                                type="date"
+                                value={dateInput(person.expiredAt)}
+                              />
+                            </label>
+                            <button class="btn btn-primary" type="submit">
+                              Salvar
+                            </button>
+                            <span class="text-sm text-[#625a51]" data-user-status></span>
+                          </form>
+                        )}
+                      </td>
+                    </tr>
+                  </>
                 ))}
               </tbody>
             </table>
-            {customers.length === 0 && (
+            {peopleFiltered.length === 0 && (
               <p class="my-2 text-[#625a51]">
-                {search
-                  ? 'Nenhuma conta corresponde à busca.'
-                  : 'Nenhum cliente ainda. As contas aparecerão aqui após o primeiro cadastro.'}
+                {search || roleFilter
+                  ? 'Nenhuma conta corresponde ao filtro.'
+                  : 'Nenhuma conta ainda.'}
               </p>
             )}
           </div>
@@ -882,47 +1284,88 @@ const deliveryStatus: Record<string, string> = {
           </div>
         </section>
       )}
-      {section === 'atividade' && (
-        <section id="atividade" class="mb-16 scroll-mt-24">
-          <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#17130d] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#625a51]">
+      {section === 'logs' && (
+        <section id="logs" class="mb-16 scroll-mt-24">
+          <div class="mb-6 [&_h1]:my-1 [&_h1]:text-3xl [&_h1]:text-[#17130d] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#625a51]">
             <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#9b6823]">
               Segurança
             </span>
-            <h2>Atividade administrativa</h2>
+            <h1>Logs</h1>
+            <p>Acessos, ações administrativas, cobrança, domínios e eventos de segurança.</p>
           </div>
-          <div class="overflow-x-auto border-y border-[#d8ae73]">
-            <table class="table w-full min-w-[540px]">
+          <form method="get" class="mb-5 flex flex-wrap items-end gap-3">
+            <label class="flex flex-col gap-1 text-sm">
+              <span class="text-[#625a51]">Tipo</span>
+              <select name="kind" class="select select-bordered h-10 rounded-lg">
+                <option value="" selected={!logFilters.kind}>
+                  Todos
+                </option>
+                {logKindOptions.map((option) => (
+                  <option value={option.key} selected={logFilters.kind === option.key}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label class="flex flex-col gap-1 text-sm">
+              <span class="text-[#625a51]">Nível</span>
+              <select name="level" class="select select-bordered h-10 rounded-lg">
+                <option value="" selected={!logFilters.level}>
+                  Todos
+                </option>
+                {['info', 'warning', 'critical'].map((level) => (
+                  <option value={level} selected={logFilters.level === level}>
+                    {severityLabel[level]}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <button class="btn h-10 rounded-lg border-0 bg-[#17130d] text-white hover:bg-[#2a241b]">
+              Filtrar
+            </button>
+            {(logFilters.kind || logFilters.level) && (
+              <a href="/admin/logs" class="btn btn-ghost h-10 rounded-lg">
+                Limpar
+              </a>
+            )}
+          </form>
+          <div class="overflow-x-auto border-y border-[#d8ae73] [&_td]:whitespace-nowrap">
+            <table class="table w-full min-w-[920px]">
               <thead>
                 <tr>
                   <th>Data</th>
-                  <th>Alteração</th>
-                  <th>Item</th>
+                  <th>Nível</th>
+                  <th>Tipo</th>
+                  <th>Ator</th>
+                  <th>Ação</th>
+                  <th>Alvo</th>
+                  <th>IP</th>
                 </tr>
               </thead>
               <tbody>
-                {audit.map((item) => (
+                {logs.map((item) => (
                   <tr>
-                    <td>{date(item.created_at)}</td>
+                    <td>{dateTime(item.created_at)}</td>
                     <td>
-                      {item.action === 'update_price'
-                        ? 'Preço alterado'
-                        : item.action === 'update_email_template'
-                          ? 'Modelo de e-mail alterado'
-                          : item.action === 'update_profile'
-                            ? 'Nome da conta alterado'
-                            : item.action === 'clear_setting'
-                              ? 'Configuração limpa'
-                              : 'Configuração alterada'}
+                      <span class:list={['badge badge-sm', severityClass[item.severity]]}>
+                        {severityLabel[item.severity] ?? item.severity}
+                      </span>
+                    </td>
+                    <td>{logKindLabels[item.kind] ?? item.kind}</td>
+                    <td>{item.actor_id ?? item.actor_type ?? '—'}</td>
+                    <td>{actionLabel(item.action)}</td>
+                    <td>
+                      <code>{item.target ?? '—'}</code>
                     </td>
                     <td>
-                      <code>{item.target}</code>
+                      <code>{item.ip ?? '—'}</code>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            {audit.length === 0 && (
-              <p class="py-4 text-sm text-[#625a51]">Nenhuma alteração registrada ainda.</p>
+            {logs.length === 0 && (
+              <p class="py-4 text-sm text-[#625a51]">Nenhum registro para este filtro.</p>
             )}
           </div>
         </section>
@@ -937,6 +1380,7 @@ const deliveryStatus: Record<string, string> = {
     import { updateSetting } from '@frontend/api/admin/update-setting';
     import { updatePrice } from '@frontend/api/admin/update-price';
     import { updateEmailTemplate } from '@frontend/api/admin/update-email-template';
+    import { updateUser } from '@frontend/api/admin/update-user';
     import { reportError } from '@frontend/components/toast';
     document
       .querySelectorAll<HTMLSelectElement>('[data-client-filter]')
@@ -983,6 +1427,60 @@ const deliveryStatus: Record<string, string> = {
       }
       if (button) button.disabled = false;
     });
+    document.querySelectorAll<HTMLButtonElement>('[data-user-toggle]').forEach((button) =>
+      button.addEventListener('click', () => {
+        const row = document.getElementById(button.getAttribute('aria-controls') || '');
+        if (!row) return;
+        const opening = row.classList.contains('hidden');
+        document
+          .querySelectorAll<HTMLElement>('[data-user-editor-row]')
+          .forEach((item) => item.classList.add('hidden'));
+        document.querySelectorAll<HTMLButtonElement>('[data-user-toggle]').forEach((item) => {
+          item.setAttribute('aria-expanded', 'false');
+          item.textContent = 'Editar';
+        });
+        if (opening) {
+          row.classList.remove('hidden');
+          button.setAttribute('aria-expanded', 'true');
+          button.textContent = 'Fechar';
+        }
+      }),
+    );
+    document.querySelectorAll<HTMLFormElement>('[data-user-form]').forEach((form) =>
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const button = form.querySelector<HTMLButtonElement>('button[type=submit]');
+        const status = form.querySelector<HTMLElement>('[data-user-status]');
+        if (button) button.disabled = true;
+        const field = (name: string) =>
+          (form.elements.namedItem(name) as HTMLInputElement | HTMLSelectElement | null)?.value ??
+          '';
+        try {
+          await updateUser(
+            form.dataset.type === 'admin'
+              ? {
+                  type: 'admin',
+                  email: form.dataset.email,
+                  displayName: field('displayName'),
+                }
+              : {
+                  type: 'user',
+                  id: form.dataset.id,
+                  email: field('email'),
+                  plan: field('plan'),
+                  trial_ends_at: field('trial_ends_at'),
+                  access_until: field('access_until'),
+                  expired_at: field('expired_at'),
+                },
+          );
+          if (status) status.textContent = 'Salvo.';
+          window.location.reload();
+        } catch (error) {
+          reportError(error, 'Falha ao salvar');
+          if (button) button.disabled = false;
+        }
+      }),
+    );
     document.querySelectorAll<HTMLFormElement>('[data-api-price-form]').forEach((form) =>
       form.addEventListener('submit', async (event) => {
         event.preventDefault();
