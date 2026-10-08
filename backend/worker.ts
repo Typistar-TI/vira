@@ -3,6 +3,7 @@ import type { ExecutionContext, ScheduledEvent } from '@cloudflare/workers-types
 import { cleanExpired, type WorkerEnv } from './jobs/cleanup';
 import { deliverQueuedEmails } from './features/emails/controller/delivery';
 import { queueEndingReminders } from './jobs/email-reminders';
+import { flushSecurityAlerts } from './features/logs/service/alerts';
 import { api } from './app';
 
 export default {
@@ -24,6 +25,7 @@ export default {
       (async () => {
         await queueEndingReminders();
         await deliverQueuedEmails(50);
+        await flushSecurityAlerts();
         if (event.cron === '0 3 * * *') await cleanExpired(environment);
       })(),
     );

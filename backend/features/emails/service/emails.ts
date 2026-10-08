@@ -136,6 +136,14 @@ export async function sendLoginEmail(email: string, code: string, tokenHash: str
   await sendResend(email, content, `login-${tokenHash}`);
 }
 
+export function sendEmailNow(
+  recipient: string,
+  content: { subject: string; html: string },
+  idempotencyKey: string,
+) {
+  return sendResend(recipient, content, idempotencyKey);
+}
+
 export function queueEmailStatement(
   kind: Exclude<EmailKind, 'login'>,
   dedupeKey: string,

@@ -1348,6 +1348,12 @@ const deliveryStatus: Record<string, string> = {
                 Limpar
               </a>
             )}
+            <a
+              href={`/api/admin/logs/export?kind=${encodeURIComponent(logFilters.kind)}&level=${encodeURIComponent(logFilters.level)}&actor=${encodeURIComponent(logFilters.actor)}&ip=${encodeURIComponent(logFilters.ip)}`}
+              class="btn btn-outline h-10 rounded-lg"
+            >
+              Exportar CSV
+            </a>
           </form>
           <div class="overflow-x-auto border-y border-[#d8ae73] [&_td]:whitespace-nowrap">
             <table class="table w-full min-w-[920px]">
