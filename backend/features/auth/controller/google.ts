@@ -27,11 +27,9 @@ function fail(message: string, scope: 'app' | 'admin'): Response {
 export const POST = async (request: Request): Promise<Response> => {
   const scope = loginScope(request);
   const failLogin = (message: string) => fail(message, scope);
-  const origin = request.headers.get('origin');
-  const selfOrigin = new URL(request.url).origin;
-  // No modo "redirect", o Google envia o POST a partir de accounts.google.com.
-  if (origin && origin !== selfOrigin && origin !== 'https://accounts.google.com')
-    return failLogin('Origem inválida');
+  // A proteção CSRF é feita pelo double-submit do g_csrf_token (cookie + campo),
+  // conforme recomendação do Google. Não validamos o header Origin porque o POST
+  // vem de accounts.google.com e, em alguns casos, é enviado como "null".
   try {
     const form = await readFormData(request, 8192);
     const csrf = String(form.get('g_csrf_token') || '');

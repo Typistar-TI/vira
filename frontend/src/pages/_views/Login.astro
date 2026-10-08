@@ -119,7 +119,7 @@ const lastUsed = en ? 'Last used' : 'Último acesso';
           </div>
           <div class="relative">
             {lastLogin === 'password' && (
-              <span class="absolute -top-2 right-3 z-10 rounded-full bg-[#b88333] px-2 py-0.5 text-[10px] font-semibold text-white shadow-sm">
+              <span class="absolute -top-2 right-3 z-10 rounded-full border border-white bg-[#b88333] px-2 py-0.5 text-[10px] font-semibold text-white shadow-md">
                 {lastUsed}
               </span>
             )}
@@ -243,7 +243,7 @@ const lastUsed = en ? 'Last used' : 'Último acesso';
         >
           <div class="relative">
             {lastLogin === 'google' && (
-              <span class="absolute -top-2 right-3 z-10 rounded-full bg-[#b88333] px-2 py-0.5 text-[10px] font-semibold text-white shadow-sm">
+              <span class="absolute -top-2 right-3 z-10 rounded-full border border-white bg-[#b88333] px-2 py-0.5 text-[10px] font-semibold text-white shadow-md">
                 {lastUsed}
               </span>
             )}
@@ -257,7 +257,7 @@ const lastUsed = en ? 'Last used' : 'Último acesso';
                 ></div>
                 <span
                   aria-hidden="true"
-                  class="pointer-events-none absolute inset-0 flex items-center justify-center gap-2 rounded-full border border-[#d8ae73] bg-[#fff4df] text-sm font-medium text-[#6f4716]"
+                  class="pointer-events-none absolute inset-0 flex items-center justify-center gap-2 rounded-full border border-[#e2cba6] bg-[#fff4df] text-sm font-medium text-[#6f4716]"
                 >
                   <svg aria-hidden="true" width="18" height="18" viewBox="0 0 48 48">
                     <path
@@ -310,7 +310,7 @@ const lastUsed = en ? 'Last used' : 'Último acesso';
           </div>
           <div class="relative">
             {lastLogin === 'code' && (
-              <span class="absolute -top-2 right-3 z-10 rounded-full bg-[#b88333] px-2 py-0.5 text-[10px] font-semibold text-white shadow-sm">
+              <span class="absolute -top-2 right-3 z-10 rounded-full border border-white bg-[#b88333] px-2 py-0.5 text-[10px] font-semibold text-white shadow-md">
                 {lastUsed}
               </span>
             )}
@@ -319,7 +319,7 @@ const lastUsed = en ? 'Last used' : 'Último acesso';
               data-login-mode="code"
               aria-pressed="false"
               disabled={!emailReady}
-              class="btn btn-ghost h-10 min-h-10 w-full rounded-full bg-[#fff4df] px-5 font-medium text-[#6f4716] aria-pressed:bg-[#fff4df] aria-pressed:text-[#6f4716]"
+              class="btn btn-ghost h-10 min-h-10 w-full rounded-full border border-[#e2cba6] bg-[#fff4df] px-5 font-medium text-[#6f4716] aria-pressed:border-[#b88333] aria-pressed:bg-[#b88333] aria-pressed:text-white"
             >
               <svg
                 aria-hidden="true"
