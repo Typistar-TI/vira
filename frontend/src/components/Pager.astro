@@ -2,10 +2,13 @@
 interface Props {
   page: number;
   pages: number;
+  total: number;
+  size: number;
   base: string;
   query?: Record<string, string>;
 }
-const { page, pages, base, query = {} } = Astro.props;
+const { page, pages, total, size, base, query = {} } = Astro.props;
+const sizes = [10, 25, 50, 100];
 const href = (target: number) => {
   const params = new URLSearchParams(query);
   if (target <= 1) params.delete('page');
@@ -13,25 +16,34 @@ const href = (target: number) => {
   const qs = params.toString();
   return qs ? `${base}?${qs}` : base;
 };
+const sizeHref = (value: number) => {
+  const params = new URLSearchParams(query);
+  params.delete('page');
+  params.set('size', String(value));
+  return `${base}?${params.toString()}`;
+};
 const first = Math.max(1, Math.min(page - 2, pages - 4));
 const last = Math.min(pages, first + 4);
 const numbers: number[] = [];
 for (let i = first; i <= last; i += 1) numbers.push(i);
+const label = (value: number) =>
+  value === 0 ? 'Nenhum registro' : value === 1 ? '1 registro' : `${value} registros`;
 ---
 
-{pages > 1 && (
-  <nav
-    class="mt-4 flex flex-wrap items-center justify-between gap-3"
-    aria-label="Paginação / Pagination"
-  >
-    <span class="text-sm text-[#625a51]">
-      Página {page} de {pages}
-    </span>
+<div
+  class="mt-4 flex flex-wrap items-center justify-between gap-3"
+  aria-label="Paginação / Pagination"
+>
+  <span class="text-sm text-[#625a51]">
+    Página {page} de {pages} · {label(total)}
+  </span>
+  <div class="flex flex-wrap items-center gap-2">
     <div class="join">
       <a
         class:list={['btn btn-sm join-item', page <= 1 && 'btn-disabled']}
         href={href(page - 1)}
         aria-disabled={page <= 1}
+        aria-label="Página anterior"
       >
         ‹
       </a>
@@ -48,9 +60,20 @@ for (let i = first; i <= last; i += 1) numbers.push(i);
         class:list={['btn btn-sm join-item', page >= pages && 'btn-disabled']}
         href={href(page + 1)}
         aria-disabled={page >= pages}
+        aria-label="Próxima página"
       >
         ›
       </a>
     </div>
-  </nav>
-)}
+    <div class="join" aria-label="Registros por página">
+      {sizes.map((value) => (
+        <a
+          class:list={['btn btn-sm join-item', value === size && 'btn-active']}
+          href={sizeHref(value)}
+        >
+          {value}
+        </a>
+      ))}
+    </div>
+  </div>
+</div>

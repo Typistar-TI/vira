@@ -8,8 +8,11 @@ export interface AdminFilters {
   ip?: string;
   role?: string;
   page?: number;
+  size?: number;
 }
 export type LogFilters = AdminFilters;
+
+const pageSizes = [10, 25, 50, 100];
 
 export async function getAdminDashboard(
   search: string,
@@ -23,13 +26,13 @@ export async function getAdminDashboard(
   const actorFilter = (filters.actor ?? '').trim().slice(0, 80);
   const ipFilter = (filters.ip ?? '').trim().slice(0, 45);
   const roleFilter = ['customer', 'admin'].includes(filters.role ?? '') ? filters.role! : '';
-  const page = Math.max(1, Math.min(2000, Math.floor(Number(filters.page) || 1)));
-  const pageSize = section === 'logs' ? 50 : section === 'emails' ? 10 : 25;
+  const page = Math.max(1, Math.min(5000, Math.floor(Number(filters.page) || 1)));
+  const size = pageSizes.includes(Number(filters.size)) ? Number(filters.size) : 10;
+  const pageSize = size;
   const offset = (page - 1) * pageSize;
   const [
     settingsResult,
     pricesResult,
-    customersResult,
     domainsResult,
     domainsCountResult,
     logsResult,
@@ -51,7 +54,7 @@ export async function getAdminDashboard(
           encrypted: number;
         }>()
       : null,
-    section === 'precos'
+    section === 'precos' || section === 'visao' || section === 'configuracoes'
       ? env.DB.prepare(
           'SELECT plan, currency, amount_minor, stripe_price_id, active FROM plan_prices ORDER BY currency, plan',
         ).all<{
@@ -61,26 +64,6 @@ export async function getAdminDashboard(
           stripe_price_id: string | null;
           active: number;
         }>()
-      : null,
-    section === 'visao'
-      ? env.DB.prepare(
-          `SELECT u.email, u.plan, u.created_at, u.trial_ends_at, u.access_until, u.stripe_subscription_id, s.slug, s.published_at,
-        d.hostname, d.status AS domain_status FROM users u JOIN sites s ON s.user_id = u.id
-        LEFT JOIN domains d ON d.site_id = s.id WHERE u.email LIKE ? OR s.slug LIKE ? ORDER BY u.created_at DESC LIMIT 6`,
-        )
-          .bind(`%${search}%`, `%${search}%`)
-          .all<{
-            email: string | null;
-            plan: string;
-            created_at: number;
-            trial_ends_at: number;
-            access_until: number | null;
-            stripe_subscription_id: string | null;
-            slug: string;
-            published_at: number | null;
-            hostname: string | null;
-            domain_status: string | null;
-          }>()
       : null,
     section === 'dominios'
       ? env.DB.prepare(
@@ -289,7 +272,6 @@ export async function getAdminDashboard(
   return {
     settings: settingsResult?.results ?? [],
     prices: pricesResult?.results ?? [],
-    customers: customersResult?.results ?? [],
     domains: domainsResult?.results ?? [],
     logs: logsResult?.results ?? [],
     emailTemplates: emailTemplatesResult?.results ?? [],
@@ -299,6 +281,8 @@ export async function getAdminDashboard(
     people: peopleResult?.results ?? [],
     page,
     pages,
+    total,
+    size,
     counts: counts ?? {
       users: 0,
       new_users_7d: 0,

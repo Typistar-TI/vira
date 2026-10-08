@@ -3,6 +3,7 @@ export const emailKinds = [
   'site_created',
   'subscription_created',
   'subscription_ending',
+  'security_alert',
 ] as const;
 export type EmailKind = (typeof emailKinds)[number];
 export interface EmailTemplate {

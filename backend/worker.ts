@@ -24,8 +24,8 @@ export default {
     context.waitUntil(
       (async () => {
         await queueEndingReminders();
-        await deliverQueuedEmails(50);
         await flushSecurityAlerts();
+        await deliverQueuedEmails(50);
         if (event.cron === '0 3 * * *') await cleanExpired(environment);
       })(),
     );

@@ -21,6 +21,7 @@ export const emailVariables = {
     'end_date_en',
     'email',
   ],
+  security_alert: ['when', 'action', 'kind', 'severity', 'actor', 'target', 'ip', 'logs_url'],
 } satisfies Record<EmailKind, string[]>;
 
 export const escapeHtml = (value: string) =>

@@ -2,7 +2,6 @@
 import Base from '@frontend/components/Base.astro';
 import AdminHeader from '@frontend/components/AdminHeader.astro';
 import ResponsiveTables from '@frontend/components/ResponsiveTables.astro';
-import PreviewStudio from '@frontend/components/PreviewStudio.astro';
 import Pager from '@frontend/components/Pager.astro';
 import { adminDashboard } from '@frontend/api/admin/dashboard';
 
@@ -10,7 +9,6 @@ const { url, admin, section = 'visao' } = Astro.props;
 const search = (url.searchParams.get('q') || '').trim().slice(0, 80);
 const navigation = [
   { key: 'visao', href: '/admin', label: 'Visão geral' },
-  { key: 'precos', href: '/admin/precos', label: 'Preços' },
   { key: 'configuracoes', href: '/admin/configuracoes', label: 'Configurações' },
   { key: 'emails', href: '/admin/emails', label: 'E-mails' },
   { key: 'usuarios', href: '/admin/usuarios', label: 'Usuários' },
@@ -21,6 +19,7 @@ const navigation = [
 const roleFilter = ['admin', 'customer'].includes(url.searchParams.get('role') || '')
   ? (url.searchParams.get('role') as string)
   : '';
+const sizeParam = Number(url.searchParams.get('size'));
 const logFilters = {
   kind: (url.searchParams.get('kind') || '').trim().slice(0, 20),
   level: (url.searchParams.get('level') || '').trim().slice(0, 20),
@@ -28,12 +27,12 @@ const logFilters = {
   ip: (url.searchParams.get('ip') || '').trim().slice(0, 45),
   role: roleFilter,
   page: Math.max(1, Math.floor(Number(url.searchParams.get('page')) || 1)),
+  size: [10, 25, 50, 100].includes(sizeParam) ? sizeParam : 10,
 };
 
 const {
   settings,
   prices,
-  customers,
   domains,
   logs,
   emailTemplates,
@@ -44,7 +43,8 @@ const {
   people,
   page,
   pages,
-  domain,
+  total,
+  size,
   clientDetail,
 } = await adminDashboard(search, section, logFilters);
 const dateInput = (time: number | null) =>
@@ -61,18 +61,31 @@ if (clientDetail?.found) {
 const pagantes = counts.monthly_active + counts.yearly_active;
 const siteTotal = counts.published + counts.drafts;
 const publishedPct = siteTotal ? counts.published / siteTotal : 0;
-const pagantesPct = counts.users ? pagantes / counts.users : 0;
 const publicationRate = siteTotal ? Math.round((counts.published / siteTotal) * 100) : 0;
 const conversionRate = counts.users ? Math.round((pagantes / counts.users) * 100) : 0;
+const activePrice = (plan: string, currency: string) =>
+  prices.find(
+    (row) => row.plan === plan && row.currency === currency && row.active && row.amount_minor,
+  )?.amount_minor ?? 0;
+const mrr = (currency: string) =>
+  counts.monthly_active * activePrice('monthly', currency) +
+  Math.round((counts.yearly_active * activePrice('yearly', currency)) / 12);
+const money = (minor: number, currency: string) =>
+  new Intl.NumberFormat(currency === 'brl' ? 'pt-BR' : 'en-US', {
+    style: 'currency',
+    currency: currency.toUpperCase(),
+  }).format(minor / 100);
+const mrrBrl = mrr('brl');
+const mrrUsd = mrr('usd');
 const stats = [
   { value: counts.users, label: 'Clientes', href: '/admin/usuarios' },
   { value: counts.new_users_7d, label: 'Novos (7 dias)', href: '/admin/usuarios' },
-  { value: counts.trials_active, label: 'Testes ativos', href: '/admin/usuarios' },
   { value: pagantes, label: 'Pagantes', href: '/admin/usuarios' },
-  { value: counts.published, label: 'Sites publicados', href: '/admin/usuarios' },
-  { value: counts.drafts, label: 'Rascunhos', href: '/admin/usuarios' },
+  { value: counts.trials_active, label: 'Testes ativos', href: '/admin/usuarios' },
+  { value: counts.access_ended, label: 'Expirados', href: '/admin/usuarios' },
   { value: counts.domains_active, label: 'Domínios ativos', href: '/admin/dominios' },
   { value: counts.emails_sent_30d, label: 'E-mails (30 dias)', href: '/admin/emails' },
+  { value: counts.emails_queued, label: 'E-mails na fila', href: '/admin/emails' },
 ];
 const days = Array.from({ length: 14 }, (_, i) => {
   const key = new Date(Date.now() - (13 - i) * 86400000).toISOString().slice(0, 10);
@@ -199,6 +212,7 @@ const emailLabels: Record<string, string> = {
   site_created: 'Site criado',
   subscription_created: 'Assinatura confirmada',
   subscription_ending: 'Término próximo',
+  security_alert: 'Alerta de segurança',
 };
 const emailDescriptions: Record<string, string> = {
   login:
@@ -207,11 +221,14 @@ const emailDescriptions: Record<string, string> = {
   subscription_created: 'Enviado após a Stripe confirmar o plano mensal ou anual.',
   subscription_ending:
     'Enviado cerca de 12 horas antes do fim do teste ou até 7 dias antes de uma assinatura com cancelamento agendado.',
+  security_alert:
+    'Enviado aos administradores quando ocorre um evento crítico de segurança (acesso administrativo negado, webhook rejeitado, falhas críticas).',
 };
 const emailVariables: Record<string, string[]> = {
   login: ['login_code', 'email'],
   site_created: ['dashboard_url', 'site_url', 'end_date_pt', 'end_date_en', 'email'],
   subscription_created: ['dashboard_url', 'site_url', 'plan_pt', 'plan_en', 'email'],
+  security_alert: ['when', 'action', 'kind', 'severity', 'actor', 'target', 'ip', 'logs_url'],
   subscription_ending: [
     'dashboard_url',
     'site_url',
@@ -449,7 +466,7 @@ const deliveryStatus: Record<string, string> = {
 
           <div class:list={['grid gap-4 lg:grid-cols-2', clientDetail?.found && 'hidden']}>
             <div class="rounded-2xl border border-[#ead8bd] bg-white p-6">
-              <h2 class="mb-5 font-[Outfit] text-xl">Sites publicados</h2>
+              <h2 class="mb-5 font-[Outfit] text-xl">Sites</h2>
               <div class="flex flex-wrap items-center gap-6">
                 <div
                   class="tooltip relative h-[168px] w-[168px] shrink-0"
@@ -493,17 +510,13 @@ const deliveryStatus: Record<string, string> = {
                     <dd class="font-semibold tabular-nums text-[#17130d]">{counts.drafts}</dd>
                   </div>
                   <div class="flex items-center justify-between gap-3 py-2">
-                    <dt class="text-[#625a51]">Total de páginas</dt>
-                    <dd class="font-semibold tabular-nums text-[#17130d]">{siteTotal}</dd>
-                  </div>
-                  <div class="flex items-center justify-between gap-3 py-2">
                     <dt class="text-[#625a51]">Taxa de publicação</dt>
                     <dd class="font-semibold tabular-nums text-[#b88333]">{publicationRate}%</dd>
                   </div>
                   <div class="flex items-center justify-between gap-3 py-2">
-                    <dt class="text-[#625a51]">Domínios ativos</dt>
+                    <dt class="text-[#625a51]">Aguardando domínio</dt>
                     <dd class="font-semibold tabular-nums text-[#17130d]">
-                      {counts.domains_active}
+                      {counts.domains - counts.domains_active}
                     </dd>
                   </div>
                 </dl>
@@ -511,69 +524,36 @@ const deliveryStatus: Record<string, string> = {
             </div>
 
             <div class="rounded-2xl border border-[#ead8bd] bg-white p-6">
-              <h2 class="mb-5 font-[Outfit] text-xl">Clientes pagantes</h2>
-              <div class="flex flex-wrap items-center gap-6">
-                <div
-                  class="tooltip relative h-[168px] w-[168px] shrink-0"
-                  data-tip={`Pagantes: ${pagantes} · Testes: ${counts.trials_active}`}
-                >
-                  <svg viewBox="0 0 120 120" class="h-full w-full -rotate-90">
-                    <title>Pagantes: {pagantes} · Testes: {counts.trials_active}</title>
-                    <circle
-                      cx="60"
-                      cy="60"
-                      r="52"
-                      fill="none"
-                      stroke="#eee7dc"
-                      stroke-width="14"
-                    ></circle>
-                    <circle
-                      cx="60"
-                      cy="60"
-                      r="52"
-                      fill="none"
-                      stroke="#b88333"
-                      stroke-width="14"
-                      stroke-linecap="round"
-                      stroke-dasharray={`${(pagantesPct * 326.7).toFixed(1)} 326.7`}
-                    ></circle>
-                  </svg>
-                  <div class="absolute inset-0 flex flex-col items-center justify-center">
-                    <strong class="font-[Outfit] text-3xl font-medium leading-none tabular-nums">
-                      {pagantes}
-                    </strong>
-                    <span class="mt-1 text-xs text-[#625a51]">pagantes</span>
-                  </div>
+              <h2 class="mb-2 font-[Outfit] text-xl">Receita recorrente estimada</h2>
+              <p class="mb-4 text-sm text-[#625a51]">
+                Estimativa mensal pelos planos ativos e preços publicados.
+              </p>
+              <div class="grid grid-cols-2 gap-3">
+                <div class="rounded-xl border border-[#ead8bd] bg-[#fcfaf6] p-4">
+                  <span class="text-xs text-[#625a51]">BRL</span>
+                  <strong class="mt-1 block font-[Outfit] text-2xl font-medium tabular-nums text-[#b88333]">
+                    {money(mrrBrl, 'brl')}
+                  </strong>
                 </div>
-                <dl class="min-w-[190px] flex-1 divide-y divide-[#f0e6d5] text-sm">
-                  <div class="flex items-center justify-between gap-3 py-2">
-                    <dt class="text-[#625a51]">Mensal</dt>
-                    <dd class="font-semibold tabular-nums text-[#17130d]">
-                      {counts.monthly_active}
-                    </dd>
-                  </div>
-                  <div class="flex items-center justify-between gap-3 py-2">
-                    <dt class="text-[#625a51]">Anual</dt>
-                    <dd class="font-semibold tabular-nums text-[#17130d]">
-                      {counts.yearly_active}
-                    </dd>
-                  </div>
-                  <div class="flex items-center justify-between gap-3 py-2">
-                    <dt class="text-[#625a51]">Testes ativos</dt>
-                    <dd class="font-semibold tabular-nums text-[#17130d]">
-                      {counts.trials_active}
-                    </dd>
-                  </div>
-                  <div class="flex items-center justify-between gap-3 py-2">
-                    <dt class="text-[#625a51]">Total de clientes</dt>
-                    <dd class="font-semibold tabular-nums text-[#17130d]">{counts.users}</dd>
-                  </div>
-                  <div class="flex items-center justify-between gap-3 py-2">
-                    <dt class="text-[#625a51]">Conversão</dt>
-                    <dd class="font-semibold tabular-nums text-[#b88333]">{conversionRate}%</dd>
-                  </div>
-                </dl>
+                <div class="rounded-xl border border-[#ead8bd] bg-[#fcfaf6] p-4">
+                  <span class="text-xs text-[#625a51]">USD</span>
+                  <strong class="mt-1 block font-[Outfit] text-2xl font-medium tabular-nums text-[#b88333]">
+                    {money(mrrUsd, 'usd')}
+                  </strong>
+                </div>
               </div>
+              <dl class="mt-4 divide-y divide-[#f0e6d5] text-sm">
+                <div class="flex items-center justify-between gap-3 py-2">
+                  <dt class="text-[#625a51]">Mensal / Anual</dt>
+                  <dd class="font-semibold tabular-nums text-[#17130d]">
+                    {counts.monthly_active} / {counts.yearly_active}
+                  </dd>
+                </div>
+                <div class="flex items-center justify-between gap-3 py-2">
+                  <dt class="text-[#625a51]">Conversão (pago/total)</dt>
+                  <dd class="font-semibold tabular-nums text-[#b88333]">{conversionRate}%</dd>
+                </div>
+              </dl>
             </div>
           </div>
 
@@ -607,159 +587,6 @@ const deliveryStatus: Record<string, string> = {
               ))}
             </div>
           </div>
-
-          <div class="mt-10">
-            <div class="mb-3 flex flex-wrap items-baseline justify-between gap-2">
-              <h3 class="font-[Outfit] text-xl">
-                {search ? 'Clientes encontrados' : 'Clientes recentes'}
-              </h3>
-              <a
-                href={`/admin/usuarios${search ? `?q=${encodeURIComponent(search)}` : ''}`}
-                class="text-sm font-semibold text-[#8b5b1e] hover:underline"
-              >
-                Ver todos ↗
-              </a>
-            </div>
-            <div class="overflow-x-auto border-y border-[#d8ae73]">
-              <table class="table w-full">
-                <thead>
-                  <tr>
-                    <th>Cliente</th>
-                    <th>Endereço</th>
-                    <th>Plano</th>
-                    <th>Estado</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {customers.map((row) => (
-                    <tr>
-                      <td>{row.email || '—'}</td>
-                      <td>
-                        <a
-                          href={`https://${row.slug}.${domain}/`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          class="font-medium text-[#8b5b1e] hover:underline"
-                        >
-                          {row.slug}
-                        </a>
-                      </td>
-                      <td>{row.plan}</td>
-                      <td>
-                        <span
-                          class:list={[
-                            'badge badge-sm',
-                            row.published_at
-                              ? 'badge-outline border-[#d8ae73] text-[#6f4716]'
-                              : 'badge-outline border-[#c8c4bd] text-[#625a51]',
-                          ]}
-                        >
-                          {row.published_at ? 'Publicado' : 'Rascunho'}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                  {customers.length === 0 && (
-                    <tr>
-                      <td colspan="4" class="py-4 text-center text-[#625a51]">
-                        {search ? 'Nenhum cliente encontrado.' : 'Nenhum cliente ainda.'}
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </section>
-      )}
-      {section === 'precos' && (
-        <section id="precos" class="mb-16 scroll-mt-24">
-          <div class="mb-6 [&_h1]:my-1 [&_h1]:text-3xl [&_h1]:text-[#17130d] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#625a51]">
-            <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#9b6823]">
-              Cobrança
-            </span>
-            <h1>Preços e planos</h1>
-            <p>
-              Ao ativar um preço, o Vira confere o valor, a moeda e a periodicidade na Stripe. Use
-              um Price ID já criado na Stripe. Edite o que precisar e salve tudo de uma vez.
-            </p>
-          </div>
-          <form id="prices-form">
-            <div class="overflow-x-auto border-y border-[#d8ae73]">
-              <table class="table w-full min-w-[760px]">
-                <thead>
-                  <tr>
-                    <th>Plano</th>
-                    <th>Moeda</th>
-                    <th>Valor</th>
-                    <th>Price ID da Stripe</th>
-                    <th>Disponível</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {prices.map((row) => (
-                    <tr
-                      data-price-row
-                      data-plan={row.plan}
-                      data-currency={row.currency}
-                      data-initial-amount={
-                        row.amount_minor === null ? '' : (row.amount_minor / 100).toFixed(2)
-                      }
-                      data-initial-price={row.stripe_price_id ?? ''}
-                      data-initial-active={row.active ? '1' : '0'}
-                    >
-                      <td class="font-semibold">{planName[row.plan]}</td>
-                      <td>
-                        <span class="badge badge-outline border-[#d8ae73]">
-                          {row.currency.toUpperCase()}
-                        </span>
-                      </td>
-                      <td>
-                        <input
-                          class="input input-bordered w-28"
-                          data-price-amount
-                          aria-label={`Valor de ${planName[row.plan]} em ${row.currency.toUpperCase()}`}
-                          type="number"
-                          min="0"
-                          max="1000000"
-                          step="0.01"
-                          value={
-                            row.amount_minor === null ? '' : (row.amount_minor / 100).toFixed(2)
-                          }
-                          placeholder="0,00"
-                        />
-                      </td>
-                      <td>
-                        <input
-                          class="input input-bordered w-full min-w-48"
-                          data-price-id
-                          aria-label={`Price ID de ${planName[row.plan]} em ${row.currency.toUpperCase()}`}
-                          value={row.stripe_price_id ?? ''}
-                          placeholder="price_..."
-                          autocomplete="off"
-                        />
-                      </td>
-                      <td>
-                        <input
-                          class="checkbox checkbox-primary border border-[#b88333]"
-                          data-price-active
-                          aria-label={`Disponibilizar ${planName[row.plan]} em ${row.currency.toUpperCase()}`}
-                          type="checkbox"
-                          checked={Boolean(row.active)}
-                        />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <div class="mt-4 flex flex-wrap items-center gap-3">
-              <span class="mr-auto text-sm text-[#625a51]" data-price-status></span>
-              <button class="btn btn-primary rounded-lg" type="submit">
-                Salvar alterações
-              </button>
-            </div>
-          </form>
         </section>
       )}
       {section === 'configuracoes' && (
@@ -858,6 +685,90 @@ const deliveryStatus: Record<string, string> = {
               </button>
             </div>
           </form>
+
+          <div class="mt-6 rounded-2xl border border-[#ead8bd] bg-white p-6">
+            <h2 class="mb-2 font-[Outfit] text-xl">Preços e planos</h2>
+            <p class="mb-4 text-sm text-[#625a51]">
+              Ao ativar um preço, o Vira confere o valor, a moeda e a periodicidade na Stripe. Use
+              um Price ID já criado na Stripe. Edite o que precisar e salve tudo de uma vez.
+            </p>
+            <form id="prices-form">
+              <div class="overflow-x-auto border-y border-[#d8ae73]">
+                <table class="table w-full min-w-[760px]">
+                  <thead>
+                    <tr>
+                      <th>Plano</th>
+                      <th>Moeda</th>
+                      <th>Valor</th>
+                      <th>Price ID da Stripe</th>
+                      <th>Disponível</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {prices.map((row) => (
+                      <tr
+                        data-price-row
+                        data-plan={row.plan}
+                        data-currency={row.currency}
+                        data-initial-amount={
+                          row.amount_minor === null ? '' : (row.amount_minor / 100).toFixed(2)
+                        }
+                        data-initial-price={row.stripe_price_id ?? ''}
+                        data-initial-active={row.active ? '1' : '0'}
+                      >
+                        <td class="font-semibold">{planName[row.plan]}</td>
+                        <td>
+                          <span class="badge badge-outline border-[#d8ae73]">
+                            {row.currency.toUpperCase()}
+                          </span>
+                        </td>
+                        <td>
+                          <input
+                            class="input input-bordered w-28"
+                            data-price-amount
+                            aria-label={`Valor de ${planName[row.plan]} em ${row.currency.toUpperCase()}`}
+                            type="number"
+                            min="0"
+                            max="1000000"
+                            step="0.01"
+                            value={
+                              row.amount_minor === null ? '' : (row.amount_minor / 100).toFixed(2)
+                            }
+                            placeholder="0,00"
+                          />
+                        </td>
+                        <td>
+                          <input
+                            class="input input-bordered w-full min-w-48"
+                            data-price-id
+                            aria-label={`Price ID de ${planName[row.plan]} em ${row.currency.toUpperCase()}`}
+                            value={row.stripe_price_id ?? ''}
+                            placeholder="price_..."
+                            autocomplete="off"
+                          />
+                        </td>
+                        <td>
+                          <input
+                            class="checkbox checkbox-primary border border-[#b88333]"
+                            data-price-active
+                            aria-label={`Disponibilizar ${planName[row.plan]} em ${row.currency.toUpperCase()}`}
+                            type="checkbox"
+                            checked={Boolean(row.active)}
+                          />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div class="mt-4 flex flex-wrap items-center gap-3">
+                <span class="mr-auto text-sm text-[#625a51]" data-price-status></span>
+                <button class="btn btn-primary rounded-lg" type="submit">
+                  Salvar alterações
+                </button>
+              </div>
+            </form>
+          </div>
         </section>
       )}
       {section === 'emails' && (
@@ -886,118 +797,115 @@ const deliveryStatus: Record<string, string> = {
               </thead>
               <tbody>
                 {emailTemplates.map((row) => (
-                  <>
-                    <tr>
-                      <td class="font-medium">{emailLabels[row.key]}</td>
-                      <td>
-                        <span
-                          class:list={[
-                            'badge badge-sm',
-                            row.enabled
-                              ? 'badge-outline border-[#d8ae73] text-[#6f4716]'
-                              : 'badge-outline border-[#c8c4bd] text-[#625a51]',
-                          ]}
-                        >
-                          {row.enabled ? 'Ativo' : 'Desativado'}
-                        </span>
-                      </td>
-                      <td
-                        class="hidden max-w-80 truncate md:table-cell"
-                        title={row.subject}
-                        data-email-subject
+                  <tr data-email-row={row.key}>
+                    <td class="font-medium">{emailLabels[row.key]}</td>
+                    <td>
+                      <span
+                        class:list={[
+                          'badge badge-sm',
+                          row.enabled
+                            ? 'badge-outline border-[#d8ae73] text-[#6f4716]'
+                            : 'badge-outline border-[#c8c4bd] text-[#625a51]',
+                        ]}
+                        data-email-state
                       >
-                        {row.subject}
-                      </td>
-                      <td>
-                        <button
-                          class="btn btn-outline btn-sm"
-                          type="button"
-                          data-email-toggle
-                          aria-controls={`email-editor-${row.key}`}
-                          aria-expanded="false"
-                        >
-                          Editar
-                        </button>
-                      </td>
-                    </tr>
-                    <tr id={`email-editor-${row.key}`} class="hidden" data-email-editor-row>
-                      <td colspan="4" class="bg-[#fffdf9] p-5 sm:p-7">
-                        <form data-api-email-template-form data-key={row.key}>
-                          <p class="max-w-[70ch] text-sm leading-relaxed text-[#625a51]">
-                            {emailDescriptions[row.key]}
-                          </p>
-                          <label class="mt-5 flex items-center gap-2 text-sm font-semibold text-[#17130d]">
-                            <input
-                              class="checkbox checkbox-primary border border-[#b88333]"
-                              name="enabled"
-                              type="checkbox"
-                              checked={Boolean(row.enabled)}
-                            />{' '}
-                            Ativo
-                          </label>
-                          <p class="mt-4 text-xs text-[#625a51]">
-                            Variáveis:{' '}
-                            {emailVariables[row.key].map((name) => `{{${name}}}`).join(' · ')}
-                          </p>
-                          <label
-                            class="mt-5 block text-sm font-semibold text-[#17130d]"
-                            for={`email-subject-${row.key}`}
-                          >
-                            Assunto
-                          </label>
-                          <input
-                            id={`email-subject-${row.key}`}
-                            class="input input-bordered mt-2 w-full"
-                            name="subject"
-                            type="text"
-                            maxlength="180"
-                            value={row.subject}
-                            required
-                          />
-                          <label
-                            class="mt-5 block text-sm font-semibold text-[#17130d]"
-                            for={`email-html-${row.key}`}
-                          >
-                            HTML do e-mail
-                          </label>
-                          <textarea
-                            id={`email-html-${row.key}`}
-                            class="textarea textarea-bordered mt-2 min-h-52 w-full font-mono text-xs leading-relaxed"
-                            name="html"
-                            maxlength="32000"
-                            spellcheck="false"
-                            required
-                          >{row.html}</textarea>
-                          <div class="mt-4 flex flex-wrap items-center gap-3">
-                            <button class="btn btn-primary" type="submit">
-                              Salvar modelo
-                            </button>
-                            <button class="btn btn-outline" type="button" data-email-preview-button>
-                              Editor interativo
-                            </button>
-                          </div>
-                          <div
-                            class="mt-5 hidden border border-[#d8ae73] bg-white p-3"
-                            data-email-preview-container
-                          >
-                            <p class="mb-2 font-mono text-[11px] uppercase tracking-wider text-[#9b6823]">
-                              Prévia isolada
-                            </p>
-                            <iframe
-                              title={`Prévia: ${emailLabels[row.key]}`}
-                              class="h-80 w-full bg-white"
-                              sandbox=""
-                              data-email-preview
-                            ></iframe>
-                          </div>
-                        </form>
-                      </td>
-                    </tr>
-                  </>
+                        {row.enabled ? 'Ativo' : 'Desativado'}
+                      </span>
+                    </td>
+                    <td
+                      class="hidden max-w-80 truncate md:table-cell"
+                      title={row.subject}
+                      data-email-subject
+                    >
+                      {row.subject}
+                    </td>
+                    <td>
+                      <button
+                        class="btn btn-outline btn-sm"
+                        type="button"
+                        data-email-open={row.key}
+                      >
+                        Editar
+                      </button>
+                    </td>
+                  </tr>
                 ))}
               </tbody>
             </table>
           </div>
+
+          {emailTemplates.map((row) => (
+            <dialog id={`email-modal-${row.key}`} class="modal">
+              <div class="modal-box max-w-3xl">
+                <h3 class="font-[Outfit] text-xl">{emailLabels[row.key]}</h3>
+                <p class="mt-1 text-sm leading-relaxed text-[#625a51]">
+                  {emailDescriptions[row.key]}
+                </p>
+                <form data-api-email-template-form data-key={row.key} class="mt-4">
+                  <label class="flex items-center gap-2 text-sm font-semibold text-[#17130d]">
+                    <input
+                      class="checkbox checkbox-primary border border-[#b88333]"
+                      name="enabled"
+                      type="checkbox"
+                      checked={Boolean(row.enabled)}
+                    />{' '}
+                    Ativo
+                  </label>
+                  <p class="mt-3 text-xs text-[#625a51]">
+                    Variáveis: {emailVariables[row.key].map((name) => `{{${name}}}`).join(' · ')}
+                  </p>
+                  <label
+                    class="mt-4 block text-sm font-semibold text-[#17130d]"
+                    for={`email-subject-${row.key}`}
+                  >
+                    Assunto
+                  </label>
+                  <input
+                    id={`email-subject-${row.key}`}
+                    class="input input-bordered mt-2 w-full"
+                    name="subject"
+                    type="text"
+                    maxlength="180"
+                    value={row.subject}
+                    required
+                  />
+                  <label
+                    class="mt-4 block text-sm font-semibold text-[#17130d]"
+                    for={`email-html-${row.key}`}
+                  >
+                    HTML do e-mail
+                  </label>
+                  <textarea
+                    id={`email-html-${row.key}`}
+                    data-email-html
+                    class="textarea textarea-bordered mt-2 min-h-40 w-full font-mono text-xs leading-relaxed"
+                    name="html"
+                    maxlength="32000"
+                    spellcheck="false"
+                    required
+                  >{row.html}</textarea>
+                  <p class="mt-4 text-sm font-semibold text-[#17130d]">Prévia</p>
+                  <iframe
+                    title={`Prévia: ${emailLabels[row.key]}`}
+                    class="mt-2 h-64 w-full rounded-lg border border-[#d8ae73] bg-white"
+                    sandbox=""
+                    data-email-preview
+                  ></iframe>
+                  <div class="modal-action">
+                    <button class="btn btn-ghost" type="button" data-email-close>
+                      Fechar
+                    </button>
+                    <button class="btn btn-primary" type="submit">
+                      Salvar modelo
+                    </button>
+                  </div>
+                </form>
+              </div>
+              <form method="dialog" class="modal-backdrop">
+                <button>fechar</button>
+              </form>
+            </dialog>
+          ))}
           <div class="mt-8">
             <h3 class="font-[Outfit] text-xl text-[#17130d]">Últimos envios</h3>
             <p class="mt-1 text-sm text-[#625a51]">Histórico mantido por 30 dias.</p>
@@ -1028,7 +936,7 @@ const deliveryStatus: Record<string, string> = {
                 <p class="py-3 text-sm text-[#625a51]">Nenhum envio registrado.</p>
               )}
             </div>
-            <Pager page={page} pages={pages} base="/admin/emails" />
+            <Pager page={page} pages={pages} total={total} size={size} base="/admin/emails" />
           </div>
         </section>
       )}
@@ -1099,137 +1007,44 @@ const deliveryStatus: Record<string, string> = {
               </thead>
               <tbody>
                 {people.map((person) => (
-                  <>
-                    <tr>
-                      <td>
-                        <span class="font-medium">
-                          {person.email || person.name || 'Conta antiga'}
-                        </span>
-                        {person.role === 'admin' && person.name && (
-                          <small class="block text-[#625a51]">{person.name}</small>
-                        )}
-                      </td>
-                      <td>
-                        <span class="badge badge-sm badge-outline border-[#d8ae73] text-[#6f4716]">
-                          {person.role === 'admin' ? 'Admin' : 'Cliente'}
-                        </span>
-                      </td>
-                      <td>
-                        {person.role === 'admin' ? '—' : (planLabels[person.plan] ?? person.plan)}
-                      </td>
-                      <td>
-                        {person.role === 'admin'
-                          ? '—'
-                          : date(
-                              person.access_until ??
-                                (person.plan === 'trial' ? person.trial_ends_at : null),
-                            )}
-                      </td>
-                      <td>{date(person.created_at)}</td>
-                      <td>{person.active_sessions}</td>
-                      <td>{person.role === 'admin' ? '—' : person.sites}</td>
-                      <td>
-                        <button
-                          class="btn btn-outline btn-sm"
-                          type="button"
-                          data-user-toggle
-                          aria-controls={`user-editor-${person.role}-${person.id}`}
-                          aria-expanded="false"
-                        >
-                          Editar
-                        </button>
-                      </td>
-                    </tr>
-                    <tr
-                      id={`user-editor-${person.role}-${person.id}`}
-                      class="hidden"
-                      data-user-editor-row
-                    >
-                      <td colspan="8" class="bg-[#fffdf9] p-5 sm:p-7">
-                        {person.role === 'admin' ? (
-                          <form
-                            data-user-form
-                            data-type="admin"
-                            data-email={person.email}
-                            class="flex flex-wrap items-end gap-3"
-                          >
-                            <label class="flex flex-col gap-1 text-sm">
-                              <span class="font-semibold text-[#17130d]">Nome de exibição</span>
-                              <input
-                                class="input input-bordered"
-                                name="displayName"
-                                type="text"
-                                maxlength="80"
-                                value={person.name}
-                              />
-                            </label>
-                            <button class="btn btn-primary" type="submit">
-                              Salvar
-                            </button>
-                            <span class="text-sm text-[#625a51]" data-user-status></span>
-                          </form>
-                        ) : (
-                          <form
-                            data-user-form
-                            data-type="user"
-                            data-id={person.id}
-                            class="flex flex-wrap items-end gap-3"
-                          >
-                            <label class="flex flex-col gap-1 text-sm">
-                              <span class="font-semibold text-[#17130d]">E-mail</span>
-                              <input
-                                class="input input-bordered w-64"
-                                name="email"
-                                type="email"
-                                value={person.email}
-                              />
-                            </label>
-                            <label class="flex flex-col gap-1 text-sm">
-                              <span class="font-semibold text-[#17130d]">Plano</span>
-                              <select class="select select-bordered" name="plan">
-                                {['trial', 'monthly', 'yearly', 'expired'].map((plan) => (
-                                  <option value={plan} selected={person.plan === plan}>
-                                    {planLabels[plan] ?? plan}
-                                  </option>
-                                ))}
-                              </select>
-                            </label>
-                            <label class="flex flex-col gap-1 text-sm">
-                              <span class="font-semibold text-[#17130d]">Teste até</span>
-                              <input
-                                class="input input-bordered"
-                                name="trial_ends_at"
-                                type="date"
-                                value={dateInput(person.trial_ends_at)}
-                              />
-                            </label>
-                            <label class="flex flex-col gap-1 text-sm">
-                              <span class="font-semibold text-[#17130d]">Acesso até</span>
-                              <input
-                                class="input input-bordered"
-                                name="access_until"
-                                type="date"
-                                value={dateInput(person.access_until)}
-                              />
-                            </label>
-                            <label class="flex flex-col gap-1 text-sm">
-                              <span class="font-semibold text-[#17130d]">Encerrado em</span>
-                              <input
-                                class="input input-bordered"
-                                name="expired_at"
-                                type="date"
-                                value={dateInput(person.expired_at)}
-                              />
-                            </label>
-                            <button class="btn btn-primary" type="submit">
-                              Salvar
-                            </button>
-                            <span class="text-sm text-[#625a51]" data-user-status></span>
-                          </form>
-                        )}
-                      </td>
-                    </tr>
-                  </>
+                  <tr>
+                    <td>
+                      <span class="font-medium">
+                        {person.email || person.name || 'Conta antiga'}
+                      </span>
+                      {person.role === 'admin' && person.name && (
+                        <small class="block text-[#625a51]">{person.name}</small>
+                      )}
+                    </td>
+                    <td>
+                      <span class="badge badge-sm badge-outline border-[#d8ae73] text-[#6f4716]">
+                        {person.role === 'admin' ? 'Admin' : 'Cliente'}
+                      </span>
+                    </td>
+                    <td>
+                      {person.role === 'admin' ? '—' : (planLabels[person.plan] ?? person.plan)}
+                    </td>
+                    <td>
+                      {person.role === 'admin'
+                        ? '—'
+                        : date(
+                            person.access_until ??
+                              (person.plan === 'trial' ? person.trial_ends_at : null),
+                          )}
+                    </td>
+                    <td>{date(person.created_at)}</td>
+                    <td>{person.active_sessions}</td>
+                    <td>{person.role === 'admin' ? '—' : person.sites}</td>
+                    <td>
+                      <button
+                        class="btn btn-outline btn-sm"
+                        type="button"
+                        data-user-open={`${person.role}-${person.id}`}
+                      >
+                        Editar
+                      </button>
+                    </td>
+                  </tr>
                 ))}
               </tbody>
             </table>
@@ -1241,9 +1056,109 @@ const deliveryStatus: Record<string, string> = {
               </p>
             )}
           </div>
+
+          {people.map((person) => (
+            <dialog id={`user-modal-${person.role}-${person.id}`} class="modal">
+              <div class="modal-box max-w-lg">
+                <h3 class="font-[Outfit] text-xl">
+                  {person.email || person.name || 'Conta antiga'}
+                </h3>
+                {person.role === 'admin' ? (
+                  <form data-user-form data-type="admin" data-email={person.email} class="mt-4">
+                    <label class="flex flex-col gap-1 text-sm">
+                      <span class="font-semibold text-[#17130d]">Nome de exibição</span>
+                      <input
+                        class="input input-bordered"
+                        name="displayName"
+                        type="text"
+                        maxlength="80"
+                        value={person.name}
+                      />
+                    </label>
+                    <div class="modal-action">
+                      <button class="btn btn-ghost" type="button" data-user-close>
+                        Fechar
+                      </button>
+                      <button class="btn btn-primary" type="submit">
+                        Salvar
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <form
+                    data-user-form
+                    data-type="user"
+                    data-id={person.id}
+                    class="mt-4 grid gap-4 sm:grid-cols-2"
+                  >
+                    <label class="flex flex-col gap-1 text-sm sm:col-span-2">
+                      <span class="font-semibold text-[#17130d]">E-mail</span>
+                      <input
+                        class="input input-bordered"
+                        name="email"
+                        type="email"
+                        value={person.email}
+                      />
+                    </label>
+                    <label class="flex flex-col gap-1 text-sm">
+                      <span class="font-semibold text-[#17130d]">Plano</span>
+                      <select class="select select-bordered" name="plan">
+                        {['trial', 'monthly', 'yearly', 'expired'].map((plan) => (
+                          <option value={plan} selected={person.plan === plan}>
+                            {planLabels[plan] ?? plan}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label class="flex flex-col gap-1 text-sm">
+                      <span class="font-semibold text-[#17130d]">Teste até</span>
+                      <input
+                        class="input input-bordered"
+                        name="trial_ends_at"
+                        type="date"
+                        value={dateInput(person.trial_ends_at)}
+                      />
+                    </label>
+                    <label class="flex flex-col gap-1 text-sm">
+                      <span class="font-semibold text-[#17130d]">Acesso até</span>
+                      <input
+                        class="input input-bordered"
+                        name="access_until"
+                        type="date"
+                        value={dateInput(person.access_until)}
+                      />
+                    </label>
+                    <label class="flex flex-col gap-1 text-sm">
+                      <span class="font-semibold text-[#17130d]">Encerrado em</span>
+                      <input
+                        class="input input-bordered"
+                        name="expired_at"
+                        type="date"
+                        value={dateInput(person.expired_at)}
+                      />
+                    </label>
+                    <div class="modal-action sm:col-span-2">
+                      <button class="btn btn-ghost" type="button" data-user-close>
+                        Fechar
+                      </button>
+                      <button class="btn btn-primary" type="submit">
+                        Salvar
+                      </button>
+                    </div>
+                  </form>
+                )}
+              </div>
+              <form method="dialog" class="modal-backdrop">
+                <button>fechar</button>
+              </form>
+            </dialog>
+          ))}
+
           <Pager
             page={page}
             pages={pages}
+            total={total}
+            size={size}
             base="/admin/usuarios"
             query={{ q: search, role: roleFilter }}
           />
@@ -1285,7 +1200,14 @@ const deliveryStatus: Record<string, string> = {
               <p class="my-2 text-[#625a51]">Nenhum domínio de cliente conectado ainda.</p>
             )}
           </div>
-          <Pager page={page} pages={pages} base="/admin/dominios" query={{ q: search }} />
+          <Pager
+            page={page}
+            pages={pages}
+            total={total}
+            size={size}
+            base="/admin/dominios"
+            query={{ q: search }}
+          />
         </section>
       )}
       {section === 'logs' && (
@@ -1400,6 +1322,8 @@ const deliveryStatus: Record<string, string> = {
           <Pager
             page={page}
             pages={pages}
+            total={total}
+            size={size}
             base="/admin/logs"
             query={{
               kind: logFilters.kind,
@@ -1413,10 +1337,8 @@ const deliveryStatus: Record<string, string> = {
     </main>
   </div>
   <ResponsiveTables />
-  <PreviewStudio id="email-studio" title="Editor interativo de e-mails" />
   <script>
     import '@frontend/pages/_scripts/account-menu';
-    import { previewStudio } from '@frontend/pages/_scripts/preview-studio';
     import { updateSetting } from '@frontend/api/admin/update-setting';
     import { updatePrice } from '@frontend/api/admin/update-price';
     import { updateEmailTemplate } from '@frontend/api/admin/update-email-template';
@@ -1482,25 +1404,21 @@ const deliveryStatus: Record<string, string> = {
       }
       if (button) button.disabled = false;
     });
-    document.querySelectorAll<HTMLButtonElement>('[data-user-toggle]').forEach((button) =>
+    document.querySelectorAll<HTMLButtonElement>('[data-user-open]').forEach((button) =>
       button.addEventListener('click', () => {
-        const row = document.getElementById(button.getAttribute('aria-controls') || '');
-        if (!row) return;
-        const opening = row.classList.contains('hidden');
-        document
-          .querySelectorAll<HTMLElement>('[data-user-editor-row]')
-          .forEach((item) => item.classList.add('hidden'));
-        document.querySelectorAll<HTMLButtonElement>('[data-user-toggle]').forEach((item) => {
-          item.setAttribute('aria-expanded', 'false');
-          item.textContent = 'Editar';
-        });
-        if (opening) {
-          row.classList.remove('hidden');
-          button.setAttribute('aria-expanded', 'true');
-          button.textContent = 'Fechar';
-        }
+        const dialog = document.getElementById(
+          `user-modal-${button.dataset.userOpen}`,
+        ) as HTMLDialogElement | null;
+        dialog?.showModal();
       }),
     );
+    document
+      .querySelectorAll<HTMLButtonElement>('[data-user-close]')
+      .forEach((button) =>
+        button.addEventListener('click', () =>
+          (button.closest('dialog') as HTMLDialogElement | null)?.close(),
+        ),
+      );
     document.querySelectorAll<HTMLFormElement>('[data-user-form]').forEach((form) =>
       form.addEventListener('submit', async (event) => {
         event.preventDefault();
@@ -1593,85 +1511,88 @@ const deliveryStatus: Record<string, string> = {
       }
       if (button) button.disabled = false;
     });
-    document.querySelectorAll<HTMLButtonElement>('[data-email-toggle]').forEach((button) =>
+    const emailSamples: Record<string, string> = {
+      login_code: '123456',
+      dashboard_url: 'https://vira.ia.br/app',
+      site_url: 'https://meu-site.vira.ia.br',
+      end_date: '27 de setembro de 2026',
+      end_date_pt: '27 de setembro de 2026',
+      end_date_en: 'September 27, 2026',
+      plan: 'mensal',
+      plan_pt: 'mensal',
+      plan_en: 'monthly',
+      email: 'cliente@exemplo.com',
+      when: new Date().toISOString(),
+      action: 'login_denied',
+      kind: 'security',
+      severity: 'warning',
+      actor: 'intruso@exemplo.com',
+      target: 'admin@vira.ia.br',
+      ip: '203.0.113.4',
+      logs_url: 'https://vira.ia.br/admin/logs',
+    };
+    const renderEmailPreview = (form: HTMLFormElement) => {
+      const frame = form.querySelector<HTMLIFrameElement>('[data-email-preview]');
+      const textarea = form.querySelector<HTMLTextAreaElement>('[data-email-html]');
+      if (!frame || !textarea) return;
+      frame.srcdoc = textarea.value.replace(
+        /{{\s*([a-z_]+)\s*}}/g,
+        (_, name: string) => emailSamples[name] ?? '',
+      );
+    };
+    document.querySelectorAll<HTMLButtonElement>('[data-email-open]').forEach((button) =>
       button.addEventListener('click', () => {
-        const row = document.getElementById(button.getAttribute('aria-controls') || '');
-        if (!row) return;
-        const opening = row.classList.contains('hidden');
-        document
-          .querySelectorAll<HTMLElement>('[data-email-editor-row]')
-          .forEach((item) => item.classList.add('hidden'));
-        document.querySelectorAll<HTMLButtonElement>('[data-email-toggle]').forEach((item) => {
-          item.setAttribute('aria-expanded', 'false');
-          item.textContent = 'Editar';
-        });
-        if (opening) {
-          row.classList.remove('hidden');
-          button.setAttribute('aria-expanded', 'true');
-          button.textContent = 'Fechar';
-        }
+        const dialog = document.getElementById(
+          `email-modal-${button.dataset.emailOpen}`,
+        ) as HTMLDialogElement | null;
+        const form = dialog?.querySelector<HTMLFormElement>('[data-api-email-template-form]');
+        if (form) renderEmailPreview(form);
+        dialog?.showModal();
       }),
     );
-    const emailStudio = previewStudio('email-studio');
+    document
+      .querySelectorAll<HTMLButtonElement>('[data-email-close]')
+      .forEach((button) =>
+        button.addEventListener('click', () =>
+          (button.closest('dialog') as HTMLDialogElement | null)?.close(),
+        ),
+      );
     document.querySelectorAll<HTMLFormElement>('[data-api-email-template-form]').forEach((form) => {
-      const frame = form.querySelector<HTMLIFrameElement>('[data-email-preview]')!;
-      const originalRow = form.closest('tr');
-      const renderPreview = () => {
-        const html = form.querySelector<HTMLTextAreaElement>('[name=html]')!.value;
-        const samples: Record<string, string> = {
-          login_code: '123456',
-          dashboard_url: 'https://vira.ia.br/app',
-          site_url: 'https://meu-site.vira.ia.br',
-          end_date: '27 de setembro de 2026',
-          end_date_pt: '27 de setembro de 2026',
-          end_date_en: 'September 27, 2026',
-          plan: 'mensal',
-          plan_pt: 'mensal',
-          plan_en: 'monthly',
-          email: 'cliente@exemplo.com',
-        };
-        const preview = html.replace(
-          /{{\s*([a-z_]+)\s*}}/g,
-          (_, name: string) => samples[name] ?? '',
-        );
-        frame.srcdoc = preview;
-      };
-      form.querySelector('[data-email-preview-button]')?.addEventListener('click', () => {
-        renderPreview();
-        emailStudio.open(frame, form);
-      });
+      const textarea = form.querySelector<HTMLTextAreaElement>('[data-email-html]');
       let previewTimer: ReturnType<typeof setTimeout>;
-      form.addEventListener('input', () => {
+      textarea?.addEventListener('input', () => {
         clearTimeout(previewTimer);
-        previewTimer = setTimeout(renderPreview, 250);
+        previewTimer = setTimeout(() => renderEmailPreview(form), 200);
       });
       form.addEventListener('submit', async (event) => {
         event.preventDefault();
-        const button = form.querySelector<HTMLButtonElement>('button[type=submit]')!;
-        button.disabled = true;
+        const button = form.querySelector<HTMLButtonElement>('button[type=submit]');
+        if (button) button.disabled = true;
         try {
+          const enabled = form.querySelector<HTMLInputElement>('[name=enabled]')!.checked;
+          const subject = form.querySelector<HTMLInputElement>('[name=subject]')!.value;
           await updateEmailTemplate({
             key: form.dataset.key || '',
-            enabled: form.querySelector<HTMLInputElement>('[name=enabled]')!.checked,
-            subject: form.querySelector<HTMLInputElement>('[name=subject]')!.value,
+            enabled,
+            subject,
             html: form.querySelector<HTMLTextAreaElement>('[name=html]')!.value,
           });
-          const badge = originalRow?.previousElementSibling?.querySelector<HTMLElement>('.badge');
+          const row = document.querySelector<HTMLElement>(`[data-email-row="${form.dataset.key}"]`);
+          const badge = row?.querySelector<HTMLElement>('[data-email-state]');
           if (badge) {
-            const enabled = form.querySelector<HTMLInputElement>('[name=enabled]')!.checked;
             badge.className = `badge badge-sm badge-outline ${enabled ? 'border-[#d8ae73] text-[#6f4716]' : 'border-[#c8c4bd] text-[#625a51]'}`;
             badge.textContent = enabled ? 'Ativo' : 'Desativado';
           }
-          const subject =
-            originalRow?.previousElementSibling?.querySelector<HTMLElement>('[data-email-subject]');
-          if (subject) {
-            subject.textContent = form.querySelector<HTMLInputElement>('[name=subject]')!.value;
-            subject.title = subject.textContent;
+          const subjectCell = row?.querySelector<HTMLElement>('[data-email-subject]');
+          if (subjectCell) {
+            subjectCell.textContent = subject;
+            subjectCell.title = subject;
           }
+          (form.closest('dialog') as HTMLDialogElement | null)?.close();
         } catch (error) {
           reportError(error, 'Falha ao salvar');
         } finally {
-          button.disabled = false;
+          if (button) button.disabled = false;
         }
       });
     });
