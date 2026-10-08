@@ -11,6 +11,7 @@ export async function getAdminDashboard(search: string, section: string = 'visao
     emailTemplatesResult,
     emailOutboxResult,
     counts,
+    signupsResult,
     domain,
   ] = await Promise.all([
     section === 'visao' || section === 'configuracoes'
@@ -31,11 +32,11 @@ export async function getAdminDashboard(search: string, section: string = 'visao
           active: number;
         }>()
       : null,
-    section === 'clientes'
+    section === 'clientes' || section === 'visao'
       ? env.DB.prepare(
           `SELECT u.email, u.plan, u.created_at, u.trial_ends_at, u.access_until, u.stripe_subscription_id, s.slug, s.published_at,
         d.hostname, d.status AS domain_status FROM users u JOIN sites s ON s.user_id = u.id
-        LEFT JOIN domains d ON d.site_id = s.id WHERE u.email LIKE ? OR s.slug LIKE ? ORDER BY u.created_at DESC LIMIT 50`,
+        LEFT JOIN domains d ON d.site_id = s.id WHERE u.email LIKE ? OR s.slug LIKE ? ORDER BY u.created_at DESC LIMIT ${section === 'visao' ? 6 : 50}`,
         )
           .bind(`%${search}%`, `%${search}%`)
           .all<{
@@ -126,6 +127,12 @@ export async function getAdminDashboard(search: string, section: string = 'visao
           emails_sent_30d: number;
         }>()
       : null,
+    section === 'visao'
+      ? env.DB.prepare(
+          `SELECT date(created_at, 'unixepoch') AS day, count(*) AS total FROM users
+           WHERE created_at >= unixepoch() - 13 * 86400 GROUP BY day`,
+        ).all<{ day: string; total: number }>()
+      : null,
     section === 'clientes' ? rootDomain() : '',
   ]);
   return {
@@ -136,6 +143,7 @@ export async function getAdminDashboard(search: string, section: string = 'visao
     audit: auditResult?.results ?? [],
     emailTemplates: emailTemplatesResult?.results ?? [],
     emailOutbox: emailOutboxResult?.results ?? [],
+    signups: signupsResult?.results ?? [],
     counts: counts ?? {
       users: 0,
       new_users_7d: 0,

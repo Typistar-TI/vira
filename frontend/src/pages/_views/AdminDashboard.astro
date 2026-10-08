@@ -17,19 +17,37 @@ const navigation = [
   { key: 'atividade', href: '/admin/atividade', label: 'Atividade' },
 ];
 
-const { settings, prices, customers, domains, audit, emailTemplates, emailOutbox, counts, domain } =
-  await adminDashboard(search, section);
-const byKey = Object.fromEntries(settings.map((row) => [row.key, Boolean(row.value)]));
-const required = [
-  { label: 'Entrar por e-mail', ready: Boolean(byKey.RESEND_API_KEY && byKey.AUTH_EMAIL_FROM) },
-  { label: 'Cobrança', ready: Boolean(byKey.STRIPE_SECRET_KEY && byKey.STRIPE_WEBHOOK_SECRET) },
-  {
-    label: 'Privacidade',
-    ready: Boolean(byKey.PRIVACY_CONTROLLER_NAME && byKey.PRIVACY_CONTACT_EMAIL),
-  },
-  { label: 'Domínios próprios', ready: Boolean(byKey.CLOUDFLARE_API_TOKEN) },
-  { label: 'Métricas', ready: Boolean(byKey.CLOUDFLARE_ANALYTICS_TOKEN) },
+const {
+  settings,
+  prices,
+  customers,
+  domains,
+  audit,
+  emailTemplates,
+  emailOutbox,
+  counts,
+  signups,
+  domain,
+} = await adminDashboard(search, section);
+const pagantes = counts.monthly_active + counts.yearly_active + counts.lifetime;
+const siteTotal = counts.published + counts.drafts;
+const publishedPct = siteTotal ? counts.published / siteTotal : 0;
+const pagantesPct = counts.users ? pagantes / counts.users : 0;
+const stats = [
+  { value: counts.users, label: 'Clientes', href: '/admin/clientes' },
+  { value: counts.new_users_7d, label: 'Novos (7 dias)', href: '/admin/clientes' },
+  { value: counts.trials_active, label: 'Testes ativos', href: '/admin/clientes' },
+  { value: pagantes, label: 'Pagantes', href: '/admin/clientes' },
+  { value: counts.published, label: 'Sites publicados', href: '/admin/clientes' },
+  { value: counts.drafts, label: 'Rascunhos', href: '/admin/clientes' },
+  { value: counts.domains_active, label: 'Domínios ativos', href: '/admin/dominios' },
+  { value: counts.emails_sent_30d, label: 'E-mails (30 dias)', href: '/admin/emails' },
 ];
+const days = Array.from({ length: 14 }, (_, i) => {
+  const key = new Date(Date.now() - (13 - i) * 86400000).toISOString().slice(0, 10);
+  return { day: key, total: signups.find((row) => row.day === key)?.total ?? 0 };
+});
+const maxSignups = Math.max(1, ...days.map((row) => row.total));
 const groups = [
   { title: 'Identidade e acesso', keys: ['GOOGLE_CLIENT_ID', 'RESEND_API_KEY', 'AUTH_EMAIL_FROM'] },
   { title: 'Cobrança', keys: ['STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET'] },
@@ -82,7 +100,12 @@ const labels: Record<string, string> = {
   FOOTER_CREATOR: 'Criador (aparece abaixo da logo)',
   FOOTER_COPYRIGHT: 'Copyright (abaixo da logo; use {year} para o ano)',
 };
-const longTextKeys = new Set(['PRIVACY_POLICY', 'TERMS_OF_USE']);
+const longTextKeys = new Set([
+  'PRIVACY_POLICY',
+  'PRIVACY_POLICY_EN',
+  'TERMS_OF_USE',
+  'TERMS_OF_USE_EN',
+]);
 const planName: Record<string, string> = {
   monthly: 'Mensal',
   yearly: 'Anual',
@@ -140,117 +163,234 @@ const deliveryStatus: Record<string, string> = {
       class="mx-auto min-w-0 max-w-[1380px] px-5 pt-8 pb-24 sm:px-8 [&_code]:break-all [&_table]:text-sm [&_thead]:bg-[#fff9ef] [&_th]:font-semibold [&_th]:text-[#6f4716] [&_tbody_tr]:border-[#ead8bd] [&_tbody_tr:hover]:bg-[#fffaf2] max-sm:[&_table]:block max-sm:[&_table]:min-w-0 max-sm:[&_thead]:hidden max-sm:[&_tbody]:block max-sm:[&_tbody_tr]:block max-sm:[&_tbody_tr]:w-full max-sm:[&_tbody_tr]:border-b max-sm:[&_tbody_tr]:py-3 max-sm:[&_tbody_tr.hidden]:!hidden max-sm:[&_td]:block max-sm:[&_td]:min-w-0 max-sm:[&_td]:w-full max-sm:[&_td]:whitespace-normal max-sm:[&_td]:px-2 max-sm:[&_td]:py-2 max-sm:[&_td]:before:mb-1 max-sm:[&_td]:before:block max-sm:[&_td]:before:text-xs max-sm:[&_td]:before:font-semibold max-sm:[&_td]:before:text-[#8b5b1e] max-sm:[&_td]:before:content-[attr(data-label)] max-sm:[&_td_input]:min-w-0 max-sm:[&_td_input]:w-full max-sm:[&_td_input.checkbox]:!w-6 max-sm:[&_td_input.checkbox]:!min-w-6 max-sm:[&_td_textarea]:w-full"
     >
       {section === 'visao' && (
-        <h1 class="mb-8 font-[Outfit] text-[clamp(2rem,4vw,3rem)] font-medium leading-none tracking-[-0.04em] text-[#17130d]">
-          Bem-vindo
-        </h1>
-      )}
-
-      {section === 'visao' && (
-        <section id="visao" class="mb-16 scroll-mt-24">
-          <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#17130d] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#625a51]">
+        <section id="visao" class="scroll-mt-24">
+          <div class="mb-6 [&_h1]:my-1 [&_h1]:text-3xl [&_h1]:text-[#17130d] [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#17130d] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#625a51]">
             <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#9b6823]">
               Visão geral
             </span>
-            <h2>Estado da operação</h2>
+            <h1>Painel do Vira</h1>
           </div>
-          <div class="grid gap-8 lg:grid-cols-[minmax(0,1.5fr)_minmax(280px,1fr)]">
-            <div>
-              <div class="grid grid-cols-2 gap-x-6 border-y border-[#d8ae73] py-5 sm:grid-cols-3">
-                {[
-                  { value: counts.users, label: 'Clientes cadastrados', href: '/admin/clientes' },
-                  { value: counts.new_users_7d, label: 'Novos em 7 dias', href: '/admin/clientes' },
-                  { value: counts.trials_active, label: 'Testes ativos', href: '/admin/clientes' },
-                  {
-                    value: counts.monthly_active + counts.yearly_active + counts.lifetime,
-                    label: 'Clientes pagantes',
-                    href: '/admin/clientes',
-                  },
-                  { value: counts.published, label: 'Sites publicados', href: '/admin/clientes' },
-                  {
-                    value: counts.domains_active,
-                    label: 'Domínios ativos',
-                    href: '/admin/dominios',
-                  },
-                ].map((item) => (
-                  <a
-                    href={item.href}
-                    class="group flex flex-col gap-1 border-b border-[#ead8bd] py-5 no-underline last:border-b-0 hover:text-[#8b5b1e] sm:[&:nth-last-child(-n+3)]:border-b-0"
-                  >
-                    <strong class="font-[Outfit] text-[clamp(2rem,4vw,3.2rem)] font-medium leading-none tracking-tight tabular-nums text-[#17130d] transition-colors group-hover:text-[#8b5b1e]">
-                      {item.value}
+
+          <form method="get" class="mb-8 flex flex-wrap items-end gap-3">
+            <label class="flex flex-col gap-1 text-sm">
+              <span class="text-[#625a51]">Cliente</span>
+              <input
+                type="search"
+                name="q"
+                value={search}
+                placeholder="E-mail ou endereço"
+                class="input input-bordered h-10 w-[260px] rounded-lg"
+              />
+            </label>
+            <button class="btn h-10 rounded-lg border-0 bg-[#17130d] text-white hover:bg-[#2a241b]">
+              Buscar
+            </button>
+            {search && (
+              <a href="/admin" class="btn btn-ghost h-10 rounded-lg">
+                Limpar
+              </a>
+            )}
+          </form>
+
+          <div class="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
+            {stats.map((item) => (
+              <a
+                href={item.href}
+                class="rounded-2xl border border-[#ead8bd] bg-[#fcfaf6] p-5 no-underline transition-colors hover:border-[#b88333]"
+              >
+                <span class="block text-sm text-[#625a51]">{item.label}</span>
+                <strong class="mt-2 block font-[Outfit] text-3xl font-medium leading-none tracking-tight tabular-nums text-[#b88333]">
+                  {item.value}
+                </strong>
+              </a>
+            ))}
+          </div>
+
+          <div class="grid gap-4 lg:grid-cols-2">
+            <div class="rounded-2xl border border-[#ead8bd] bg-white p-6">
+              <h2 class="mb-5 font-[Outfit] text-xl">Sites publicados</h2>
+              <div class="flex flex-wrap items-center gap-6">
+                <div class="relative h-[176px] w-[176px] shrink-0">
+                  <svg viewBox="0 0 120 120" class="h-full w-full -rotate-90">
+                    <circle
+                      cx="60"
+                      cy="60"
+                      r="52"
+                      fill="none"
+                      stroke="#eee7dc"
+                      stroke-width="14"
+                    ></circle>
+                    <circle
+                      cx="60"
+                      cy="60"
+                      r="52"
+                      fill="none"
+                      stroke="#b88333"
+                      stroke-width="14"
+                      stroke-linecap="round"
+                      stroke-dasharray={`${(publishedPct * 326.7).toFixed(1)} 326.7`}
+                    ></circle>
+                  </svg>
+                  <div class="absolute inset-0 flex flex-col items-center justify-center">
+                    <strong class="font-[Outfit] text-3xl font-medium leading-none tabular-nums">
+                      {counts.published}
                     </strong>
-                    <span class="text-xs text-[#625a51]">{item.label}</span>
-                  </a>
-                ))}
+                    <span class="mt-1 text-xs text-[#625a51]">publicados</span>
+                  </div>
+                </div>
+                <ul class="space-y-3 text-sm text-[#625a51]">
+                  <li class="flex items-center gap-2">
+                    <span class="h-3 w-3 shrink-0 rounded-sm bg-[#b88333]"></span>
+                    Publicados: <strong class="text-[#17130d]">{counts.published}</strong>
+                  </li>
+                  <li class="flex items-center gap-2">
+                    <span class="h-3 w-3 shrink-0 rounded-sm bg-[#eee7dc]"></span>
+                    Rascunhos: <strong class="text-[#17130d]">{counts.drafts}</strong>
+                  </li>
+                </ul>
               </div>
-              <p class="mt-3 text-xs text-[#766e63]">
-                Cadastros: últimos 7 dias · demais números: situação atual.
-              </p>
             </div>
-            <div class="border-t border-[#d8ae73] lg:border-t-0 lg:border-l lg:pl-8">
-              <h3 class="mb-4 font-[Outfit] text-xl">Detalhamento</h3>
-              <dl class="grid grid-cols-[1fr_auto] gap-x-5 gap-y-3 text-sm [&_dd]:font-semibold [&_dd]:tabular-nums [&_dt]:text-[#625a51]">
-                <dt>Plano mensal ativo</dt>
-                <dd>{counts.monthly_active}</dd>
-                <dt>Plano anual ativo</dt>
-                <dd>{counts.yearly_active}</dd>
-                <dt>Plano vitalício</dt>
-                <dd>{counts.lifetime}</dd>
-                <dt>Acesso encerrado</dt>
-                <dd>{counts.access_ended}</dd>
-                <dt>Sites em rascunho</dt>
-                <dd>{counts.drafts}</dd>
-                <dt>Domínios aguardando ativação</dt>
-                <dd>{counts.domains - counts.domains_active}</dd>
-                <dt>E-mails enviados em 30 dias</dt>
-                <dd>{counts.emails_sent_30d}</dd>
-                <dt>E-mails na fila</dt>
-                <dd>{counts.emails_queued}</dd>
-                <dt>Falhas de envio</dt>
-                <dd>{counts.emails_failed}</dd>
-              </dl>
+
+            <div class="rounded-2xl border border-[#ead8bd] bg-white p-6">
+              <h2 class="mb-5 font-[Outfit] text-xl">Clientes pagantes</h2>
+              <div class="flex flex-wrap items-center gap-6">
+                <div class="relative h-[176px] w-[176px] shrink-0">
+                  <svg viewBox="0 0 120 120" class="h-full w-full -rotate-90">
+                    <circle
+                      cx="60"
+                      cy="60"
+                      r="52"
+                      fill="none"
+                      stroke="#eee7dc"
+                      stroke-width="14"
+                    ></circle>
+                    <circle
+                      cx="60"
+                      cy="60"
+                      r="52"
+                      fill="none"
+                      stroke="#b88333"
+                      stroke-width="14"
+                      stroke-linecap="round"
+                      stroke-dasharray={`${(pagantesPct * 326.7).toFixed(1)} 326.7`}
+                    ></circle>
+                  </svg>
+                  <div class="absolute inset-0 flex flex-col items-center justify-center">
+                    <strong class="font-[Outfit] text-3xl font-medium leading-none tabular-nums">
+                      {pagantes}
+                    </strong>
+                    <span class="mt-1 text-xs text-[#625a51]">pagantes</span>
+                  </div>
+                </div>
+                <ul class="space-y-3 text-sm text-[#625a51]">
+                  <li class="flex items-center gap-2">
+                    <span class="h-3 w-3 shrink-0 rounded-sm bg-[#b88333]"></span>
+                    Mensal: <strong class="text-[#17130d]">{counts.monthly_active}</strong>
+                  </li>
+                  <li class="flex items-center gap-2">
+                    <span class="h-3 w-3 shrink-0 rounded-sm bg-[#d8ae73]"></span>
+                    Anual: <strong class="text-[#17130d]">{counts.yearly_active}</strong>
+                  </li>
+                  <li class="flex items-center gap-2">
+                    <span class="h-3 w-3 shrink-0 rounded-sm bg-[#8b5b1e]"></span>
+                    Vitalício: <strong class="text-[#17130d]">{counts.lifetime}</strong>
+                  </li>
+                  <li class="flex items-center gap-2">
+                    <span class="h-3 w-3 shrink-0 rounded-sm bg-[#eee7dc]"></span>
+                    Testes: <strong class="text-[#17130d]">{counts.trials_active}</strong>
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
-          <div class="mt-12 mb-3 flex flex-wrap items-baseline justify-between gap-2">
-            <h3 class="font-[Outfit] text-xl">Integrações</h3>
-            <a
-              href="/admin/configuracoes"
-              class="text-sm font-semibold text-[#8b5b1e] hover:underline"
-            >
-              Abrir configurações ↗
-            </a>
+
+          <div class="mt-4 rounded-2xl border border-[#ead8bd] bg-white p-6">
+            <div class="mb-6 flex flex-wrap items-baseline justify-between gap-2">
+              <h2 class="font-[Outfit] text-xl">Novos clientes</h2>
+              <span class="text-sm text-[#625a51]">Últimos 14 dias</span>
+            </div>
+            <div class="flex h-44 items-end gap-1.5">
+              {days.map((item) => (
+                <div
+                  class="flex flex-1 flex-col items-center gap-2"
+                  title={`${item.day}: ${item.total}`}
+                >
+                  <span class="text-[10px] font-semibold tabular-nums text-[#9b6823]">
+                    {item.total || ''}
+                  </span>
+                  <div
+                    class="w-full rounded-t bg-[#b88333]"
+                    style={`height:${Math.max(3, (item.total / maxSignups) * 112).toFixed(0)}px`}
+                  ></div>
+                  <span class="text-[9px] tabular-nums text-[#b0a89c]">
+                    {item.day.slice(8, 10)}/{item.day.slice(5, 7)}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
-          <p class="mb-3 text-sm text-[#625a51]">
-            Confira as conexões necessárias para acesso, cobrança e publicação.
-          </p>
-          <div class="overflow-x-auto border-y border-[#d8ae73]">
-            <table class="table w-full">
-              <thead>
-                <tr>
-                  <th>Item</th>
-                  <th>Estado</th>
-                </tr>
-              </thead>
-              <tbody>
-                {required.map((item) => (
+
+          <div class="mt-10">
+            <div class="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+              <h3 class="font-[Outfit] text-xl">
+                {search ? 'Clientes encontrados' : 'Clientes recentes'}
+              </h3>
+              <a
+                href={`/admin/clientes${search ? `?q=${encodeURIComponent(search)}` : ''}`}
+                class="text-sm font-semibold text-[#8b5b1e] hover:underline"
+              >
+                Ver todos ↗
+              </a>
+            </div>
+            <div class="overflow-x-auto border-y border-[#d8ae73]">
+              <table class="table w-full">
+                <thead>
                   <tr>
-                    <td>{item.label}</td>
-                    <td>
-                      <span
-                        class:list={[
-                          'badge badge-sm',
-                          item.ready
-                            ? 'badge-outline border-[#d8ae73] text-[#6f4716]'
-                            : 'badge-outline border-[#c8c4bd] text-[#625a51]',
-                        ]}
-                      >
-                        {item.ready ? 'Pronto' : 'Pendente'}
-                      </span>
-                    </td>
+                    <th>Cliente</th>
+                    <th>Endereço</th>
+                    <th>Plano</th>
+                    <th>Estado</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {customers.map((row) => (
+                    <tr>
+                      <td>{row.email || '—'}</td>
+                      <td>
+                        <a
+                          href={`https://${row.slug}.${domain}/`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          class="font-medium text-[#8b5b1e] hover:underline"
+                        >
+                          {row.slug}
+                        </a>
+                      </td>
+                      <td>{row.plan}</td>
+                      <td>
+                        <span
+                          class:list={[
+                            'badge badge-sm',
+                            row.published_at
+                              ? 'badge-outline border-[#d8ae73] text-[#6f4716]'
+                              : 'badge-outline border-[#c8c4bd] text-[#625a51]',
+                          ]}
+                        >
+                          {row.published_at ? 'Publicado' : 'Rascunho'}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                  {customers.length === 0 && (
+                    <tr>
+                      <td colspan="4" class="py-4 text-center text-[#625a51]">
+                        {search ? 'Nenhum cliente encontrado.' : 'Nenhum cliente ainda.'}
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         </section>
       )}
@@ -353,49 +493,42 @@ const deliveryStatus: Record<string, string> = {
       )}
       {section === 'configuracoes' && (
         <section id="configuracoes" class="mb-16 scroll-mt-24">
-          <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#17130d] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#625a51]">
+          <div class="mb-6 [&_h1]:my-1 [&_h1]:text-3xl [&_h1]:text-[#17130d] [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#17130d] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#625a51]">
             <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#9b6823]">
               Serviços
             </span>
-            <h2>Configurações</h2>
+            <h1>Configurações</h1>
             <p>
               Os segredos ficam criptografados no banco. Depois de salvos, apenas o estado
-              “configurado” aparece aqui.
+              “configurado” aparece aqui. Edite o que precisar e salve tudo de uma vez.
             </p>
           </div>
-          <div class="overflow-x-auto border-y border-[#d8ae73]">
-            <table class="table w-full min-w-[780px]">
-              <thead>
-                <tr>
-                  <th>Grupo</th>
-                  <th>Configuração</th>
-                  <th>Estado</th>
-                  <th>Valor</th>
-                  <th>
-                    <span class="sr-only">Ação</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {groups.map((group) =>
-                  group.keys.map((key) => {
+          <form id="settings-form" class="space-y-5">
+            {groups.map((group) => (
+              <div class="rounded-2xl border border-[#ead8bd] bg-white p-6">
+                <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+                  <h2 class="font-[Outfit] text-xl">{group.title}</h2>
+                  <span class="text-xs text-[#625a51]">
+                    {
+                      group.keys.filter((key) => settings.find((item) => item.key === key)?.value)
+                        .length
+                    }
+                    {' de '}
+                    {group.keys.length} configurados
+                  </span>
+                </div>
+                <div class="grid gap-5 md:grid-cols-2">
+                  {group.keys.map((key) => {
                     const row = settings.find((item) => item.key === key);
                     if (!row) return null;
-                    const formId = `setting-form-${key}`;
+                    const wide = longTextKeys.has(key);
                     return (
-                      <tr>
-                        <td class="text-xs text-[#625a51]">{group.title}</td>
-                        <td class="font-medium">
-                          <form
-                            id={formId}
-                            data-key={key}
-                            data-secret={Boolean(row.encrypted)}
-                            data-api-setting-form
-                          >
-                            <label for={`setting-${key}`}>{labels[key]}</label>
-                          </form>
-                        </td>
-                        <td>
+                      <label
+                        class:list={['flex flex-col gap-2', wide && 'md:col-span-2']}
+                        for={`setting-${key}`}
+                      >
+                        <span class="flex flex-wrap items-center gap-2 text-sm font-medium text-[#17130d]">
+                          {labels[key]}
                           <span
                             class:list={[
                               'badge badge-sm',
@@ -407,50 +540,56 @@ const deliveryStatus: Record<string, string> = {
                           >
                             {row.value ? 'Configurado' : 'Pendente'}
                           </span>
-                        </td>
-                        <td>
-                          {longTextKeys.has(key) ? (
-                            <textarea
-                              class="textarea textarea-bordered w-full min-w-56"
-                              form={formId}
-                              id={`setting-${key}`}
-                              name="value"
-                              rows="5"
-                              placeholder="Deixe vazio para usar o texto padrão"
-                            >{row.value}</textarea>
-                          ) : (
-                            <input
-                              class="input input-bordered w-full min-w-56"
-                              form={formId}
-                              id={`setting-${key}`}
-                              name="value"
-                              type={
-                                row.encrypted
-                                  ? 'password'
-                                  : key === 'PRIVACY_CONTACT_EMAIL' || key === 'CONTACT_EMAIL'
-                                    ? 'email'
-                                    : 'text'
-                              }
-                              value={row.encrypted ? '' : row.value}
-                              placeholder={
-                                row.encrypted && row.value ? 'Novo valor para substituir' : ''
-                              }
-                              autocomplete="off"
-                            />
-                          )}
-                        </td>
-                        <td>
-                          <button class="btn btn-outline btn-sm" form={formId} type="submit">
-                            Salvar
-                          </button>
-                        </td>
-                      </tr>
+                        </span>
+                        {wide ? (
+                          <textarea
+                            class="textarea textarea-bordered w-full font-mono text-xs leading-relaxed"
+                            id={`setting-${key}`}
+                            rows="8"
+                            data-setting-input
+                            data-key={key}
+                            data-secret={Boolean(row.encrypted)}
+                            data-initial={row.value}
+                            placeholder="Deixe vazio para usar o texto padrão"
+                          >{row.value}</textarea>
+                        ) : (
+                          <input
+                            class="input input-bordered w-full"
+                            id={`setting-${key}`}
+                            type={
+                              row.encrypted
+                                ? 'password'
+                                : key === 'PRIVACY_CONTACT_EMAIL' || key === 'CONTACT_EMAIL'
+                                  ? 'email'
+                                  : 'text'
+                            }
+                            value={row.encrypted ? '' : row.value}
+                            placeholder={
+                              row.encrypted && row.value ? 'Novo valor para substituir' : ''
+                            }
+                            autocomplete="off"
+                            data-setting-input
+                            data-key={key}
+                            data-secret={Boolean(row.encrypted)}
+                            data-initial={row.encrypted ? '' : row.value}
+                          />
+                        )}
+                      </label>
                     );
-                  }),
-                )}
-              </tbody>
-            </table>
-          </div>
+                  })}
+                </div>
+              </div>
+            ))}
+            <div class="sticky bottom-4 z-10 flex flex-wrap items-center gap-3 rounded-2xl border border-[#ead8bd] bg-white/95 px-5 py-4 shadow-lg backdrop-blur">
+              <span class="mr-auto text-sm text-[#625a51]" data-save-status></span>
+              <button
+                class="btn rounded-lg border-0 bg-[#17130d] text-white hover:bg-[#2a241b]"
+                type="submit"
+              >
+                Salvar alterações
+              </button>
+            </div>
+          </form>
         </section>
       )}
       {section === 'emails' && (
@@ -795,27 +934,48 @@ const deliveryStatus: Record<string, string> = {
     import { updatePrice } from '@frontend/api/admin/update-price';
     import { updateEmailTemplate } from '@frontend/api/admin/update-email-template';
     import { reportError } from '@frontend/components/toast';
-    document.querySelectorAll<HTMLFormElement>('[data-api-setting-form]').forEach((form) =>
-      form.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        const button = form.closest('tr')!.querySelector<HTMLButtonElement>('button[type=submit]')!;
-        button.disabled = true;
+    const settingsForm = document.getElementById('settings-form') as HTMLFormElement | null;
+    settingsForm?.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const button = settingsForm.querySelector<HTMLButtonElement>('button[type=submit]');
+      const status = settingsForm.querySelector<HTMLElement>('[data-save-status]');
+      if (button) button.disabled = true;
+      let saved = 0;
+      const failed: string[] = [];
+      for (const input of settingsForm.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>(
+        '[data-setting-input]',
+      )) {
+        const key = input.dataset.key || '';
+        const secret = input.dataset.secret === 'true';
+        const initial = input.dataset.initial ?? '';
+        const value = input.value;
+        if (secret ? !value.trim() : value === initial) continue;
         try {
-          const field = form.elements.namedItem('value') as HTMLInputElement;
-          const value = field.value;
-          if (!value.trim()) throw new Error('Informe um valor.');
-          await updateSetting(form.dataset.key || '', value);
-          if (form.dataset.secret === 'true') field.value = '';
-          const badge = form.closest('tr')!.querySelector<HTMLElement>('[data-api-config-state]')!;
-          badge.className = 'badge badge-sm badge-outline border-[#d8ae73] text-[#6f4716]';
-          badge.textContent = 'Configurado';
+          await updateSetting(key, value);
+          input.dataset.initial = secret ? '' : value;
+          if (secret) input.value = '';
+          saved += 1;
+          const badge = input
+            .closest('label')
+            ?.querySelector<HTMLElement>('[data-api-config-state]');
+          if (badge && value.trim()) {
+            badge.className = 'badge badge-sm badge-outline border-[#d8ae73] text-[#6f4716]';
+            badge.textContent = 'Configurado';
+          }
         } catch (error) {
+          failed.push(key);
           reportError(error, 'Falha ao salvar');
-        } finally {
-          button.disabled = false;
         }
-      }),
-    );
+      }
+      if (status) {
+        status.textContent = failed.length
+          ? `Não foi possível salvar: ${failed.join(', ')}`
+          : saved
+            ? 'Alterações salvas.'
+            : 'Nada para salvar.';
+      }
+      if (button) button.disabled = false;
+    });
     document.querySelectorAll<HTMLFormElement>('[data-api-price-form]').forEach((form) =>
       form.addEventListener('submit', async (event) => {
         event.preventDefault();
