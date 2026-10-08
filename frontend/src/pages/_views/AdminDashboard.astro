@@ -27,6 +27,7 @@ const {
   emailOutbox,
   counts,
   signups,
+  clients,
   domain,
 } = await adminDashboard(search, section);
 const pagantes = counts.monthly_active + counts.yearly_active + counts.lifetime;
@@ -171,25 +172,28 @@ const deliveryStatus: Record<string, string> = {
             <h1>Painel do Vira</h1>
           </div>
 
-          <form method="get" class="mb-8 flex flex-wrap items-end gap-3">
-            <label class="flex flex-col gap-1 text-sm">
+          <form method="get" class="mb-8">
+            <label class="flex w-full max-w-[440px] flex-col gap-1 text-sm">
               <span class="text-[#625a51]">Cliente</span>
-              <input
-                type="search"
+              <select
                 name="q"
-                value={search}
-                placeholder="E-mail ou endereço"
-                class="input input-bordered h-10 w-[260px] rounded-lg"
-              />
+                data-client-filter
+                class="select select-bordered h-11 w-full rounded-lg"
+              >
+                <option value="">Todos os clientes</option>
+                {clients.map((client) => (
+                  <option value={client.slug} selected={client.slug === search}>
+                    {client.slug}
+                    {client.email ? ` — ${client.email}` : ''}
+                  </option>
+                ))}
+              </select>
             </label>
-            <button class="btn h-10 rounded-lg border-0 bg-[#17130d] text-white hover:bg-[#2a241b]">
-              Buscar
-            </button>
-            {search && (
-              <a href="/admin" class="btn btn-ghost h-10 rounded-lg">
-                Limpar
-              </a>
-            )}
+            <noscript>
+              <button class="btn mt-3 h-10 rounded-lg border-0 bg-[#17130d] text-white">
+                Filtrar
+              </button>
+            </noscript>
           </form>
 
           <div class="mb-8 grid grid-cols-2 gap-4 sm:grid-cols-4">
@@ -580,7 +584,7 @@ const deliveryStatus: Record<string, string> = {
                 </div>
               </div>
             ))}
-            <div class="sticky bottom-4 z-10 flex flex-wrap items-center gap-3 rounded-2xl border border-[#ead8bd] bg-white/95 px-5 py-4 shadow-lg backdrop-blur">
+            <div class="flex flex-wrap items-center gap-3 pt-2">
               <span class="mr-auto text-sm text-[#625a51]" data-save-status></span>
               <button
                 class="btn rounded-lg border-0 bg-[#17130d] text-white hover:bg-[#2a241b]"
@@ -934,6 +938,9 @@ const deliveryStatus: Record<string, string> = {
     import { updatePrice } from '@frontend/api/admin/update-price';
     import { updateEmailTemplate } from '@frontend/api/admin/update-email-template';
     import { reportError } from '@frontend/components/toast';
+    document
+      .querySelectorAll<HTMLSelectElement>('[data-client-filter]')
+      .forEach((select) => select.addEventListener('change', () => select.form?.requestSubmit()));
     const settingsForm = document.getElementById('settings-form') as HTMLFormElement | null;
     settingsForm?.addEventListener('submit', async (event) => {
       event.preventDefault();

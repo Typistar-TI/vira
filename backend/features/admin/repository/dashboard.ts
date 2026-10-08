@@ -12,6 +12,7 @@ export async function getAdminDashboard(search: string, section: string = 'visao
     emailOutboxResult,
     counts,
     signupsResult,
+    clientsResult,
     domain,
   ] = await Promise.all([
     section === 'visao' || section === 'configuracoes'
@@ -133,6 +134,12 @@ export async function getAdminDashboard(search: string, section: string = 'visao
            WHERE created_at >= unixepoch() - 13 * 86400 GROUP BY day`,
         ).all<{ day: string; total: number }>()
       : null,
+    section === 'visao'
+      ? env.DB.prepare(
+          `SELECT u.email, s.slug FROM users u JOIN sites s ON s.user_id = u.id
+           ORDER BY u.created_at DESC LIMIT 300`,
+        ).all<{ email: string | null; slug: string }>()
+      : null,
     section === 'clientes' ? rootDomain() : '',
   ]);
   return {
@@ -144,6 +151,7 @@ export async function getAdminDashboard(search: string, section: string = 'visao
     emailTemplates: emailTemplatesResult?.results ?? [],
     emailOutbox: emailOutboxResult?.results ?? [],
     signups: signupsResult?.results ?? [],
+    clients: clientsResult?.results ?? [],
     counts: counts ?? {
       users: 0,
       new_users_7d: 0,
