@@ -2,13 +2,22 @@
 interface Props {
   email: string;
   displayName?: string;
+  avatar?: string | null;
   profileHref: string;
   profileLabel?: string;
   homeHref: string;
   lang?: 'pt' | 'en';
 }
 
-const { email, displayName = '', profileHref, profileLabel, homeHref, lang = 'pt' } = Astro.props;
+const {
+  email,
+  displayName = '',
+  avatar = null,
+  profileHref,
+  profileLabel,
+  homeHref,
+  lang = 'pt',
+} = Astro.props;
 const en = lang === 'en';
 const label = displayName || email.split('@')[0] || 'Conta';
 const initials = label
@@ -30,28 +39,35 @@ const links = [
         : 'Administração',
   },
   { href: homeHref, label: en ? 'Home' : 'Página inicial' },
-  { href: en ? '/en/privacy' : '/privacidade', label: en ? 'Privacy' : 'Privacidade' },
 ];
 const avatarClass =
-  'btn btn-circle btn-ghost btn-sm border border-[#d8ae73] bg-[#fff4df] font-semibold text-[#6f4716] hover:border-[#b88333] hover:bg-[#ffecd0] sm:btn-md';
+  'btn btn-circle btn-ghost btn-sm overflow-hidden border border-[#d8ae73] bg-[#fff4df] p-0 font-semibold text-[#6f4716] hover:border-[#b88333] hover:bg-[#ffecd0] sm:btn-md';
 ---
 
 <div data-account-menu data-account-scope={profileHref.startsWith('/admin') ? 'admin' : 'app'}>
   <details class="dropdown dropdown-end hidden sm:block" data-account-dropdown>
     <summary
-      class:list={[avatarClass, 'avatar list-none']}
+      class:list={[avatarClass, 'list-none']}
       aria-label={en ? `Open account menu for ${label}` : `Abrir menu da conta de ${label}`}
     >
-      <span aria-hidden="true" data-account-initials>
+      <img
+        data-account-avatar
+        src={avatar ?? ''}
+        alt=""
+        class:list={['h-full w-full rounded-full object-cover', !avatar && 'hidden']}
+      />
+      <span
+        data-account-initials
+        class:list={['grid h-full w-full place-items-center', avatar && 'hidden']}
+      >
         {initials || 'V'}
       </span>
     </summary>
-    <ul class="menu dropdown-content z-50 mt-3 w-64 rounded-2xl border border-[#d8ae73] bg-white p-2 shadow-[0_18px_45px_-20px_rgba(95,59,12,0.28)]">
+    <ul class="menu dropdown-content z-50 mt-3 w-60 rounded-2xl border border-[#d8ae73] bg-white p-2 shadow-[0_18px_45px_-20px_rgba(95,59,12,0.28)]">
       <li class="pointer-events-none border-b border-[#ead8bd] px-3 py-2">
         <span class="block truncate p-0 text-sm font-semibold text-[#17130d]" data-account-label>
           {label}
         </span>
-        <small class="block truncate text-xs text-[#625a51]">{email}</small>
       </li>
       {links.map((link) => (
         <li>
@@ -72,7 +88,16 @@ const avatarClass =
       data-open-account
       aria-label={en ? `Open account menu for ${label}` : `Abrir menu da conta de ${label}`}
     >
-      <span aria-hidden="true" data-account-initials>
+      <img
+        data-account-avatar
+        src={avatar ?? ''}
+        alt=""
+        class:list={['h-full w-full rounded-full object-cover', !avatar && 'hidden']}
+      />
+      <span
+        data-account-initials
+        class:list={['grid h-full w-full place-items-center', avatar && 'hidden']}
+      >
         {initials || 'V'}
       </span>
     </button>
@@ -93,8 +118,8 @@ const avatarClass =
             ×
           </button>
         </div>
-        <p class="mb-5 truncate text-sm text-[#625a51]">
-          <span data-account-label>{label}</span> · {email}
+        <p class="mb-5 truncate text-sm font-semibold text-[#17130d]" data-account-label>
+          {label}
         </p>
         <ul class="menu w-full gap-1 p-0 text-base">
           {links.map((link) => (

@@ -4,8 +4,7 @@ import { rootDomain } from '@backend/platform/config';
 export interface AdminFilters {
   kind?: string;
   level?: string;
-  actor?: string;
-  ip?: string;
+  q?: string;
   role?: string;
   page?: number;
   size?: number;
@@ -23,9 +22,8 @@ export async function getAdminDashboard(
   const levels = ['info', 'warning', 'critical'];
   const kindFilter = filters.kind && logKinds.includes(filters.kind) ? filters.kind : '';
   const levelFilter = filters.level && levels.includes(filters.level) ? filters.level : '';
-  const actorFilter = (filters.actor ?? '').trim().slice(0, 80);
-  const ipFilter = (filters.ip ?? '').trim().slice(0, 45);
   const roleFilter = ['customer', 'admin'].includes(filters.role ?? '') ? filters.role! : '';
+  const logSearch = (filters.q ?? '').trim().slice(0, 80);
   const page = Math.max(1, Math.min(5000, Math.floor(Number(filters.page) || 1)));
   const size = pageSizes.includes(Number(filters.size)) ? Number(filters.size) : 10;
   const pageSize = size;
@@ -68,8 +66,7 @@ export async function getAdminDashboard(
           `SELECT created_at, kind, severity, actor_type, actor_id, action, target, ip, user_agent
            FROM logs
            WHERE (? = '' OR kind = ?) AND (? = '' OR severity = ?)
-             AND (? = '' OR actor_id LIKE ? OR target LIKE ?)
-             AND (? = '' OR ip LIKE ?)
+             AND (? = '' OR actor_id LIKE ? OR target LIKE ? OR action LIKE ? OR ip LIKE ?)
            ORDER BY created_at DESC LIMIT ? OFFSET ?`,
         )
           .bind(
@@ -77,11 +74,11 @@ export async function getAdminDashboard(
             kindFilter,
             levelFilter,
             levelFilter,
-            actorFilter,
-            `%${actorFilter}%`,
-            `%${actorFilter}%`,
-            ipFilter,
-            `%${ipFilter}%`,
+            logSearch,
+            `%${logSearch}%`,
+            `%${logSearch}%`,
+            `%${logSearch}%`,
+            `%${logSearch}%`,
             pageSize,
             offset,
           )
@@ -101,19 +98,18 @@ export async function getAdminDashboard(
       ? env.DB.prepare(
           `SELECT count(*) AS n FROM logs
            WHERE (? = '' OR kind = ?) AND (? = '' OR severity = ?)
-             AND (? = '' OR actor_id LIKE ? OR target LIKE ?)
-             AND (? = '' OR ip LIKE ?)`,
+             AND (? = '' OR actor_id LIKE ? OR target LIKE ? OR action LIKE ? OR ip LIKE ?)`,
         )
           .bind(
             kindFilter,
             kindFilter,
             levelFilter,
             levelFilter,
-            actorFilter,
-            `%${actorFilter}%`,
-            `%${actorFilter}%`,
-            ipFilter,
-            `%${ipFilter}%`,
+            logSearch,
+            `%${logSearch}%`,
+            `%${logSearch}%`,
+            `%${logSearch}%`,
+            `%${logSearch}%`,
           )
           .first<{ n: number }>()
       : null,

@@ -17,17 +17,15 @@ export const GET = async (request: Request): Promise<Response> => {
   const levelParam = url.searchParams.get('level') || '';
   const kind = logKinds.includes(kindParam) ? kindParam : '';
   const level = levels.includes(levelParam) ? levelParam : '';
-  const actor = (url.searchParams.get('actor') || '').trim().slice(0, 80);
-  const ip = (url.searchParams.get('ip') || '').trim().slice(0, 45);
+  const q = (url.searchParams.get('q') || '').trim().slice(0, 80);
   const rows = await env.DB.prepare(
     `SELECT created_at, kind, severity, actor_type, actor_id, action, target, ip, user_agent
      FROM logs
      WHERE (? = '' OR kind = ?) AND (? = '' OR severity = ?)
-       AND (? = '' OR actor_id LIKE ? OR target LIKE ?)
-       AND (? = '' OR ip LIKE ?)
+       AND (? = '' OR actor_id LIKE ? OR target LIKE ? OR action LIKE ? OR ip LIKE ?)
      ORDER BY created_at DESC LIMIT 5000`,
   )
-    .bind(kind, kind, level, level, actor, `%${actor}%`, `%${actor}%`, ip, `%${ip}%`)
+    .bind(kind, kind, level, level, q, `%${q}%`, `%${q}%`, `%${q}%`, `%${q}%`)
     .all<{
       created_at: number;
       kind: string;

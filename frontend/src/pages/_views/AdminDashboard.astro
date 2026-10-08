@@ -22,8 +22,7 @@ const sizeParam = Number(url.searchParams.get('size'));
 const logFilters = {
   kind: (url.searchParams.get('kind') || '').trim().slice(0, 20),
   level: (url.searchParams.get('level') || '').trim().slice(0, 20),
-  actor: (url.searchParams.get('actor') || '').trim().slice(0, 80),
-  ip: (url.searchParams.get('ip') || '').trim().slice(0, 45),
+  q: search,
   role: roleFilter,
   page: Math.max(1, Math.floor(Number(url.searchParams.get('page')) || 1)),
   size: [10, 25, 50, 100].includes(sizeParam) ? sizeParam : 10,
@@ -1199,34 +1198,23 @@ const deliveryStatus: Record<string, string> = {
               </select>
             </label>
             <label class="flex flex-col gap-1 text-sm">
-              <span class="text-[#625a51]">Ator ou alvo</span>
+              <span class="text-[#625a51]">Buscar</span>
               <input
-                class="input input-bordered h-10 w-56 rounded-lg"
-                name="actor"
+                class="input input-bordered h-10 w-72 rounded-lg"
+                name="q"
                 type="search"
-                value={logFilters.actor}
-                placeholder="E-mail, chave..."
+                value={search}
+                placeholder="Ator, alvo, ação, IP..."
                 maxlength="80"
               />
             </label>
-            <label class="flex flex-col gap-1 text-sm">
-              <span class="text-[#625a51]">IP</span>
-              <input
-                class="input input-bordered h-10 w-44 rounded-lg"
-                name="ip"
-                type="search"
-                value={logFilters.ip}
-                placeholder="203.0.113.4"
-                maxlength="45"
-              />
-            </label>
-            {(logFilters.kind || logFilters.level || logFilters.actor || logFilters.ip) && (
+            {(logFilters.kind || logFilters.level || search) && (
               <a href="/admin/logs" class="btn btn-ghost h-10 rounded-lg">
                 Limpar
               </a>
             )}
             <a
-              href={`/api/admin/logs/export?kind=${encodeURIComponent(logFilters.kind)}&level=${encodeURIComponent(logFilters.level)}&actor=${encodeURIComponent(logFilters.actor)}&ip=${encodeURIComponent(logFilters.ip)}`}
+              href={`/api/admin/logs/export?kind=${encodeURIComponent(logFilters.kind)}&level=${encodeURIComponent(logFilters.level)}&q=${encodeURIComponent(search)}`}
               class="btn btn-outline h-10 rounded-lg"
             >
               Exportar CSV
@@ -1280,8 +1268,7 @@ const deliveryStatus: Record<string, string> = {
             query={{
               kind: logFilters.kind,
               level: logFilters.level,
-              actor: logFilters.actor,
-              ip: logFilters.ip,
+              q: search,
             }}
           />
         </section>

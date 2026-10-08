@@ -57,18 +57,23 @@ export function lastLoginCookie(method: 'google' | 'code' | 'password'): string 
 
 export async function getSessionAdmin(
   request: Request,
-): Promise<{ id: string; email: string; displayName: string } | null> {
+): Promise<{ id: string; email: string; displayName: string; avatar: string | null } | null> {
   const token = cookieToken(request, adminSessionName);
   if (!token) return null;
   const row = await env.DB.prepare(
-    `SELECT s.admin_email, a.display_name FROM admin_sessions s
+    `SELECT s.admin_email, a.display_name, a.avatar FROM admin_sessions s
      JOIN admin_accounts a ON a.email = s.admin_email
      WHERE s.token_hash = ? AND s.expires_at > ?`,
   )
     .bind(await sha256(token), Math.floor(Date.now() / 1000))
-    .first<{ admin_email: string; display_name: string }>();
+    .first<{ admin_email: string; display_name: string; avatar: string | null }>();
   return row
-    ? { id: row.admin_email, email: row.admin_email, displayName: row.display_name }
+    ? {
+        id: row.admin_email,
+        email: row.admin_email,
+        displayName: row.display_name,
+        avatar: row.avatar,
+      }
     : null;
 }
 

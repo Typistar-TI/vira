@@ -9,4 +9,6 @@ export interface UserRow {
   plan: string;
   access_until: number | null;
   expired_at: number | null;
+  display_name: string | null;
+  avatar: string | null;
 }

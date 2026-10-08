@@ -17,6 +17,13 @@ const content = parseSiteContent(JSON.parse(site.draft_json));
 const active = userHasAccess(user);
 const en = preferredLanguage(Astro.request) === 'en';
 const domain = await getRootDomain();
+const accountName = user.display_name || (user.email ?? '').split('@')[0] || 'V';
+const accountInitials = accountName
+  .split(/[^\p{L}\p{N}]+/u)
+  .filter(Boolean)
+  .slice(0, 2)
+  .map((part: string) => part[0].toLocaleUpperCase('pt-BR'))
+  .join('');
 const priceRows = section === 'plano' ? await getPublicPrices() : [];
 const priceMap = Object.fromEntries(
   priceRows.map((row) => [`${row.plan}_${row.currency}`, row.amount_minor]),
@@ -129,6 +136,7 @@ const t = en
       deleteAccount: 'Delete account',
       confirmEmail: 'Type your email to confirm',
       privacy: 'Privacy',
+      terms: 'Terms of Use',
       identity: 'Site identity and app',
       identityHint:
         'These changes appear on your public site after you publish. Visitors can install it on their phones.',
@@ -237,6 +245,7 @@ const t = en
       deleteAccount: 'Excluir conta',
       confirmEmail: 'Digite seu e-mail para confirmar',
       privacy: 'Privacidade',
+      terms: 'Termos de Uso',
       identity: 'Identidade do site e aplicativo',
       identityHint:
         'As alterações aparecem no site público depois de publicar. Os visitantes poderão instalá-lo no celular.',
@@ -270,6 +279,8 @@ const trialLeft = en
   <div class="min-h-screen bg-white text-[#17130d]">
     <CustomerHeader
       email={user.email ?? (en ? 'Legacy account' : 'Conta antiga')}
+      displayName={user.display_name ?? ''}
+      avatar={user.avatar}
       en={en}
       section={section}
     />
@@ -662,21 +673,78 @@ const trialLeft = en
             class="card rounded-none border-x-0 border-b-0 border-[#d8ae73] bg-white p-6 px-0 shadow-none [&_h2]:font-['Outfit',sans-serif] [&_h2]:font-medium [&_h2]:tracking-[-0.03em] [&_h2]:mb-4 [&_h2]:text-[1.45rem] [&_h2]:text-[#17130d] [&_h3]:mt-7 [&_h3]:mb-3 [&_h3]:text-lg [&_label]:mt-4 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold [&_.input]:w-full [&_.textarea]:w-full [&_.select]:w-full [&_small]:text-[#625a51] mb-5"
           >
             <h2>{t.account}</h2>
-            <a
-              href="/login?password=1"
-              class="mb-4 inline-block text-sm font-semibold text-[#8b5b1e] hover:underline"
-            >
-              {en ? 'Create or change password' : 'Criar ou alterar senha'}
-            </a>
-            <div class="mt-5 flex flex-wrap gap-2.5">
-              <a id="export-data" class="btn btn-outline" href="#export">
-                {t.exportData}
-              </a>
-              <a class="btn btn-ghost" href={en ? '/en/privacy' : '/privacidade'}>
-                {t.privacy}
-              </a>
+            <form id="account-profile-form" class="max-w-xl">
+              <label>Foto</label>
+              <div data-avatar-picker class="flex flex-wrap items-center gap-4">
+                <span class="relative h-16 w-16 shrink-0">
+                  <img
+                    data-avatar-preview
+                    src={user.avatar ?? ''}
+                    alt=""
+                    class:list={[
+                      'h-16 w-16 rounded-full border border-[#d8ae73] object-cover',
+                      !user.avatar && 'hidden',
+                    ]}
+                  />
+                  <span
+                    data-avatar-placeholder
+                    class:list={[
+                      'grid h-16 w-16 place-items-center rounded-full border border-[#d8ae73] bg-[#fff4df] font-semibold text-[#6f4716]',
+                      user.avatar && 'hidden',
+                    ]}
+                  >
+                    {accountInitials || 'V'}
+                  </span>
+                </span>
+                <input
+                  data-avatar-input
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  class="file-input file-input-bordered file-input-sm w-full max-w-xs"
+                />
+                <button data-avatar-remove type="button" class="btn btn-ghost btn-sm">
+                  Remover foto
+                </button>
+                <input data-avatar-value type="hidden" name="avatar" value={user.avatar ?? ''} />
+              </div>
+              <label for="account-name">Nome</label>
+              <input
+                id="account-name"
+                class="input input-bordered w-full"
+                name="displayName"
+                maxlength="80"
+                autocomplete="name"
+                value={user.display_name ?? ''}
+              />
+              <div class="mt-5 flex flex-wrap items-center gap-3">
+                <button class="btn btn-primary" type="submit">
+                  Salvar
+                </button>
+                <a
+                  href="/login?password=1"
+                  class="text-sm font-semibold text-[#8b5b1e] hover:underline"
+                >
+                  {en ? 'Create or change password' : 'Criar ou alterar senha'}
+                </a>
+              </div>
+            </form>
+
+            <div class="mt-8 border-t border-[#ead8bd] pt-6">
+              <h3>Documentos</h3>
+              <div class="mt-1 flex flex-wrap gap-2.5">
+                <a class="btn btn-outline" href={en ? '/en/privacy' : '/privacidade'}>
+                  {t.privacy}
+                </a>
+                <a class="btn btn-outline" href={en ? '/en/terms' : '/termos'}>
+                  {t.terms}
+                </a>
+                <a id="export-data" class="btn btn-ghost" href="#export">
+                  {t.exportData}
+                </a>
+              </div>
             </div>
-            <form id="delete-account-form" class="mt-5">
+
+            <form id="delete-account-form" class="mt-8 border-t border-[#ead8bd] pt-6">
               <label for="delete-email">
                 {user.email
                   ? t.confirmEmail
@@ -714,6 +782,8 @@ const trialLeft = en
     import { billingPortal } from '@frontend/api/billing/portal';
     import { deleteAccount } from '@frontend/api/accounts/delete';
     import { exportAccount } from '@frontend/api/accounts/export';
+    import { updateAccountProfile } from '@frontend/api/accounts/profile';
+    import { initAvatarPicker, applyAvatarToMenu } from '@frontend/pages/_scripts/avatar-picker';
     import { getMetrics } from '@frontend/api/analytics/metrics';
     import { reportError } from '@frontend/components/toast';
 
@@ -1136,6 +1206,35 @@ const trialLeft = en
         }
       });
     }
+    document.querySelectorAll<HTMLElement>('[data-avatar-picker]').forEach(initAvatarPicker);
+    document
+      .querySelector<HTMLFormElement>('#account-profile-form')
+      ?.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const form = event.currentTarget as HTMLFormElement;
+        const button = form.querySelector<HTMLButtonElement>('button[type=submit]');
+        if (button) button.disabled = true;
+        try {
+          const name = input(form, 'displayName');
+          const avatar = input(form, 'avatar') || null;
+          await updateAccountProfile(name, avatar);
+          const normalized = name.trim().replace(/\s+/g, ' ');
+          document.querySelectorAll<HTMLElement>('[data-account-label]').forEach((node) => {
+            node.textContent = normalized;
+          });
+          const initials = normalized
+            .split(/[^\p{L}\p{N}]+/u)
+            .filter(Boolean)
+            .slice(0, 2)
+            .map((part: string) => part[0].toLocaleUpperCase('pt-BR'))
+            .join('');
+          applyAvatarToMenu(avatar ?? '', initials);
+        } catch (error) {
+          reportError(error, 'Falha ao salvar o perfil');
+        } finally {
+          if (button) button.disabled = false;
+        }
+      });
     document
       .querySelector<HTMLFormElement>('#delete-account-form')
       ?.addEventListener('submit', async (event) => {

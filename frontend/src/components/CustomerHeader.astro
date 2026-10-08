@@ -6,8 +6,10 @@ interface Props {
   email: string;
   en: boolean;
   section: string;
+  displayName?: string;
+  avatar?: string | null;
 }
-const { email, en, section } = Astro.props;
+const { email, en, section, displayName = '', avatar = null } = Astro.props;
 const links = [
   { key: 'conteudo', href: '/app', label: en ? 'Content' : 'Conteúdo' },
   { key: 'plano', href: '/app/plano', label: en ? 'Plan and billing' : 'Plano e cobrança' },
@@ -48,6 +50,8 @@ const links = [
       </div>
       <AccountMenu
         email={email}
+        displayName={displayName}
+        avatar={avatar}
         profileHref="/app/conta"
         profileLabel={en ? 'Account and data' : 'Conta e dados'}
         homeHref="/"

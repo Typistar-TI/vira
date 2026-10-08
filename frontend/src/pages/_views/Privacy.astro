@@ -1,6 +1,8 @@
 ---
 import Base from '@frontend/components/Base.astro';
 import SiteHeader from '@frontend/components/SiteHeader.astro';
+import CustomerHeader from '@frontend/components/CustomerHeader.astro';
+import AdminHeader from '@frontend/components/AdminHeader.astro';
 import CookieNotice from '@frontend/components/CookieNotice.astro';
 import SiteFooter from '@frontend/components/SiteFooter.astro';
 import { getSetting } from '@frontend/api/config/setting';
@@ -39,14 +41,35 @@ const custom = policy.trim();
   appearance="light"
 >
   <div class="min-h-screen bg-white text-[#17130d]">
-    <SiteHeader
-      lang={lang}
-      signedIn={signedIn}
-      dashboardHref={dashboardHref}
-      hasAdmin={hasAdmin}
-      hasUser={hasUser}
-    />
-    <main class="mx-auto max-w-[1380px] px-5 pb-16 pt-10 sm:px-8">
+    {hasAdmin && adminSession ? (
+      <AdminHeader
+        section="conta"
+        admin={{
+          email: adminSession.email,
+          displayName: adminSession.displayName,
+          avatar: adminSession.avatar,
+        }}
+      />
+    ) : hasUser && userSession ? (
+      <CustomerHeader
+        email={userSession.email ?? ''}
+        displayName={userSession.display_name ?? ''}
+        avatar={userSession.avatar}
+        en={en}
+        section="conta"
+      />
+    ) : (
+      <SiteHeader
+        lang={lang}
+        signedIn={signedIn}
+        dashboardHref={dashboardHref}
+        hasAdmin={hasAdmin}
+        hasUser={hasUser}
+      />
+    )}
+    <main
+      class:list={['mx-auto max-w-[1380px] px-5 sm:px-8', signedIn ? 'pt-8 pb-24' : 'pt-10 pb-16']}
+    >
       <article class="w-full break-words">
         <span class="text-xs font-extrabold uppercase tracking-[0.15em] text-[#17130d]">Vira</span>
         <h1 class="text-4xl mt-2 mb-6">
@@ -75,7 +98,7 @@ const custom = policy.trim();
         )}
       </article>
     </main>
-    <SiteFooter lang={lang} />
+    {!signedIn && <SiteFooter lang={lang} />}
   </div>
   <CookieNotice lang={lang} />
 </Base>
