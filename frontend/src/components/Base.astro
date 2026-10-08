@@ -2,7 +2,6 @@
 import '@frontend/styles/global.css';
 import Motion from '@frontend/components/Motion.astro';
 import Toast from '@frontend/components/Toast.astro';
-import RouteSkeleton from '@frontend/components/RouteSkeleton.astro';
 interface Props {
   title: string;
   description?: string;
@@ -80,7 +79,6 @@ const lightFields =
     ]}
   >
     <slot />
-    <RouteSkeleton appearance={appearance} />
     <Toast />
     <Motion />
     <script>
@@ -91,40 +89,6 @@ const lightFields =
           navigator.serviceWorker.register('/sw.js').catch(() => {});
         });
       }
-      const routeSkeleton = document.querySelector<HTMLElement>('[data-route-skeleton]');
-      let routeTimer = 0;
-      const showRouteSkeleton = () => {
-        if (!routeSkeleton) return;
-        const header = document.querySelector('header');
-        routeSkeleton.style.top = `${
-          header ? Math.max(0, Math.round(header.getBoundingClientRect().bottom)) : 0
-        }px`;
-        routeSkeleton.removeAttribute('hidden');
-        window.clearTimeout(routeTimer);
-        routeTimer = window.setTimeout(() => routeSkeleton.setAttribute('hidden', ''), 12000);
-      };
-      (window as unknown as { viraShowRouteSkeleton?: () => void }).viraShowRouteSkeleton =
-        showRouteSkeleton;
-      document.addEventListener('click', (event) => {
-        if (event.defaultPrevented || event.button !== 0) return;
-        if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-        const anchor = (event.target as Element | null)?.closest('a');
-        if (!anchor) return;
-        const href = anchor.getAttribute('href') || '';
-        if (!href || href.startsWith('#')) return;
-        if (anchor.target && anchor.target !== '_self') return;
-        if (anchor.hasAttribute('download')) return;
-        let url: URL;
-        try {
-          url = new URL(anchor.href, location.href);
-        } catch {
-          return;
-        }
-        if (url.origin !== location.origin) return;
-        if (url.pathname.startsWith('/api/')) return;
-        if (url.pathname === location.pathname && url.search === location.search) return;
-        showRouteSkeleton();
-      });
     </script>
   </body>
 </html>

@@ -1430,16 +1430,15 @@ const deliveryStatus: Record<string, string> = {
       };
     };
     document.querySelectorAll<HTMLFormElement>('[data-filter-form]').forEach((form) => {
-      const navigate = () => {
-        (window as unknown as { viraShowRouteSkeleton?: () => void }).viraShowRouteSkeleton?.();
-        form.requestSubmit();
-      };
       form
         .querySelectorAll<HTMLSelectElement>('select')
-        .forEach((select) => select.addEventListener('change', navigate));
-      form
-        .querySelectorAll<HTMLInputElement>('input')
-        .forEach((input) => input.addEventListener('input', debounce(navigate, 450)));
+        .forEach((select) => select.addEventListener('change', () => form.requestSubmit()));
+      form.querySelectorAll<HTMLInputElement>('input').forEach((input) =>
+        input.addEventListener(
+          'input',
+          debounce(() => form.requestSubmit(), 450),
+        ),
+      );
     });
     const settingsForm = document.getElementById('settings-form') as HTMLFormElement | null;
     settingsForm?.addEventListener('submit', async (event) => {

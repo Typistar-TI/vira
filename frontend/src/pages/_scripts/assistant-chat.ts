@@ -58,6 +58,14 @@ function initAssistant(root: HTMLElement) {
     scroll();
     return node;
   };
+  const skeletonBubble = () => {
+    const node = document.createElement('div');
+    node.className = 'mr-auto w-52 rounded-2xl rounded-bl-md px-4 py-3 animate-pulse';
+    node.style.background = 'var(--a-soft)';
+    node.innerHTML =
+      '<span class="block h-3 w-36 rounded bg-current opacity-20"></span><span class="mt-2 block h-3 w-24 rounded bg-current opacity-20"></span>';
+    return node;
+  };
   const hideSuggestions = () =>
     root.querySelector('[data-assistant-suggestions]')?.classList.add('hidden');
   const streamText = async (node: HTMLElement, text: string) => {
@@ -168,14 +176,18 @@ function initAssistant(root: HTMLElement) {
   toggle?.addEventListener('click', () => open(panel.classList.contains('hidden')));
   root.querySelector('[data-assistant-close]')?.addEventListener('click', () => open(false));
   if (!persist && root.dataset.script) void playScript();
-  if (persist)
+  if (persist) {
+    const placeholder = skeletonBubble();
+    log.append(placeholder);
     void loadHistory(endpoint.replace(/\/chat$/, '/history'), conversation)
       .then((history) => {
+        placeholder.remove();
         if (!history.length || started) return;
         log.replaceChildren();
         history.forEach((item) => bubble(item.role, item.content));
         hideSuggestions();
       })
-      .catch(() => {});
+      .catch(() => placeholder.remove());
+  }
 }
 document.querySelectorAll<HTMLElement>('[data-assistant]').forEach(initAssistant);
