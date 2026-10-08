@@ -95,6 +95,10 @@ const lightFields =
       let routeTimer = 0;
       const showRouteSkeleton = () => {
         if (!routeSkeleton) return;
+        const header = document.querySelector('header');
+        routeSkeleton.style.top = `${
+          header ? Math.max(0, Math.round(header.getBoundingClientRect().bottom)) : 0
+        }px`;
         routeSkeleton.removeAttribute('hidden');
         window.clearTimeout(routeTimer);
         routeTimer = window.setTimeout(() => routeSkeleton.setAttribute('hidden', ''), 12000);

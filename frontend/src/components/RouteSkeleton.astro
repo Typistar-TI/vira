@@ -8,31 +8,26 @@ const bar = appearance === 'light' ? 'bg-[#efe8dc]' : 'bg-[#24211c]';
 const card = appearance === 'light' ? 'bg-[#f6f1e8]' : 'bg-[#181613]';
 ---
 
+<!--
+  Esqueleto apenas da área de conteúdo (abaixo do cabeçalho real).
+  Não imita logo, avatar ou navegação, que são fixos e não "carregam".
+-->
 <div
   data-route-skeleton
   hidden
   aria-hidden="true"
-  class:list={['fixed inset-0 z-[70] overflow-hidden', bg]}
+  class:list={['fixed inset-x-0 bottom-0 z-[70] overflow-hidden', bg]}
 >
-  <div class="mx-auto max-w-[1380px] px-5 py-6 sm:px-8">
-    <div class="flex items-center justify-between gap-3">
-      <div class:list={['h-8 w-28 animate-pulse rounded-lg', bar]}></div>
-      <div class="hidden gap-2 md:flex">
-        {Array.from({ length: 6 }).map(() => (
-          <div class:list={['h-8 w-20 animate-pulse rounded-full', card]} />
-        ))}
-      </div>
-      <div class:list={['h-9 w-9 animate-pulse rounded-full', bar]}></div>
-    </div>
-    <div class:list={['mt-10 h-9 w-56 animate-pulse rounded-lg', bar]}></div>
+  <div class="mx-auto max-w-[1380px] px-5 py-8 sm:px-8">
+    <div class:list={['h-9 w-56 animate-pulse rounded-lg', bar]}></div>
     <div class="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
-      {Array.from({ length: 8 }).map(() => (
+      {Array.from({ length: 4 }).map(() => (
         <div class:list={['h-24 animate-pulse rounded-2xl', card]} />
       ))}
     </div>
     <div class="mt-8 space-y-3">
-      {Array.from({ length: 8 }).map(() => (
-        <div class:list={['h-11 animate-pulse rounded-xl', card]} />
+      {Array.from({ length: 6 }).map(() => (
+        <div class:list={['h-12 animate-pulse rounded-xl', card]} />
       ))}
     </div>
   </div>
