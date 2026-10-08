@@ -20,6 +20,8 @@ const navigation = [
 const logFilters = {
   kind: (url.searchParams.get('kind') || '').trim().slice(0, 20),
   level: (url.searchParams.get('level') || '').trim().slice(0, 20),
+  actor: (url.searchParams.get('actor') || '').trim().slice(0, 80),
+  ip: (url.searchParams.get('ip') || '').trim().slice(0, 45),
 };
 
 const {
@@ -670,45 +672,41 @@ const deliveryStatus: Record<string, string> = {
       )}
       {section === 'precos' && (
         <section id="precos" class="mb-16 scroll-mt-24">
-          <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#17130d] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#625a51]">
+          <div class="mb-6 [&_h1]:my-1 [&_h1]:text-3xl [&_h1]:text-[#17130d] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#625a51]">
             <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#9b6823]">
               Cobrança
             </span>
-            <h2>Preços e planos</h2>
+            <h1>Preços e planos</h1>
             <p>
               Ao ativar um preço, o Vira confere o valor, a moeda e a periodicidade na Stripe. Use
-              um Price ID já criado na Stripe.
+              um Price ID já criado na Stripe. Edite o que precisar e salve tudo de uma vez.
             </p>
           </div>
-          <div class="overflow-x-auto border-y border-[#d8ae73]">
-            <table class="table w-full min-w-[760px]">
-              <thead>
-                <tr>
-                  <th>Plano</th>
-                  <th>Moeda</th>
-                  <th>Valor</th>
-                  <th>Price ID da Stripe</th>
-                  <th>Disponível</th>
-                  <th>
-                    <span class="sr-only">Ação</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {prices.map((row) => {
-                  const formId = `price-${row.plan}-${row.currency}`;
-                  return (
-                    <tr>
-                      <td class="font-semibold">
-                        <form
-                          id={formId}
-                          data-api-price-form
-                          data-plan={row.plan}
-                          data-currency={row.currency}
-                        >
-                          {planName[row.plan]}
-                        </form>
-                      </td>
+          <form id="prices-form">
+            <div class="overflow-x-auto border-y border-[#d8ae73]">
+              <table class="table w-full min-w-[760px]">
+                <thead>
+                  <tr>
+                    <th>Plano</th>
+                    <th>Moeda</th>
+                    <th>Valor</th>
+                    <th>Price ID da Stripe</th>
+                    <th>Disponível</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {prices.map((row) => (
+                    <tr
+                      data-price-row
+                      data-plan={row.plan}
+                      data-currency={row.currency}
+                      data-initial-amount={
+                        row.amount_minor === null ? '' : (row.amount_minor / 100).toFixed(2)
+                      }
+                      data-initial-price={row.stripe_price_id ?? ''}
+                      data-initial-active={row.active ? '1' : '0'}
+                    >
+                      <td class="font-semibold">{planName[row.plan]}</td>
                       <td>
                         <span class="badge badge-outline border-[#d8ae73]">
                           {row.currency.toUpperCase()}
@@ -717,9 +715,8 @@ const deliveryStatus: Record<string, string> = {
                       <td>
                         <input
                           class="input input-bordered w-28"
-                          form={formId}
+                          data-price-amount
                           aria-label={`Valor de ${planName[row.plan]} em ${row.currency.toUpperCase()}`}
-                          name="amount"
                           type="number"
                           min="0"
                           max="1000000"
@@ -728,15 +725,13 @@ const deliveryStatus: Record<string, string> = {
                             row.amount_minor === null ? '' : (row.amount_minor / 100).toFixed(2)
                           }
                           placeholder="0,00"
-                          required
                         />
                       </td>
                       <td>
                         <input
                           class="input input-bordered w-full min-w-48"
-                          form={formId}
+                          data-price-id
                           aria-label={`Price ID de ${planName[row.plan]} em ${row.currency.toUpperCase()}`}
-                          name="stripe_price_id"
                           value={row.stripe_price_id ?? ''}
                           placeholder="price_..."
                           autocomplete="off"
@@ -745,24 +740,27 @@ const deliveryStatus: Record<string, string> = {
                       <td>
                         <input
                           class="checkbox checkbox-primary border border-[#b88333]"
-                          form={formId}
+                          data-price-active
                           aria-label={`Disponibilizar ${planName[row.plan]} em ${row.currency.toUpperCase()}`}
-                          name="active"
                           type="checkbox"
                           checked={Boolean(row.active)}
                         />
                       </td>
-                      <td>
-                        <button class="btn btn-primary btn-sm" form={formId} type="submit">
-                          Salvar
-                        </button>
-                      </td>
                     </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div class="mt-4 flex flex-wrap items-center gap-3">
+              <span class="mr-auto text-sm text-[#625a51]" data-price-status></span>
+              <button
+                class="btn rounded-lg border-0 bg-[#17130d] text-white hover:bg-[#2a241b]"
+                type="submit"
+              >
+                Salvar alterações
+              </button>
+            </div>
+          </form>
         </section>
       )}
       {section === 'configuracoes' && (
@@ -1320,10 +1318,32 @@ const deliveryStatus: Record<string, string> = {
                 ))}
               </select>
             </label>
+            <label class="flex flex-col gap-1 text-sm">
+              <span class="text-[#625a51]">Ator ou alvo</span>
+              <input
+                class="input input-bordered h-10 w-56 rounded-lg"
+                name="actor"
+                type="search"
+                value={logFilters.actor}
+                placeholder="E-mail, chave..."
+                maxlength="80"
+              />
+            </label>
+            <label class="flex flex-col gap-1 text-sm">
+              <span class="text-[#625a51]">IP</span>
+              <input
+                class="input input-bordered h-10 w-44 rounded-lg"
+                name="ip"
+                type="search"
+                value={logFilters.ip}
+                placeholder="203.0.113.4"
+                maxlength="45"
+              />
+            </label>
             <button class="btn h-10 rounded-lg border-0 bg-[#17130d] text-white hover:bg-[#2a241b]">
               Filtrar
             </button>
-            {(logFilters.kind || logFilters.level) && (
+            {(logFilters.kind || logFilters.level || logFilters.actor || logFilters.ip) && (
               <a href="/admin/logs" class="btn btn-ghost h-10 rounded-lg">
                 Limpar
               </a>
@@ -1481,33 +1501,63 @@ const deliveryStatus: Record<string, string> = {
         }
       }),
     );
-    document.querySelectorAll<HTMLFormElement>('[data-api-price-form]').forEach((form) =>
-      form.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        const button = form.closest('tr')!.querySelector<HTMLButtonElement>('button[type=submit]')!;
-        button.disabled = true;
-        try {
-          const input = form.elements.namedItem('amount') as HTMLInputElement;
-          const amount = Number(input.value);
-          if (!Number.isFinite(amount) || !Number.isInteger(amount * 100))
-            throw new Error('Informe um valor com até duas casas decimais.');
-          const body = {
-            plan: form.dataset.plan,
-            currency: form.dataset.currency,
-            amount_minor: Math.round(amount * 100),
-            stripe_price_id: (
-              form.elements.namedItem('stripe_price_id') as HTMLInputElement
-            ).value.trim(),
-            active: (form.elements.namedItem('active') as HTMLInputElement).checked,
-          };
-          await updatePrice(body);
-        } catch (error) {
-          reportError(error, 'Falha ao salvar');
-        } finally {
-          button.disabled = false;
+    const pricesForm = document.getElementById('prices-form') as HTMLFormElement | null;
+    pricesForm?.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const button = pricesForm.querySelector<HTMLButtonElement>('button[type=submit]');
+      const status = pricesForm.querySelector<HTMLElement>('[data-price-status]');
+      if (button) button.disabled = true;
+      let saved = 0;
+      const failed: string[] = [];
+      for (const row of pricesForm.querySelectorAll<HTMLElement>('[data-price-row]')) {
+        const amountRaw = (
+          row.querySelector<HTMLInputElement>('[data-price-amount]')?.value ?? ''
+        ).trim();
+        const priceId = (
+          row.querySelector<HTMLInputElement>('[data-price-id]')?.value ?? ''
+        ).trim();
+        const active = Boolean(row.querySelector<HTMLInputElement>('[data-price-active]')?.checked);
+        if (
+          amountRaw === (row.dataset.initialAmount ?? '') &&
+          priceId === (row.dataset.initialPrice ?? '') &&
+          String(active ? '1' : '0') === (row.dataset.initialActive ?? '0')
+        )
+          continue;
+        const amount = Number(amountRaw);
+        if (amountRaw !== '' && (!Number.isFinite(amount) || !Number.isInteger(amount * 100))) {
+          failed.push(`${row.dataset.plan}:${row.dataset.currency}`);
+          reportError(
+            new Error('Informe um valor com até duas casas decimais.'),
+            'Falha ao salvar',
+          );
+          continue;
         }
-      }),
-    );
+        try {
+          await updatePrice({
+            plan: row.dataset.plan,
+            currency: row.dataset.currency,
+            amount_minor: amountRaw === '' ? 0 : Math.round(amount * 100),
+            stripe_price_id: priceId,
+            active,
+          });
+          row.dataset.initialAmount = amountRaw;
+          row.dataset.initialPrice = priceId;
+          row.dataset.initialActive = active ? '1' : '0';
+          saved += 1;
+        } catch (error) {
+          failed.push(`${row.dataset.plan}:${row.dataset.currency}`);
+          reportError(error, 'Falha ao salvar');
+        }
+      }
+      if (status) {
+        status.textContent = failed.length
+          ? `Não foi possível salvar: ${failed.join(', ')}`
+          : saved
+            ? 'Alterações salvas.'
+            : 'Nada para salvar.';
+      }
+      if (button) button.disabled = false;
+    });
     document.querySelectorAll<HTMLButtonElement>('[data-email-toggle]').forEach((button) =>
       button.addEventListener('click', () => {
         const row = document.getElementById(button.getAttribute('aria-controls') || '');

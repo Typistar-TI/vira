@@ -4,6 +4,8 @@ import { rootDomain } from '@backend/platform/config';
 export interface LogFilters {
   kind?: string;
   level?: string;
+  actor?: string;
+  ip?: string;
 }
 
 export async function getAdminDashboard(
@@ -15,6 +17,8 @@ export async function getAdminDashboard(
   const levels = ['info', 'warning', 'critical'];
   const kindFilter = filters.kind && logKinds.includes(filters.kind) ? filters.kind : '';
   const levelFilter = filters.level && levels.includes(filters.level) ? filters.level : '';
+  const actorFilter = (filters.actor ?? '').trim().slice(0, 80);
+  const ipFilter = (filters.ip ?? '').trim().slice(0, 45);
   const [
     settingsResult,
     pricesResult,
@@ -86,9 +90,21 @@ export async function getAdminDashboard(
           `SELECT created_at, kind, severity, actor_type, actor_id, action, target, ip, user_agent
            FROM logs
            WHERE (? = '' OR kind = ?) AND (? = '' OR severity = ?)
+             AND (? = '' OR actor_id LIKE ? OR target LIKE ?)
+             AND (? = '' OR ip LIKE ?)
            ORDER BY created_at DESC LIMIT 200`,
         )
-          .bind(kindFilter, kindFilter, levelFilter, levelFilter)
+          .bind(
+            kindFilter,
+            kindFilter,
+            levelFilter,
+            levelFilter,
+            actorFilter,
+            `%${actorFilter}%`,
+            `%${actorFilter}%`,
+            ipFilter,
+            `%${ipFilter}%`,
+          )
           .all<{
             created_at: number;
             kind: string;
