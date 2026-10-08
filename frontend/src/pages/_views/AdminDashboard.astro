@@ -12,7 +12,6 @@ const navigation = [
   { key: 'configuracoes', href: '/admin/configuracoes', label: 'Configurações' },
   { key: 'emails', href: '/admin/emails', label: 'E-mails' },
   { key: 'usuarios', href: '/admin/usuarios', label: 'Usuários' },
-  { key: 'dominios', href: '/admin/dominios', label: 'Domínios' },
   { key: 'logs', href: '/admin/logs', label: 'Logs' },
 ];
 
@@ -33,7 +32,6 @@ const logFilters = {
 const {
   settings,
   prices,
-  domains,
   logs,
   emailTemplates,
   emailOutbox,
@@ -83,7 +81,7 @@ const stats = [
   { value: pagantes, label: 'Pagantes', href: '/admin/usuarios' },
   { value: counts.trials_active, label: 'Testes ativos', href: '/admin/usuarios' },
   { value: counts.access_ended, label: 'Expirados', href: '/admin/usuarios' },
-  { value: counts.domains_active, label: 'Domínios ativos', href: '/admin/dominios' },
+  { value: counts.domains_active, label: 'Domínios ativos', href: '/admin/usuarios' },
   { value: counts.emails_sent_30d, label: 'E-mails (30 dias)', href: '/admin/emails' },
   { value: counts.emails_queued, label: 'E-mails na fila', href: '/admin/emails' },
 ];
@@ -1161,52 +1159,6 @@ const deliveryStatus: Record<string, string> = {
             size={size}
             base="/admin/usuarios"
             query={{ q: search, role: roleFilter }}
-          />
-        </section>
-      )}
-      {section === 'dominios' && (
-        <section id="dominios" class="mb-16 scroll-mt-24">
-          <div class="mb-5 [&_h2]:my-1 [&_h2]:text-3xl [&_h2]:text-[#17130d] [&_p]:max-w-[68ch] [&_p]:leading-relaxed [&_p]:text-[#625a51]">
-            <span class="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-[#9b6823]">
-              Publicação
-            </span>
-            <h2>Domínios dos clientes</h2>
-            <p>Acompanhe a ativação do hostname e do certificado TLS.</p>
-          </div>
-          <div class="overflow-x-auto border-y border-[#d8ae73] [&_td]:whitespace-nowrap">
-            <table class="table">
-              <thead>
-                <tr>
-                  <th>Domínio</th>
-                  <th>Cliente</th>
-                  <th>Hostname</th>
-                  <th>TLS</th>
-                  <th>Adicionado</th>
-                </tr>
-              </thead>
-              <tbody>
-                {domains.map((row) => (
-                  <tr>
-                    <td>{row.hostname}</td>
-                    <td>{row.email ?? 'Conta antiga'}</td>
-                    <td>{row.status}</td>
-                    <td>{row.ssl_status}</td>
-                    <td>{date(row.created_at)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            {domains.length === 0 && (
-              <p class="my-2 text-[#625a51]">Nenhum domínio de cliente conectado ainda.</p>
-            )}
-          </div>
-          <Pager
-            page={page}
-            pages={pages}
-            total={total}
-            size={size}
-            base="/admin/dominios"
-            query={{ q: search }}
           />
         </section>
       )}

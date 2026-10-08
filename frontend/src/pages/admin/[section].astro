@@ -4,8 +4,8 @@ import { sessionAdmin } from '@frontend/api/auth/session-admin';
 
 const section = Astro.params.section;
 if (section === 'visao') return Astro.redirect('/admin');
-if (section === 'precos') return Astro.redirect('/admin/configuracoes');
-if (!section || !['configuracoes', 'emails', 'usuarios', 'dominios', 'logs'].includes(section))
+if (section === 'precos' || section === 'dominios') return Astro.redirect('/admin/usuarios');
+if (!section || !['configuracoes', 'emails', 'usuarios', 'logs'].includes(section))
   return Astro.rewrite('/404');
 const admin = await sessionAdmin(Astro.request);
 if (!admin) return Astro.redirect('/login?next=admin');

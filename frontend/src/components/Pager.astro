@@ -11,17 +11,13 @@ const { page, pages, total, size, base, query = {} } = Astro.props;
 const sizes = [10, 25, 50, 100];
 const href = (target: number) => {
   const params = new URLSearchParams(query);
+  if (size !== 10) params.set('size', String(size));
   if (target <= 1) params.delete('page');
   else params.set('page', String(target));
   const qs = params.toString();
   return qs ? `${base}?${qs}` : base;
 };
-const sizeHref = (value: number) => {
-  const params = new URLSearchParams(query);
-  params.delete('page');
-  params.set('size', String(value));
-  return `${base}?${params.toString()}`;
-};
+const hidden = Object.entries(query).filter(([, value]) => value);
 const first = Math.max(1, Math.min(page - 2, pages - 4));
 const last = Math.min(pages, first + 4);
 const numbers: number[] = [];
@@ -30,50 +26,60 @@ const label = (value: number) =>
   value === 0 ? 'Nenhum registro' : value === 1 ? '1 registro' : `${value} registros`;
 ---
 
-<div
-  class="mt-4 flex flex-wrap items-center justify-between gap-3"
-  aria-label="Paginação / Pagination"
->
-  <span class="text-sm text-[#625a51]">
-    Página {page} de {pages} · {label(total)}
-  </span>
-  <div class="flex flex-wrap items-center gap-2">
-    <div class="join">
-      <a
-        class:list={['btn btn-sm join-item', page <= 1 && 'btn-disabled']}
-        href={href(page - 1)}
-        aria-disabled={page <= 1}
-        aria-label="Página anterior"
+<div class="mt-4 flex flex-wrap items-center justify-between gap-3">
+  <form method="get" action={base} class="flex items-center gap-2">
+    {hidden.map(([name, value]) => (
+      <input type="hidden" name={name} value={value} />
+    ))}
+    <label class="flex items-center gap-2 text-sm text-[#625a51]">
+      Registros
+      <select
+        name="size"
+        data-pager-size
+        class="select select-bordered select-sm h-8 rounded-lg"
+        aria-label="Registros por página"
       >
-        ‹
-      </a>
-      {numbers.map((number) => (
-        <a
-          class:list={['btn btn-sm join-item', number === page && 'btn-active']}
-          href={href(number)}
-          aria-current={number === page ? 'page' : undefined}
-        >
-          {number}
-        </a>
-      ))}
+        {sizes.map((value) => (
+          <option value={value} selected={value === size}>
+            {value}
+          </option>
+        ))}
+      </select>
+    </label>
+    <span class="text-sm text-[#625a51]">
+      Página {page} de {pages} · {label(total)}
+    </span>
+  </form>
+  <div class="join">
+    <a
+      class:list={['btn btn-sm join-item', page <= 1 && 'btn-disabled']}
+      href={href(page - 1)}
+      aria-disabled={page <= 1}
+      aria-label="Página anterior"
+    >
+      ‹
+    </a>
+    {numbers.map((number) => (
       <a
-        class:list={['btn btn-sm join-item', page >= pages && 'btn-disabled']}
-        href={href(page + 1)}
-        aria-disabled={page >= pages}
-        aria-label="Próxima página"
+        class:list={['btn btn-sm join-item', number === page && 'btn-active']}
+        href={href(number)}
+        aria-current={number === page ? 'page' : undefined}
       >
-        ›
+        {number}
       </a>
-    </div>
-    <div class="join" aria-label="Registros por página">
-      {sizes.map((value) => (
-        <a
-          class:list={['btn btn-sm join-item', value === size && 'btn-active']}
-          href={sizeHref(value)}
-        >
-          {value}
-        </a>
-      ))}
-    </div>
+    ))}
+    <a
+      class:list={['btn btn-sm join-item', page >= pages && 'btn-disabled']}
+      href={href(page + 1)}
+      aria-disabled={page >= pages}
+      aria-label="Próxima página"
+    >
+      ›
+    </a>
   </div>
 </div>
+<script>
+  document
+    .querySelectorAll<HTMLSelectElement>('[data-pager-size]')
+    .forEach((select) => select.addEventListener('change', () => select.form?.requestSubmit()));
+</script>

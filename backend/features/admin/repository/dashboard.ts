@@ -33,8 +33,6 @@ export async function getAdminDashboard(
   const [
     settingsResult,
     pricesResult,
-    domainsResult,
-    domainsCountResult,
     logsResult,
     logsCountResult,
     emailTemplatesResult,
@@ -64,25 +62,6 @@ export async function getAdminDashboard(
           stripe_price_id: string | null;
           active: number;
         }>()
-      : null,
-    section === 'dominios'
-      ? env.DB.prepare(
-          `SELECT d.hostname, d.status, d.ssl_status, d.created_at, u.email, s.slug FROM domains d
-        JOIN sites s ON s.id = d.site_id JOIN users u ON u.id = s.user_id
-        ORDER BY d.created_at DESC LIMIT ? OFFSET ?`,
-        )
-          .bind(pageSize, offset)
-          .all<{
-            hostname: string;
-            status: string;
-            ssl_status: string;
-            created_at: number;
-            email: string | null;
-            slug: string;
-          }>()
-      : null,
-    section === 'dominios'
-      ? env.DB.prepare('SELECT count(*) AS n FROM domains').first<{ n: number }>()
       : null,
     section === 'logs'
       ? env.DB.prepare(
@@ -261,18 +240,15 @@ export async function getAdminDashboard(
   const total =
     section === 'usuarios'
       ? (peopleCountResult?.n ?? 0)
-      : section === 'dominios'
-        ? (domainsCountResult?.n ?? 0)
-        : section === 'logs'
-          ? (logsCountResult?.n ?? 0)
-          : section === 'emails'
-            ? (outboxCountResult?.n ?? 0)
-            : 0;
+      : section === 'logs'
+        ? (logsCountResult?.n ?? 0)
+        : section === 'emails'
+          ? (outboxCountResult?.n ?? 0)
+          : 0;
   const pages = Math.max(1, Math.ceil(total / pageSize));
   return {
     settings: settingsResult?.results ?? [],
     prices: pricesResult?.results ?? [],
-    domains: domainsResult?.results ?? [],
     logs: logsResult?.results ?? [],
     emailTemplates: emailTemplatesResult?.results ?? [],
     emailOutbox: emailOutboxResult?.results ?? [],
