@@ -33,9 +33,9 @@ const links = [
 ---
 
 <header class="relative z-20 mx-auto flex w-full max-w-[1380px] shrink-0 items-center justify-between gap-4 px-5 pt-5 sm:px-8 sm:pt-7 md:grid md:grid-cols-[1fr_auto_1fr]">
-  <div class="flex min-w-0 flex-col justify-center md:justify-self-start">
+  <div class="flex w-fit min-w-0 flex-col items-center justify-center md:justify-self-start">
     <Brand href={signedIn ? dashboardHref : en ? '/en' : '/'} tone="light" />
-    <span class="mt-0.5 text-[11px] leading-tight text-[#8b5b1e] sm:mt-1 sm:text-xs">
+    <span class="mt-0.5 text-center text-[11px] leading-tight text-[#8b5b1e] sm:mt-1 sm:text-xs">
       {en ? 'Vira your idea out there.' : 'Vira sua ideia no mundo.'}
     </span>
   </div>
