@@ -119,6 +119,22 @@ export function equalHashes(a: string, b: string): boolean {
   return difference === 0;
 }
 
+async function storePassword(
+  email: string,
+  password: { hash: string; salt: string; iterations: number },
+): Promise<void> {
+  // Reset invalidates existing sessions, including sessions from other login methods.
+  await env.DB.batch([
+    env.DB.prepare(
+      'INSERT INTO auth_passwords (email, password_hash, salt, iterations, updated_at) VALUES (?, ?, ?, ?, ?) ON CONFLICT(email) DO UPDATE SET password_hash = excluded.password_hash, salt = excluded.salt, iterations = excluded.iterations, updated_at = excluded.updated_at',
+    ).bind(email, password.hash, password.salt, password.iterations, Math.floor(Date.now() / 1000)),
+    env.DB.prepare(
+      'DELETE FROM sessions WHERE user_id IN (SELECT id FROM users WHERE email = ?)',
+    ).bind(email),
+    env.DB.prepare('DELETE FROM admin_sessions WHERE admin_email = ?').bind(email),
+  ]);
+}
+
 export async function establishLogin(
   email: string,
   request: Request,
@@ -145,6 +161,36 @@ export async function establishLogin(
     });
     return json({ error: 'Acesso administrativo não autorizado' }, 403);
   }
+  if (!adminLogin && admin) {
+    if (password) {
+      // Admins set/reset their password here without creating a customer account.
+      await storePassword(email, password);
+      await logEvent(request, {
+        kind: 'auth',
+        action: 'password_set',
+        actorType: 'admin',
+        actorId: email,
+        target: email,
+      });
+      return json({ redirect: '/login?next=admin' }, 200, { 'cache-control': 'no-store' });
+    }
+    await logEvent(request, {
+      kind: 'security',
+      action: 'login_denied',
+      severity: 'warning',
+      actorType: 'admin',
+      actorId: email,
+      target: email,
+      metadata: { method, reason: 'admin_email' },
+    });
+    return json(
+      {
+        error:
+          'Este e-mail é de uma conta administrativa. Use o acesso administrativo. / This email belongs to an admin account.',
+      },
+      403,
+    );
+  }
   if (!existing && !adminLogin && (!controller || !contact))
     return json({ error: 'Cadastro temporariamente indisponível' }, 403);
   let user: { id: string } | null = null;
@@ -164,24 +210,7 @@ export async function establishLogin(
       );
     throw error;
   }
-  if (password) {
-    // Reset invalidates existing sessions, including sessions from other login methods.
-    await env.DB.batch([
-      env.DB.prepare(
-        'INSERT INTO auth_passwords (email, password_hash, salt, iterations, updated_at) VALUES (?, ?, ?, ?, ?) ON CONFLICT(email) DO UPDATE SET password_hash = excluded.password_hash, salt = excluded.salt, iterations = excluded.iterations, updated_at = excluded.updated_at',
-      ).bind(
-        email,
-        password.hash,
-        password.salt,
-        password.iterations,
-        Math.floor(Date.now() / 1000),
-      ),
-      env.DB.prepare(
-        'DELETE FROM sessions WHERE user_id IN (SELECT id FROM users WHERE email = ?)',
-      ).bind(email),
-      env.DB.prepare('DELETE FROM admin_sessions WHERE admin_email = ?').bind(email),
-    ]);
-  }
+  if (password) await storePassword(email, password);
   const created = !adminLogin && !existing;
   await logEvent(request, {
     kind: adminLogin ? 'admin' : 'auth',

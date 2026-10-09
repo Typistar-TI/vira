@@ -195,6 +195,7 @@ export async function getAdminDashboard(
               (SELECT count(*) FROM sessions s WHERE s.user_id = u.id AND s.expires_at > unixepoch()) AS active_sessions,
               (SELECT count(*) FROM sites si WHERE si.user_id = u.id) AS sites
             FROM users u
+            WHERE COALESCE(u.email, '') NOT IN (SELECT email FROM admin_accounts)
             UNION ALL
             SELECT 'admin', a.email, a.email, 'admin', a.created_at, NULL, NULL, NULL,
               a.display_name, a.google_sub,
@@ -224,6 +225,7 @@ export async function getAdminDashboard(
       ? env.DB.prepare(
           `SELECT count(*) AS n FROM (
             SELECT 'customer' AS role, u.email AS email FROM users u
+            WHERE COALESCE(u.email, '') NOT IN (SELECT email FROM admin_accounts)
             UNION ALL SELECT 'admin', a.email FROM admin_accounts a
           ) WHERE (? = '' OR role = ?) AND (? = '' OR COALESCE(email, '') LIKE ?)`,
         )

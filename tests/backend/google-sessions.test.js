@@ -21,45 +21,26 @@ function googleRequest(scope, cookie) {
 }
 
 describe('Google session role selection', () => {
-  it.each(['app', 'admin'])(
-    'creates only the %s session for an email registered in both roles',
-    async (scope) => {
-      const { email, cookie: appCookie } = await customer();
-      await env.DB.prepare('INSERT INTO admin_accounts (email, created_at) VALUES (?, ?)')
-        .bind(email, Math.floor(Date.now() / 1000))
-        .run();
-      await env.DB.prepare(
-        "UPDATE app_settings SET value = 'test-client-id', encrypted = 0 WHERE key = 'GOOGLE_CLIENT_ID'",
-      ).run();
-      const adminCookie = (await createAdminSession(email)).split(';')[0];
-      const cookie = `${appCookie}; ${adminCookie}`;
-      jwtVerify.mockResolvedValue({
-        payload: { sub: 'google-test-sub', email, email_verified: true },
-      });
-      const response = await POST(googleRequest(scope, cookie));
-      expect(response.status).toBe(303);
-      expect(response.headers.get('location')).toBe(`/${scope}`);
-      expect(response.headers.get('set-cookie')).toMatch(
-        scope === 'admin' ? /^__Host-vira_admin_session=/ : /^__Host-vira_session=/,
-      );
-      expect(response.headers.get('set-cookie')).toContain('Max-Age=2592000');
-      expect((await getSessionUser(request('/app', undefined, { cookie }))).email).toBe(email);
-      expect((await getSessionAdmin(request('/admin', undefined, { cookie }))).email).toBe(email);
-      if (scope === 'app') {
-        const combined = `${response.headers.get('set-cookie').split(';')[0]}; ${adminCookie}`;
-        expect((await getSessionUser(request('/app', undefined, { cookie: combined }))).email).toBe(
-          email,
-        );
-        expect(
-          (
-            await env.DB.prepare('SELECT google_sub FROM admin_accounts WHERE email = ?')
-              .bind(email)
-              .first()
-          ).google_sub,
-        ).toBeNull();
-      }
-    },
-  );
+  it('creates the admin session for an admin email and blocks the app scope', async () => {
+    const { email } = await customer();
+    await env.DB.prepare('INSERT INTO admin_accounts (email, created_at) VALUES (?, ?)')
+      .bind(email, Math.floor(Date.now() / 1000))
+      .run();
+    await env.DB.prepare(
+      "UPDATE app_settings SET value = 'test-client-id', encrypted = 0 WHERE key = 'GOOGLE_CLIENT_ID'",
+    ).run();
+    jwtVerify.mockResolvedValue({
+      payload: { sub: 'google-test-sub', email, email_verified: true },
+    });
+    const appResponse = await POST(googleRequest('app', 'g_csrf_token=test-csrf'));
+    expect(appResponse.status).toBe(303);
+    expect(appResponse.headers.get('location')).toMatch(/^\/login\?next=app&error=/);
+    expect(appResponse.headers.has('set-cookie')).toBe(false);
+    const adminResponse = await POST(googleRequest('admin', 'g_csrf_token=test-csrf'));
+    expect(adminResponse.status).toBe(303);
+    expect(adminResponse.headers.get('location')).toBe('/admin');
+    expect(adminResponse.headers.get('set-cookie')).toMatch(/^__Host-vira_admin_session=/);
+  });
 
   it('rejects a non-admin Google identity and preserves the admin sign-in destination on error', async () => {
     const { email, cookie } = await customer();
