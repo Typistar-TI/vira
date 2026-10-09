@@ -26,17 +26,17 @@ const label = (value: number) =>
   value === 0 ? 'Nenhum registro' : value === 1 ? '1 registro' : `${value} registros`;
 ---
 
-<div class="mt-4 flex flex-wrap items-center justify-between gap-3">
-  <form method="get" action={base} class="flex items-center gap-2">
+<div class="mt-4 flex flex-nowrap items-center justify-between gap-2">
+  <form method="get" action={base} class="flex min-w-0 items-center gap-2">
     {hidden.map(([name, value]) => (
       <input type="hidden" name={name} value={value} />
     ))}
     <label class="flex items-center gap-2 text-sm text-[#625a51]">
-      Registros
+      <span class="max-sm:hidden">Registros</span>
       <select
         name="size"
         data-pager-size
-        class="select select-bordered select-sm h-8 rounded-lg"
+        class="select select-bordered select-sm h-8 w-auto rounded-lg"
         aria-label="Registros por página"
       >
         {sizes.map((value) => (
@@ -46,11 +46,16 @@ const label = (value: number) =>
         ))}
       </select>
     </label>
-    <span class="text-sm text-[#625a51]">
-      Página {page} de {pages} · {label(total)}
+    <span class="truncate text-xs text-[#625a51] sm:text-sm">
+      <span class="sm:hidden">
+        {page}/{pages}
+      </span>
+      <span class="hidden sm:inline">
+        Página {page} de {pages} · {label(total)}
+      </span>
     </span>
   </form>
-  <div class="join">
+  <div class="join shrink-0">
     <a
       class:list={['btn btn-sm join-item', page <= 1 && 'btn-disabled']}
       href={href(page - 1)}
@@ -61,7 +66,7 @@ const label = (value: number) =>
     </a>
     {numbers.map((number) => (
       <a
-        class:list={['btn btn-sm join-item', number === page && 'btn-active']}
+        class:list={['btn btn-sm join-item max-sm:hidden', number === page && 'btn-active']}
         href={href(number)}
         aria-current={number === page ? 'page' : undefined}
       >
