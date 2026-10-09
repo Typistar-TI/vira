@@ -1,6 +1,6 @@
 import { env } from 'cloudflare:workers';
 import { setting } from '@backend/platform/config';
-import { createAdminSession, createSession, loginScope, sha256 } from './session';
+import { createAdminSession, createSession, sha256 } from './session';
 import { consumeLimit, getOrCreateEmailUser } from '../repository/users';
 import { languageFromRequest } from './language';
 import { clientIp, json } from '@backend/platform/http';
@@ -148,80 +148,38 @@ export async function establishLogin(
     setting('PRIVACY_CONTROLLER_NAME'),
     setting('PRIVACY_CONTACT_EMAIL'),
   ]);
-  const adminLogin = loginScope(request) === 'admin';
-  if (adminLogin && !admin) {
-    await logEvent(request, {
-      kind: 'security',
-      action: 'login_denied',
-      severity: 'warning',
-      actorType: 'admin',
-      actorId: email,
-      target: email,
-      metadata: { method, reason: 'admin_not_authorized' },
-    });
-    return json({ error: 'Acesso administrativo não autorizado' }, 403);
-  }
-  if (!adminLogin && admin) {
-    if (password) {
-      // Admins set/reset their password here without creating a customer account.
-      await storePassword(email, password);
-      await logEvent(request, {
-        kind: 'auth',
-        action: 'password_set',
-        actorType: 'admin',
-        actorId: email,
-        target: email,
-      });
-      return json({ redirect: '/login?next=admin' }, 200, { 'cache-control': 'no-store' });
-    }
-    await logEvent(request, {
-      kind: 'security',
-      action: 'login_denied',
-      severity: 'warning',
-      actorType: 'admin',
-      actorId: email,
-      target: email,
-      metadata: { method, reason: 'admin_email' },
-    });
-    return json(
-      {
-        error:
-          'Este e-mail é de uma conta administrativa. Use o acesso administrativo. / This email belongs to an admin account.',
-      },
-      403,
-    );
-  }
-  if (!existing && !adminLogin && (!controller || !contact))
+  const isAdmin = Boolean(admin);
+  if (!isAdmin && !existing && (!controller || !contact))
     return json({ error: 'Cadastro temporariamente indisponível' }, 403);
   let user: { id: string } | null = null;
-  try {
-    user = adminLogin
-      ? null
-      : await getOrCreateEmailUser(email, languageFromRequest(request), accepted);
-  } catch (error) {
-    if (error instanceof Error && error.message === 'consent_required')
-      return json(
-        {
-          error:
-            'Você precisa aceitar os Termos de Uso e a Política de Privacidade para criar a conta.',
-          consent: true,
-        },
-        400,
-      );
-    throw error;
+  if (!isAdmin) {
+    try {
+      user = await getOrCreateEmailUser(email, languageFromRequest(request), accepted);
+    } catch (error) {
+      if (error instanceof Error && error.message === 'consent_required')
+        return json(
+          {
+            error:
+              'Você precisa aceitar os Termos de Uso e a Política de Privacidade para criar a conta.',
+            consent: true,
+          },
+          400,
+        );
+      throw error;
+    }
   }
   if (password) await storePassword(email, password);
-  const created = !adminLogin && !existing;
+  const created = !isAdmin && !existing;
   await logEvent(request, {
-    kind: adminLogin ? 'admin' : 'auth',
+    kind: isAdmin ? 'admin' : 'auth',
     action: created ? 'signup' : 'login',
-    actorType: adminLogin ? 'admin' : 'user',
+    actorType: isAdmin ? 'admin' : 'user',
     actorId: email,
     target: email,
     metadata: { method },
   });
-  return json({ redirect: adminLogin ? '/admin' : '/app' }, 200, {
-    'set-cookie': adminLogin ? await createAdminSession(email) : await createSession(user!.id),
+  return json({ redirect: isAdmin ? '/admin' : '/app' }, 200, {
+    'set-cookie': isAdmin ? await createAdminSession(email) : await createSession(user!.id),
     'cache-control': 'no-store',
   });
 }

@@ -85,11 +85,7 @@ export const POST = async (request: Request): Promise<Response> => {
       setting('PRIVACY_CONTROLLER_NAME'),
       setting('PRIVACY_CONTACT_EMAIL'),
     ]);
-    const isAdmin =
-      scope === 'admin' && Boolean(admin && (!admin.google_sub || admin.google_sub === sub));
-    if (scope !== 'admin' && admin)
-      return failLogin('Este e-mail é de uma conta administrativa. Use o acesso administrativo');
-    if (scope === 'admin' && !isAdmin) return failLogin('Conta Google não autorizada');
+    const isAdmin = Boolean(admin && (!admin.google_sub || admin.google_sub === sub));
     if (!existing && !isAdmin && (!controller || !contact))
       return failLogin('Cadastro temporariamente indisponível');
     if (isAdmin && admin && !admin.google_sub) {

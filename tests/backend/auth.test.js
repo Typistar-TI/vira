@@ -179,12 +179,13 @@ describe('Email authentication and password lifecycle', () => {
       }),
     );
     expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({ redirect: '/login?next=admin' });
+    expect(await response.json()).toEqual({ redirect: '/admin' });
+    expect(response.headers.get('set-cookie')).toMatch(/^__Host-vira_admin_session=/);
     expect(
       await env.DB.prepare('SELECT 1 FROM users WHERE email = ?').bind(email).first(),
     ).toBeNull();
     const login = await password(
-      request('/api/auth/password?next=admin', { email, password: 'admin-long-password' }),
+      request('/api/auth/password', { email, password: 'admin-long-password' }),
     );
     expect(login.status).toBe(200);
     expect(login.headers.get('set-cookie')).toMatch(/^__Host-vira_admin_session=/);
@@ -229,7 +230,7 @@ describe('Email authentication and password lifecycle', () => {
 });
 
 describe('Sessions', () => {
-  it('does not allow an admin email to sign in to the customer area', async () => {
+  it('signs an admin email into the admin area', async () => {
     const { email } = await customer();
     await env.DB.prepare('INSERT INTO admin_accounts (email, created_at) VALUES (?, ?)')
       .bind(email, Math.floor(Date.now() / 1000))
@@ -241,41 +242,32 @@ describe('Sessions', () => {
     )
       .bind(email, record.hash, record.salt, record.iterations, Math.floor(Date.now() / 1000))
       .run();
-    const app = await password(request('/api/auth/password?next=app', { email, password: secret }));
-    expect(app.status).toBe(403);
-    expect(app.headers.has('set-cookie')).toBe(false);
-    const admin = await password(
-      request('/api/auth/password?next=admin', { email, password: secret }),
-    );
-    expect(await admin.json()).toEqual({ redirect: '/admin' });
-    expect(admin.headers.get('set-cookie')).toMatch(/^__Host-vira_admin_session=/);
+    const login = await password(request('/api/auth/password', { email, password: secret }));
+    expect(login.status).toBe(200);
+    expect(await login.json()).toEqual({ redirect: '/admin' });
+    expect(login.headers.get('set-cookie')).toMatch(/^__Host-vira_admin_session=/);
   });
 
-  it('email-code login for an admin email only works for the admin scope', async () => {
+  it('email-code login signs an admin email into the admin area', async () => {
     const { email } = await customer();
     await env.DB.prepare('INSERT INTO admin_accounts (email, created_at) VALUES (?, ?)')
       .bind(email, Math.floor(Date.now() / 1000))
       .run();
-    const appCode = await issue(email);
-    const app = await verify(request('/api/auth/email/verify?next=app', { email, code: appCode }));
-    expect(app.status).toBe(403);
-    expect(app.headers.has('set-cookie')).toBe(false);
-    await env.DB.prepare('DELETE FROM rate_limits').run();
-    const adminCode = await issue(email);
-    const admin = await verify(
-      request('/api/auth/email/verify?next=admin', { email, code: adminCode }),
-    );
-    expect(admin.status).toBe(200);
-    expect(await admin.json()).toEqual({ redirect: '/admin' });
-    expect(admin.headers.get('set-cookie')).toMatch(/^__Host-vira_admin_session=/);
+    const code = await issue(email);
+    const response = await verify(request('/api/auth/email/verify', { email, code }));
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ redirect: '/admin' });
+    expect(response.headers.get('set-cookie')).toMatch(/^__Host-vira_admin_session=/);
   });
 
-  it('does not grant administrative access to a customer using next=admin', async () => {
+  it('does not grant administrative access to a customer email', async () => {
     const { email } = await customer();
     const code = await issue(email);
     const response = await verify(request('/api/auth/email/verify?next=admin', { email, code }));
-    expect(response.status).toBe(403);
-    expect(response.headers.has('set-cookie')).toBe(false);
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ redirect: '/app' });
+    expect(response.headers.get('set-cookie')).toMatch(/^__Host-vira_session=/);
+    expect(response.headers.get('set-cookie')).not.toContain('admin_session');
   });
 
   it.each(['app', 'admin'])(
