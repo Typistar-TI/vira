@@ -1,4 +1,5 @@
 ---
+import Sheet from './Sheet.astro';
 interface Props {
   email: string;
   displayName?: string;
@@ -90,44 +91,27 @@ const avatarClass =
         {initials || 'V'}
       </span>
     </button>
-    <dialog
-      class="modal modal-bottom"
-      data-account-dialog
-      aria-label={en ? 'Account options' : 'Opções da conta'}
+    <Sheet
+      label={en ? 'Your account' : 'Sua conta'}
+      closeLabel={en ? 'Close options' : 'Fechar opções'}
     >
-      <div class="modal-box max-h-[78dvh] w-full max-w-none rounded-t-[2rem] border-t border-[#d8ae73] bg-white px-5 pt-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] text-[#17130d]">
-        <div class="mb-5 flex items-center justify-between gap-4">
-          <h2 class="font-[Outfit] text-xl font-medium">{en ? 'Your account' : 'Sua conta'}</h2>
-          <button
-            class="btn btn-ghost btn-circle btn-sm"
-            type="button"
-            data-close-account
-            aria-label={en ? 'Close options' : 'Fechar opções'}
-          >
-            ×
-          </button>
-        </div>
-        <p class="mb-5 truncate text-sm font-semibold text-[#17130d]" data-account-label>
-          {label}
-        </p>
-        <ul class="menu w-full gap-1 p-0 text-base">
-          {links.map((link) => (
-            <li>
-              <a class="min-h-12 rounded-xl px-4" href={link.href}>
-                {link.label}
-              </a>
-            </li>
-          ))}
-          <li class="mt-2 border-t border-[#ead8bd] pt-2">
-            <button class="min-h-12 rounded-xl px-4" type="button" data-account-logout>
-              {en ? 'Sign out' : 'Sair da conta'}
-            </button>
+      <p class="mb-4 truncate text-sm font-semibold text-[#17130d]" data-account-label>
+        {label}
+      </p>
+      <ul class="menu w-full gap-1 p-0 text-base">
+        {links.map((link) => (
+          <li>
+            <a class="min-h-12 rounded-xl px-4" href={link.href}>
+              {link.label}
+            </a>
           </li>
-        </ul>
-      </div>
-      <form method="dialog" class="modal-backdrop">
-        <button aria-label={en ? 'Close options' : 'Fechar opções'}></button>
-      </form>
-    </dialog>
+        ))}
+        <li class="mt-2 pt-2">
+          <button class="min-h-12 rounded-xl px-4" type="button" data-account-logout>
+            {en ? 'Sign out' : 'Sair da conta'}
+          </button>
+        </li>
+      </ul>
+    </Sheet>
   </div>
 </div>

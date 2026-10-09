@@ -1,0 +1,87 @@
+---
+interface Props {
+  id?: string;
+  label: string;
+  closeLabel?: string;
+  centered?: boolean;
+}
+const { id, label, closeLabel = 'Fechar', centered = false } = Astro.props;
+---
+
+<dialog
+  id={id}
+  data-sheet
+  class:list={['modal modal-bottom', centered && 'sm:modal-middle']}
+  aria-label={label}
+>
+  <div
+    data-sheet-panel
+    class="modal-box max-h-[82dvh] w-full max-w-none rounded-t-[2rem] border-t border-[#d8ae73] bg-white px-5 pt-3 pb-[max(1.5rem,env(safe-area-inset-bottom))] text-[#17130d] sm:rounded-3xl sm:border"
+  >
+    <div
+      data-sheet-handle
+      class="mx-auto mb-4 h-1.5 w-12 cursor-grab touch-none rounded-full bg-[#d8ae73]/60 active:cursor-grabbing"
+      aria-hidden="true"
+    ></div>
+    <div class="mb-5 flex items-center justify-between gap-4">
+      <h2 class="font-[Outfit] text-xl font-medium">{label}</h2>
+      <button
+        class="btn btn-ghost btn-circle btn-sm"
+        type="button"
+        data-sheet-close
+        aria-label={closeLabel}
+      >
+        ×
+      </button>
+    </div>
+    <slot />
+  </div>
+  <form method="dialog" class="modal-backdrop">
+    <button aria-label={closeLabel}></button>
+  </form>
+</dialog>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    document.querySelectorAll<HTMLDialogElement>('[data-sheet]').forEach((dialog) => {
+      if (dialog.dataset.sheetReady === 'true') return;
+      dialog.dataset.sheetReady = 'true';
+      const panel = dialog.querySelector<HTMLElement>('[data-sheet-panel]');
+      const handle = dialog.querySelector<HTMLElement>('[data-sheet-handle]');
+      dialog.querySelector('[data-sheet-close]')?.addEventListener('click', () => dialog.close());
+      dialog
+        .querySelectorAll<HTMLAnchorElement>('a')
+        .forEach((link) => link.addEventListener('click', () => dialog.close()));
+      if (!panel || !handle) return;
+      let startY = 0;
+      let offset = 0;
+      let dragging = false;
+      handle.addEventListener('pointerdown', (event) => {
+        if (event.pointerType === 'mouse') return;
+        dragging = true;
+        startY = event.clientY;
+        offset = 0;
+        panel.style.transition = 'none';
+        handle.setPointerCapture(event.pointerId);
+      });
+      handle.addEventListener('pointermove', (event) => {
+        if (!dragging) return;
+        offset = Math.max(0, event.clientY - startY);
+        panel.style.transform = `translateY(${offset}px)`;
+      });
+      const end = () => {
+        if (!dragging) return;
+        dragging = false;
+        panel.style.transition = 'transform 180ms ease-out';
+        if (offset > 90) dialog.close();
+        panel.style.transform = '';
+        offset = 0;
+      };
+      handle.addEventListener('pointerup', end);
+      handle.addEventListener('pointercancel', end);
+      dialog.addEventListener('close', () => {
+        panel.style.transform = '';
+      });
+    });
+  });
+</script>

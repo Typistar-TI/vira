@@ -1,5 +1,6 @@
 ---
 import Brand from '@frontend/components/Brand.astro';
+import Sheet from '@frontend/components/Sheet.astro';
 import MobileNavigation from '@frontend/components/MobileNavigation.astro';
 
 interface Props {
@@ -81,60 +82,43 @@ const links = [
   </div>
 
   {bothSessions && (
-    <dialog
-      data-dashboard-dialog
-      class="modal modal-bottom sm:modal-middle"
-      aria-label={en ? 'Choose dashboard' : 'Escolher painel'}
+    <Sheet
+      id="dashboard-sheet"
+      label={en ? 'Where do you want to go?' : 'Para onde você quer ir?'}
+      closeLabel={en ? 'Close' : 'Fechar'}
+      centered
     >
-      <div class="modal-box max-w-md rounded-t-[2rem] border-t border-[#d8ae73] bg-white px-6 pt-6 pb-6 text-[#17130d] sm:rounded-3xl sm:border">
-        <div class="mb-4 flex items-center justify-between gap-4">
-          <h2 class="font-['Outfit',sans-serif] text-xl font-medium">
-            {en ? 'Where do you want to go?' : 'Para onde você quer ir?'}
-          </h2>
-          <button
-            type="button"
-            data-dashboard-close
-            class="btn btn-ghost btn-circle btn-sm"
-            aria-label={en ? 'Close' : 'Fechar'}
-          >
-            ×
-          </button>
-        </div>
-        <p class="mb-5 text-sm text-[#625a51]">
-          {en
-            ? 'You are signed in as a customer and as an administrator.'
-            : 'Você está logado como cliente e como administrador.'}
-        </p>
-        <div class="flex flex-col gap-3">
-          <a
-            href="/app"
-            class="btn h-12 w-full rounded-full border border-[#b88333] bg-white font-semibold text-[#6f4716] shadow-none hover:border-[#9b6823] hover:bg-[#fff9ef]"
-          >
-            {en ? 'Customer dashboard' : 'Painel do cliente'}
-          </a>
-          <a
-            href="/admin"
-            class="btn h-12 w-full rounded-full border border-[#a66f27] bg-[#b88333] font-semibold text-white shadow-none hover:bg-[#9b6823]"
-          >
-            {en ? 'Admin dashboard' : 'Painel admin'}
-          </a>
-        </div>
+      <p class="mb-5 text-sm text-[#625a51]">
+        {en
+          ? 'You are signed in as a customer and as an administrator.'
+          : 'Você está logado como cliente e como administrador.'}
+      </p>
+      <div class="flex flex-col gap-3">
+        <a
+          href="/app"
+          class="btn h-12 w-full rounded-full border border-[#b88333] bg-white font-semibold text-[#6f4716] shadow-none hover:border-[#9b6823] hover:bg-[#fff9ef]"
+        >
+          {en ? 'Customer dashboard' : 'Painel do cliente'}
+        </a>
+        <a
+          href="/admin"
+          class="btn h-12 w-full rounded-full border border-[#a66f27] bg-[#b88333] font-semibold text-white shadow-none hover:bg-[#9b6823]"
+        >
+          {en ? 'Admin dashboard' : 'Painel admin'}
+        </a>
       </div>
-      <form method="dialog" class="modal-backdrop">
-        <button aria-label={en ? 'Close' : 'Fechar'}></button>
-      </form>
-    </dialog>
+    </Sheet>
   )}
 </header>
 
 <script>
   document.addEventListener('astro:page-load', () => {
-    const dashboardDialog = document.querySelector<HTMLDialogElement>('[data-dashboard-dialog]');
     document
       .querySelectorAll<HTMLElement>('[data-dashboard-open]')
-      .forEach((button) => button.addEventListener('click', () => dashboardDialog?.showModal()));
-    dashboardDialog
-      ?.querySelector('[data-dashboard-close]')
-      ?.addEventListener('click', () => dashboardDialog?.close());
+      .forEach((button) =>
+        button.addEventListener('click', () =>
+          document.querySelector<HTMLDialogElement>('#dashboard-sheet')?.showModal(),
+        ),
+      );
   });
 </script>
