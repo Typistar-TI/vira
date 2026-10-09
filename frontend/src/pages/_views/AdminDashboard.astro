@@ -1019,13 +1019,13 @@ const deliveryStatus: Record<string, string> = {
               />
             </label>
             {(search || roleFilter) && (
-              <a href="/admin/usuarios" class="btn btn-ghost h-10 rounded-lg">
+              <a href="/admin/usuarios" class="btn btn-ghost rounded-lg">
                 Limpar
               </a>
             )}
             <button
               type="button"
-              class="btn btn-primary h-10 rounded-lg sm:ml-auto"
+              class="btn btn-primary rounded-lg sm:ml-auto"
               data-user-create-open
             >
               Novo usuário
@@ -1326,13 +1326,13 @@ const deliveryStatus: Record<string, string> = {
               />
             </label>
             {(logFilters.kind || logFilters.level || search) && (
-              <a href="/admin/logs" class="btn btn-ghost h-10 rounded-lg">
+              <a href="/admin/logs" class="btn btn-ghost rounded-lg">
                 Limpar
               </a>
             )}
             <a
               href={`/api/admin/logs/export?kind=${encodeURIComponent(logFilters.kind)}&level=${encodeURIComponent(logFilters.level)}&q=${encodeURIComponent(search)}`}
-              class="btn btn-outline h-10 rounded-lg"
+              class="btn btn-outline rounded-lg"
             >
               Exportar CSV
             </a>

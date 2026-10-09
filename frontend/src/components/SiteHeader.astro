@@ -75,14 +75,14 @@ const links = [
           type="button"
           data-dashboard-open
           aria-haspopup="dialog"
-          class="btn h-10 min-h-10 rounded-full border border-[#b88333] bg-white px-4 font-semibold text-[#6f4716] shadow-none transition-colors hover:border-[#9b6823] hover:bg-[#fff9ef] sm:px-5"
+          class="btn rounded-full border border-[#b88333] bg-white px-4 font-semibold text-[#6f4716] shadow-none transition-colors hover:border-[#9b6823] hover:bg-[#fff9ef] sm:px-5"
         >
           Dashboard
         </button>
       ) : (
         <a
           href={dashboardHref}
-          class="btn h-10 min-h-10 rounded-full border border-[#b88333] bg-white px-4 font-semibold text-[#6f4716] shadow-none transition-colors hover:border-[#9b6823] hover:bg-[#fff9ef] sm:px-5"
+          class="btn rounded-full border border-[#b88333] bg-white px-4 font-semibold text-[#6f4716] shadow-none transition-colors hover:border-[#9b6823] hover:bg-[#fff9ef] sm:px-5"
         >
           Dashboard
           <span class="hidden sm:inline" aria-hidden="true">
@@ -93,7 +93,7 @@ const links = [
     ) : (
       <a
         href="/login?signup=1"
-        class="btn h-10 min-h-10 rounded-full border border-[#b88333] bg-white px-4 font-semibold text-[#6f4716] shadow-none transition-colors hover:border-[#9b6823] hover:bg-[#fff9ef] sm:px-5"
+        class="btn rounded-full border border-[#b88333] bg-white px-4 font-semibold text-[#6f4716] shadow-none transition-colors hover:border-[#9b6823] hover:bg-[#fff9ef] sm:px-5"
       >
         <span class="sm:hidden">{en ? 'Start' : 'Começar'}</span>
         <span class="hidden sm:inline">{en ? 'Start free' : 'Começar grátis'}</span>

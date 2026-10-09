@@ -122,10 +122,18 @@
   animation: none;
 }
 
-/* Altura única para todos os campos (input, select, arquivo e date picker). */
+/* Altura única e compacta para todos os campos (input, select, arquivo e date picker). */
 .input,
 .select,
 .file-input {
-  height: 2.5rem;
-  min-height: 2.5rem;
+  height: 2rem;
+  min-height: 2rem;
+}
+
+/* Botões padrão mais compactos, preservando variantes sm/lg/circle/square e CTAs grandes. */
+.btn:not(.btn-sm):not(.btn-xs):not(.btn-lg):not(.btn-circle):not(.btn-square):not(.h-11):not(
+    .h-12
+  ) {
+  height: 2rem;
+  min-height: 2rem;
 }
