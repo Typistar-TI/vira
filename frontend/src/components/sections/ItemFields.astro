@@ -1,5 +1,6 @@
 ---
 import type { SectionType } from '@frontend/api/sites/parse-site';
+import ImageUpload from '@frontend/components/ImageUpload.astro';
 
 interface Props {
   kind: SectionType;
@@ -67,23 +68,13 @@ const v = (key: string) => item[key] ?? '';
       value={v('url')}
       placeholder="https://"
     />
-    <input
-      class="file-input file-input-bordered w-full"
-      name="item-file"
-      type="file"
-      accept="image/jpeg,image/png,image/webp"
-    />
+    <ImageUpload name="item-file" lang={en ? 'en' : 'pt'} src={v('image')} compact class="mb-2" />
     <input type="hidden" name="item-image" value={v('image')} />
   </>
 )}
 {kind === 'gallery' && (
   <>
-    <input
-      class="file-input file-input-bordered w-full"
-      name="item-file"
-      type="file"
-      accept="image/jpeg,image/png,image/webp"
-    />
+    <ImageUpload name="item-file" lang={en ? 'en' : 'pt'} src={v('image')} compact />
     <input type="hidden" name="item-image" value={v('image')} />
   </>
 )}

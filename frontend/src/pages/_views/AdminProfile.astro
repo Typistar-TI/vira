@@ -1,6 +1,7 @@
 ---
 import Base from '@frontend/components/Base.astro';
 import AdminHeader from '@frontend/components/AdminHeader.astro';
+import ImageUpload from '@frontend/components/ImageUpload.astro';
 
 const { admin } = Astro.props;
 const label = admin.displayName || admin.email.split('@')[0] || 'V';
@@ -52,11 +53,10 @@ const initials = label
                   {initials || 'V'}
                 </span>
               </span>
-              <input
-                data-avatar-input
-                type="file"
+              <ImageUpload
                 accept="image/png,image/jpeg,image/webp"
-                class="file-input file-input-bordered file-input-sm w-full max-w-xs"
+                preview={false}
+                class="max-w-xs"
               />
               <button data-avatar-remove type="button" class="btn btn-ghost btn-sm">
                 Remover foto
@@ -97,9 +97,6 @@ const initials = label
             <button class="btn btn-primary" type="submit">
               Salvar
             </button>
-            <a href="/admin" class="text-sm text-[#6f4716] hover:underline">
-              Voltar ao painel
-            </a>
           </div>
         </form>
 

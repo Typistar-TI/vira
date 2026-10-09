@@ -85,6 +85,7 @@ const lightFields =
     <Motion />
     <script>
       import { enhanceDatePickers } from '@frontend/pages/_scripts/date-picker';
+      import { initImageUploads } from '@frontend/pages/_scripts/image-upload';
       window.scrollTo(0, 0);
       window.addEventListener('pageshow', () => window.scrollTo(0, 0));
       if ('serviceWorker' in navigator) {
@@ -92,7 +93,10 @@ const lightFields =
           navigator.serviceWorker.register('/sw.js').catch(() => {});
         });
       }
-      document.addEventListener('astro:page-load', enhanceDatePickers);
+      document.addEventListener('astro:page-load', () => {
+        enhanceDatePickers();
+        initImageUploads();
+      });
     </script>
   </body>
 </html>

@@ -1,0 +1,85 @@
+---
+interface Props {
+  name?: string;
+  accept?: string;
+  id?: string;
+  lang?: 'pt' | 'en';
+  label?: string;
+  hint?: string;
+  compact?: boolean;
+  preview?: boolean;
+  src?: string;
+  class?: string;
+  [key: string]: unknown;
+}
+const {
+  name = 'file',
+  accept = 'image/jpeg,image/png,image/webp',
+  id,
+  lang = 'pt',
+  label,
+  hint,
+  compact = false,
+  preview = true,
+  src,
+  class: className = '',
+  ...rest
+} = Astro.props;
+const en = lang === 'en';
+const text =
+  label ?? (en ? 'Drag an image or click to upload' : 'Arraste uma imagem ou clique para enviar');
+const hintText = hint ?? (en ? 'PNG, JPG or WEBP' : 'PNG, JPG ou WEBP');
+const uid = id ?? `image-upload-${Math.random().toString(36).slice(2, 9)}`;
+---
+
+<div
+  data-image-upload
+  data-label={text}
+  class:list={[
+    'group flex w-full cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-[#d8ae73] bg-[#fffdf9] text-center transition-colors hover:border-[#b88333] hover:bg-[#fff9ef] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b88333]',
+    compact ? 'px-3 py-2.5' : 'px-4 py-5',
+    className,
+  ]}
+  role="button"
+  tabindex="0"
+>
+  {preview && (
+    <img
+      data-image-upload-preview
+      src={src || ''}
+      alt=""
+      class:list={['max-h-16 w-auto rounded-lg object-contain', !src && 'hidden']}
+    />
+  )}
+  <span class="flex items-center gap-2 text-sm font-medium text-[#6f4716]">
+    <svg
+      class="h-4 w-4 shrink-0"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.8"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M12 16V4M8 8l4-4 4 4"></path>
+      <path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"></path>
+    </svg>
+    <span data-image-upload-text>{text}</span>
+  </span>
+  {!compact && (
+    <span data-image-upload-hint class="text-xs text-[#8b8174]">
+      {hintText}
+    </span>
+  )}
+  <input
+    id={uid}
+    data-image-upload-input
+    class="sr-only"
+    type="file"
+    name={name}
+    accept={accept}
+    tabindex="-1"
+    {...rest}
+  />
+</div>

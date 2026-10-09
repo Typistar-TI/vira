@@ -1,5 +1,6 @@
 ---
 import ItemFields from './ItemFields.astro';
+import ImageUpload from '@frontend/components/ImageUpload.astro';
 import type { Section, SectionType } from '@frontend/api/sites/parse-site';
 
 interface Props {
@@ -278,23 +279,9 @@ const variants = variantLabels[section.type];
         </label>
         <label class="flex flex-col gap-1 text-[0.8rem] font-bold text-[#4a4238]">
           <span>{L.image}</span>
-          <input
-            class="file-input file-input-bordered w-full"
-            name="field-file"
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-          />
+          <ImageUpload name="field-file" lang={en ? 'en' : 'pt'} src={section.image} compact />
           <input type="hidden" name="field-image" value={section.image} />
         </label>
-        {section.image && (
-          <img
-            class="h-16 w-auto rounded-lg border border-[#e2d8c6] object-contain"
-            src={section.image}
-            alt=""
-            width="120"
-            height="80"
-          />
-        )}
       </>
     )}
 
@@ -319,23 +306,9 @@ const variants = variantLabels[section.type];
         </label>
         <label class="flex flex-col gap-1 text-[0.8rem] font-bold text-[#4a4238]">
           <span>{L.image}</span>
-          <input
-            class="file-input file-input-bordered w-full"
-            name="field-file"
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-          />
+          <ImageUpload name="field-file" lang={en ? 'en' : 'pt'} src={section.image} compact />
           <input type="hidden" name="field-image" value={section.image} />
         </label>
-        {section.image && (
-          <img
-            class="h-16 w-auto rounded-lg border border-[#e2d8c6] object-contain"
-            src={section.image}
-            alt=""
-            width="120"
-            height="80"
-          />
-        )}
       </>
     )}
 

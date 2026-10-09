@@ -28,7 +28,9 @@ function resizeImage(file: File, size = 160): Promise<string> {
 }
 
 export function initAvatarPicker(root: HTMLElement) {
-  const input = root.querySelector<HTMLInputElement>('[data-avatar-input]');
+  const input = root.querySelector<HTMLInputElement>(
+    '[data-avatar-input], [data-image-upload-input]',
+  );
   const preview = root.querySelector<HTMLImageElement>('[data-avatar-preview]');
   const placeholder = root.querySelector<HTMLElement>('[data-avatar-placeholder]');
   const value = root.querySelector<HTMLInputElement>('[data-avatar-value]');

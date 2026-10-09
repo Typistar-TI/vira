@@ -121,3 +121,11 @@
 ::view-transition-new(root) {
   animation: none;
 }
+
+/* Altura única para todos os campos (input, select, arquivo e date picker). */
+.input,
+.select,
+.file-input {
+  height: 2.5rem;
+  min-height: 2.5rem;
+}
