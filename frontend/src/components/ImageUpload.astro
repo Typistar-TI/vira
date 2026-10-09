@@ -26,8 +26,7 @@ const {
   ...rest
 } = Astro.props;
 const en = lang === 'en';
-const text =
-  label ?? (en ? 'Drag an image or click to upload' : 'Arraste uma imagem ou clique para enviar');
+const text = label ?? (en ? 'Drag or click to upload' : 'Arraste ou clique para enviar');
 const hintText = hint ?? (en ? 'PNG, JPG or WEBP' : 'PNG, JPG ou WEBP');
 const uid = id ?? `image-upload-${Math.random().toString(36).slice(2, 9)}`;
 ---
@@ -36,8 +35,8 @@ const uid = id ?? `image-upload-${Math.random().toString(36).slice(2, 9)}`;
   data-image-upload
   data-label={text}
   class:list={[
-    'group flex w-full cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-[#d8ae73] bg-[#fffdf9] text-center transition-colors hover:border-[#b88333] hover:bg-[#fff9ef] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b88333]',
-    compact ? 'px-3 py-2' : 'px-4 py-3',
+    'group flex w-full cursor-pointer flex-wrap items-center gap-x-2.5 gap-y-1 rounded-xl border border-dashed border-[#d8ae73] bg-[#fffdf9] text-left transition-colors hover:border-[#b88333] hover:bg-[#fff9ef] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#b88333]',
+    compact ? 'px-2.5 py-1.5' : 'px-3 py-2',
     className,
   ]}
   role="button"
@@ -48,10 +47,10 @@ const uid = id ?? `image-upload-${Math.random().toString(36).slice(2, 9)}`;
       data-image-upload-preview
       src={src || ''}
       alt=""
-      class:list={['max-h-16 w-auto rounded-lg object-contain', !src && 'hidden']}
+      class:list={['max-h-9 w-auto shrink-0 rounded-lg object-contain', !src && 'hidden']}
     />
   )}
-  <span class="flex items-center gap-2 text-sm font-medium text-[#6f4716]">
+  <span class="flex min-w-0 items-center gap-2 text-sm font-medium text-[#6f4716]">
     <svg
       class="h-4 w-4 shrink-0"
       viewBox="0 0 24 24"
@@ -65,10 +64,12 @@ const uid = id ?? `image-upload-${Math.random().toString(36).slice(2, 9)}`;
       <path d="M12 16V4M8 8l4-4 4 4"></path>
       <path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"></path>
     </svg>
-    <span data-image-upload-text>{text}</span>
+    <span data-image-upload-text class="truncate">
+      {text}
+    </span>
   </span>
   {!compact && (
-    <span data-image-upload-hint class="text-xs text-[#8b8174]">
+    <span data-image-upload-hint class="text-[11px] text-[#8b8174] sm:ml-auto">
       {hintText}
     </span>
   )}
