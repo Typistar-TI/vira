@@ -55,6 +55,11 @@ const captions = en
       'Mude textos e imagens e veja a página se atualizar enquanto digita.',
       'Um clique coloca sua página no ar com um endereço para compartilhar.',
     ];
+const stepIcons = [
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>',
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>',
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>',
+];
 ---
 
 <section
@@ -130,7 +135,8 @@ const captions = en
               >
                 0{index + 1}
               </span>
-              <span class="font-mono text-[11px] uppercase tracking-[0.18em] text-[#9b6823]">
+              <span class="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.18em] text-[#9b6823]">
+                <span class="text-[#b88333]" aria-hidden="true" set:html={stepIcons[index] ?? ''} />
                 {en ? 'Step' : 'Passo'} 0{index + 1}
               </span>
             </div>
