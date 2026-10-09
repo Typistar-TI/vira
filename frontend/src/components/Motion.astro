@@ -1,7 +1,7 @@
 <script>
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-
-  if (!reducedMotion.matches) {
+  document.addEventListener('astro:page-load', () => {
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (reducedMotion.matches) return;
     const reveal = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
@@ -38,5 +38,5 @@
         { passive: true },
       );
     }
-  }
+  });
 </script>

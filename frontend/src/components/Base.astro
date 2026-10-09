@@ -1,5 +1,6 @@
 ---
 import '@frontend/styles/global.css';
+import { ClientRouter } from 'astro:transitions';
 import Motion from '@frontend/components/Motion.astro';
 import Toast from '@frontend/components/Toast.astro';
 interface Props {
@@ -63,6 +64,7 @@ const lightFields =
     <link rel="icon" href={favicon} type="image/png" />
     <link rel="apple-touch-icon" href={touchIcon} />
     <link rel="manifest" href={manifest} />
+    <ClientRouter />
     <script is:inline>
       if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
     </script>

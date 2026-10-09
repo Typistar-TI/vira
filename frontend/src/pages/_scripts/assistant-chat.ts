@@ -190,4 +190,6 @@ function initAssistant(root: HTMLElement) {
       .catch(() => placeholder.remove());
   }
 }
-document.querySelectorAll<HTMLElement>('[data-assistant]').forEach(initAssistant);
+document.addEventListener('astro:page-load', () => {
+  document.querySelectorAll<HTMLElement>('[data-assistant]').forEach(initAssistant);
+});

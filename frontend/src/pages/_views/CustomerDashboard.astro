@@ -729,7 +729,7 @@ const trialLeft = en
               </div>
             </form>
 
-            <div class="mt-8 border-t border-[#ead8bd] pt-6">
+            <div id="documentos" class="mt-8 border-t border-[#ead8bd] pt-6">
               <h3>Documentos</h3>
               <div class="mt-1 flex flex-wrap gap-2.5">
                 <a class="btn btn-outline" href={en ? '/en/privacy' : '/privacidade'}>
@@ -786,514 +786,524 @@ const trialLeft = en
     import { initAvatarPicker, applyAvatarToMenu } from '@frontend/pages/_scripts/avatar-picker';
     import { getMetrics } from '@frontend/api/analytics/metrics';
     import { reportError } from '@frontend/components/toast';
-
-    const input = (scope: ParentNode, name: string) =>
-      (
-        scope.querySelector<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(
-          `[name="${name}"]`,
-        )?.value || ''
-      ).trim();
-    const setField = (scope: ParentNode, name: string, value: string) => {
-      const field = scope.querySelector<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(
-        `[name="${name}"]`,
-      );
-      if (field && typeof value === 'string') field.value = value;
-    };
-    const MAX_SECTIONS = 20;
-    const ITEM_LIMITS: Record<string, number> = {
-      services: 12,
-      gallery: 12,
-      stats: 4,
-      steps: 6,
-      experience: 10,
-      testimonials: 6,
-      faq: 10,
-      contact: 8,
-      footer: 8,
-    };
-    const TEXT_KEYS = [
-      'eyebrow',
-      'title',
-      'subtitle',
-      'body',
-      'primaryLabel',
-      'primaryUrl',
-      'url',
-      'caption',
-      'address',
-      'text',
-    ];
-
-    function initEditor(form: HTMLFormElement) {
-      let changeVersion = 0;
-      let savedVersion = 0;
-      const markChanged = () => {
-        changeVersion += 1;
+    document.addEventListener('astro:page-load', () => {
+      const input = (scope: ParentNode, name: string) =>
+        (
+          scope.querySelector<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>(
+            `[name="${name}"]`,
+          )?.value || ''
+        ).trim();
+      const setField = (scope: ParentNode, name: string, value: string) => {
+        const field = scope.querySelector<
+          HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+        >(`[name="${name}"]`);
+        if (field && typeof value === 'string') field.value = value;
       };
-      form.addEventListener('input', markChanged);
-      form.addEventListener('change', markChanged);
-      window.addEventListener('beforeunload', (event) => {
-        if (changeVersion === savedVersion) return;
-        event.preventDefault();
-        event.returnValue = '';
-      });
-      const panel = document.querySelector<HTMLElement>('#site-controls')!;
-      const toggle = document.querySelector<HTMLButtonElement>('#toggle-site-controls')!;
-      const setControls = (open: boolean) => {
-        panel.hidden = !open;
-        toggle.setAttribute('aria-expanded', String(open));
-        if (open) panel.querySelector<HTMLButtonElement>('#close-site-controls')?.focus();
-        else toggle.focus();
+      const MAX_SECTIONS = 20;
+      const ITEM_LIMITS: Record<string, number> = {
+        services: 12,
+        gallery: 12,
+        stats: 4,
+        steps: 6,
+        experience: 10,
+        testimonials: 6,
+        faq: 10,
+        contact: 8,
+        footer: 8,
       };
-      toggle.addEventListener('click', () => setControls(Boolean(panel.hidden)));
-      form.addEventListener('invalid', () => setControls(true), true);
-      document
-        .querySelector('#close-site-controls')
-        ?.addEventListener('click', () => setControls(false));
-      panel.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape') setControls(false);
-      });
+      const TEXT_KEYS = [
+        'eyebrow',
+        'title',
+        'subtitle',
+        'body',
+        'primaryLabel',
+        'primaryUrl',
+        'url',
+        'caption',
+        'address',
+        'text',
+      ];
 
-      const sectionsRoot = form.querySelector<HTMLElement>('#sections')!;
-      const templatesRoot = form.querySelector<HTMLElement>('[data-section-templates]')!;
-      const sectionNodes = () => [...sectionsRoot.querySelectorAll<HTMLElement>('[data-section]')];
-
-      const makeSection = (type: string) => {
-        const tpl = templatesRoot.querySelector<HTMLElement>(
-          `[data-section][data-type="${type}"]`,
-        )!;
-        const node = tpl.cloneNode(true) as HTMLElement;
-        node.removeAttribute('data-template');
-        node.classList.remove('hidden');
-        setField(node, 'field-id', crypto.randomUUID().slice(0, 12));
-        return node;
-      };
-
-      form.querySelector('#add-section')?.addEventListener('click', () => {
-        const type = form.querySelector<HTMLSelectElement>('#add-section-type')?.value || 'hero';
-        if (sectionNodes().length >= MAX_SECTIONS) return;
-        sectionsRoot.append(makeSection(type));
-        markChanged();
-        updatePreview();
-      });
-
-      form.addEventListener('click', (event) => {
-        const button = (event.target as HTMLElement).closest<HTMLButtonElement>('button');
-        if (!button) return;
-        const section = button.closest<HTMLElement>('[data-section]');
-        if (!section) return;
-        if (button.matches('[data-remove-section]')) {
-          section.remove();
-        } else if (button.matches('[data-move]')) {
-          const direction = button.dataset.move;
-          if (direction === 'up' && section.previousElementSibling)
-            section.parentElement!.insertBefore(section, section.previousElementSibling);
-          else if (direction === 'down' && section.nextElementSibling)
-            section.parentElement!.insertBefore(section.nextElementSibling, section);
-          else return;
-        } else if (button.matches('[data-add-item]')) {
-          const type = section.dataset.type || '';
-          const items = section.querySelector('[data-items]');
-          const template = section.querySelector<HTMLTemplateElement>('[data-item-template]');
-          if (!items || !template) return;
-          if (items.children.length >= (ITEM_LIMITS[type] ?? 0)) return;
-          items.append(template.content.firstElementChild!.cloneNode(true));
-        } else if (button.matches('[data-remove]')) {
-          button.closest('[data-item]')?.remove();
-        } else {
-          return;
-        }
-        markChanged();
-        updatePreview();
-      });
-
-      async function upload(file: File) {
-        const body = new FormData();
-        body.set('file', file);
-        const data = await uploadMedia(body);
-        return data.url as string;
-      }
-      async function iconFile(file: File, size: number): Promise<File> {
-        if (
-          file.size > 5 * 1024 * 1024 ||
-          !['image/png', 'image/jpeg', 'image/webp'].includes(file.type)
-        )
-          throw new Error(
-            document.documentElement.lang === 'en'
-              ? 'Use a PNG, JPG or WebP image up to 5 MB.'
-              : 'Use uma imagem PNG, JPG ou WebP de até 5 MB.',
-          );
-        const bitmap = await createImageBitmap(file);
-        try {
-          const canvas = document.createElement('canvas');
-          canvas.width = canvas.height = size;
-          const context = canvas.getContext('2d');
-          if (!context) throw new Error('Canvas indisponível');
-          context.fillStyle = input(form, 'backgroundColor');
-          context.fillRect(0, 0, size, size);
-          const scale = Math.min((size * 0.82) / bitmap.width, (size * 0.82) / bitmap.height);
-          const width = bitmap.width * scale;
-          const height = bitmap.height * scale;
-          context.drawImage(bitmap, (size - width) / 2, (size - height) / 2, width, height);
-          const blob = await new Promise<Blob>((resolve, reject) =>
-            canvas.toBlob(
-              (result) => (result ? resolve(result) : reject(new Error('Falha ao preparar ícone'))),
-              'image/png',
-            ),
-          );
-          return new File([blob], `icon-${size}.png`, { type: 'image/png' });
-        } finally {
-          bitmap.close();
-        }
-      }
-      async function uploadInto(scope: ParentNode, name: string) {
-        const file = scope.querySelector<HTMLInputElement>(
-          '[name="field-file"], [name="item-file"]',
-        )?.files?.[0];
-        let image = input(scope, name);
-        if (file) {
-          image = await upload(file);
-          setField(scope, name, image);
-          scope.querySelectorAll<HTMLInputElement>('input[type="file"]').forEach((field) => {
-            field.value = '';
-          });
-        }
-        return image;
-      }
-      function itemValues(row: ParentNode) {
-        const value: Record<string, string> = {};
-        row
-          .querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('[name^="item-"]')
-          .forEach((field) => {
-            if (field.name !== 'item-image' && field.type !== 'file')
-              value[field.name.replace('item-', '')] = field.value.trim();
-          });
-        return value;
-      }
-      async function collect(uploadFiles = true) {
-        const logoFile = form.querySelector<HTMLInputElement>('#logo-file')?.files?.[0];
-        let logo = input(form, 'logo');
-        if (logoFile && uploadFiles) {
-          logo = await upload(logoFile);
-          setField(form, 'logo', logo);
-          form.querySelector<HTMLInputElement>('#logo-file')!.value = '';
-        }
-        const faviconFile = form.querySelector<HTMLInputElement>('#favicon-file')?.files?.[0];
-        let favicon = input(form, 'favicon');
-        if (faviconFile && uploadFiles) {
-          favicon = await upload(await iconFile(faviconFile, 64));
-          setField(form, 'favicon', favicon);
-          form.querySelector<HTMLInputElement>('#favicon-file')!.value = '';
-        }
-        const pwaFile = form.querySelector<HTMLInputElement>('#pwa-icon-file')?.files?.[0];
-        let pwaIcon192 = input(form, 'pwaIcon192');
-        let pwaIcon512 = input(form, 'pwaIcon512');
-        if (pwaFile && uploadFiles) {
-          pwaIcon192 = await upload(await iconFile(pwaFile, 192));
-          pwaIcon512 = await upload(await iconFile(pwaFile, 512));
-          setField(form, 'pwaIcon192', pwaIcon192);
-          setField(form, 'pwaIcon512', pwaIcon512);
-          form.querySelector<HTMLInputElement>('#pwa-icon-file')!.value = '';
-        }
-
-        const sections: Record<string, unknown>[] = [];
-        for (const node of sectionNodes()) {
-          const type = node.dataset.type || 'about';
-          const variant = input(node, 'field-variant');
-          const base: Record<string, unknown> = {
-            id: input(node, 'field-id') || crypto.randomUUID().slice(0, 12),
-            type,
-          };
-          if (variant) base.variant = variant;
-          for (const key of TEXT_KEYS) {
-            const field = node.querySelector(`[name="field-${key}"]`);
-            if (field) base[key] = input(node, `field-${key}`);
-          }
-          const imageField = node.querySelector('[name="field-image"]');
-          if (imageField) base.image = await uploadInto(node, 'field-image');
-          const rows = [...node.querySelectorAll<HTMLElement>('[data-item]')];
-          if (type === 'services' || type === 'gallery') {
-            const items = [];
-            for (const row of rows) {
-              const image = await uploadInto(row, 'item-image');
-              const values = itemValues(row);
-              items.push(
-                type === 'gallery'
-                  ? { image }
-                  : {
-                      title: values.title || '',
-                      description: values.description || '',
-                      url: values.url || '',
-                      image,
-                    },
-              );
-            }
-            if (type === 'services') base.items = items;
-            else base.images = items;
-          } else if (type === 'contact' || type === 'footer') {
-            base.links = rows.map((row) => itemValues(row));
-          } else {
-            base.items = rows.map((row) => itemValues(row));
-          }
-          sections.push(base);
-        }
-        const hero = sections.find((item) => item.type === 'hero') as
-          { title?: string } | undefined;
-        return {
-          font: input(form, 'font'),
-          language: input(form, 'language'),
-          title: hero?.title || input(form, 'appName') || 'Vira',
-          appName: input(form, 'appName'),
-          logo,
-          showInShowcase: form.querySelector<HTMLInputElement>('[name="showInShowcase"]')!.checked,
-          favicon,
-          pwaIcon192,
-          pwaIcon512,
-          themeColor: input(form, 'themeColor'),
-          backgroundColor: input(form, 'backgroundColor'),
-          textColor: input(form, 'textColor'),
-          accentColor: input(form, 'accentColor'),
-          assistant: form.querySelector<HTMLInputElement>('[name="assistant"]')!.checked,
-          sections,
+      function initEditor(form: HTMLFormElement) {
+        let changeVersion = 0;
+        let savedVersion = 0;
+        const markChanged = () => {
+          changeVersion += 1;
         };
-      }
-
-      async function save() {
-        clearTimeout(previewTimer);
-        previewRequest?.abort();
-        const content = await collect();
-        const savingVersion = changeVersion;
-        const result = await saveSite(content);
-        savedVersion = savingVersion;
-        const frame = document.querySelector<HTMLIFrameElement>('#preview-frame')!;
-        frame.removeAttribute('srcdoc');
-        frame.src = `/app/preview?t=${Date.now()}`;
-        return result;
-      }
-      let previewTimer: ReturnType<typeof setTimeout>;
-      let previewRequest: AbortController | undefined;
-      const updatePreview = () => {
-        clearTimeout(previewTimer);
-        previewRequest?.abort();
-        previewTimer = setTimeout(async () => {
-          const current = new AbortController();
-          previewRequest = current;
-          try {
-            const content = await collect(false);
-            if (current.signal.aborted) return;
-            const response = await fetch('/app/preview', {
-              method: 'POST',
-              credentials: 'same-origin',
-              signal: current.signal,
-              headers: { 'content-type': 'application/json' },
-              body: JSON.stringify(content),
-            });
-            if (!response.ok) return;
-            const html = await response.text();
-            if (!current.signal.aborted)
-              document.querySelector<HTMLIFrameElement>('#preview-frame')!.srcdoc = html;
-          } catch (error) {
-            if (!(error instanceof DOMException && error.name === 'AbortError'))
-              console.warn('Preview unavailable');
-          }
-        }, 500);
-      };
-      form.addEventListener('input', updatePreview);
-      form.addEventListener('change', updatePreview);
-      form.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        try {
-          await save();
-        } catch (error) {
-          reportError(error, 'Falha ao salvar');
-        }
-      });
-      document.querySelector('#publish')?.addEventListener('click', async () => {
-        try {
-          await save();
-          await publishSite();
-        } catch (error) {
-          reportError(error, 'Falha ao publicar');
-        }
-      });
-      document.querySelector('#desktop-preview')?.addEventListener('click', () => {
-        document.querySelector('#desktop-preview')?.setAttribute('aria-pressed', 'true');
-        document.querySelector('#mobile-preview')?.setAttribute('aria-pressed', 'false');
+        form.addEventListener('input', markChanged);
+        form.addEventListener('change', markChanged);
+        window.addEventListener('beforeunload', (event) => {
+          if (changeVersion === savedVersion) return;
+          event.preventDefault();
+          event.returnValue = '';
+        });
+        const panel = document.querySelector<HTMLElement>('#site-controls')!;
+        const toggle = document.querySelector<HTMLButtonElement>('#toggle-site-controls')!;
+        const setControls = (open: boolean) => {
+          panel.hidden = !open;
+          toggle.setAttribute('aria-expanded', String(open));
+          if (open) panel.querySelector<HTMLButtonElement>('#close-site-controls')?.focus();
+          else toggle.focus();
+        };
+        toggle.addEventListener('click', () => setControls(Boolean(panel.hidden)));
+        form.addEventListener('invalid', () => setControls(true), true);
         document
-          .querySelector<HTMLIFrameElement>('#preview-frame')!
-          .classList.remove('max-w-[390px]');
-      });
-      document.querySelector('#mobile-preview')?.addEventListener('click', () => {
-        document.querySelector('#desktop-preview')?.setAttribute('aria-pressed', 'false');
-        document.querySelector('#mobile-preview')?.setAttribute('aria-pressed', 'true');
-        document.querySelector<HTMLIFrameElement>('#preview-frame')!.classList.add('max-w-[390px]');
-      });
-    }
-    const editorForm = document.querySelector<HTMLFormElement>('#editor');
-    if (editorForm) initEditor(editorForm);
-    document
-      .querySelector<HTMLFormElement>('#slug-form')
-      ?.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        const form = event.currentTarget as HTMLFormElement;
-        try {
-          const result = await changeSlug(input(form, 'slug'));
-          document.querySelector<HTMLAnchorElement>('#public-url')!.href = result.url;
-          document.querySelector<HTMLAnchorElement>('#public-url')!.textContent = new URL(
-            result.url,
-          ).host;
-        } catch (error) {
-          reportError(error, 'Falha ao alterar endereço');
-        }
-      });
-    document
-      .querySelector<HTMLFormElement>('#domain-form')
-      ?.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        const form = event.currentTarget as HTMLFormElement;
-        const target = document.querySelector<HTMLElement>('#domain-status')!;
-        target.hidden = false;
-        try {
-          const result = await connectDomain(input(form, 'hostname'));
-          target.textContent = `CNAME: ${result.hostname} → ${result.target}`;
-          target.classList.remove('alert-error');
-          target.classList.add('alert-success');
-        } catch (error) {
-          reportError(error, 'Falha ao conectar domínio');
-        }
-      });
-    const currencySelect = document.querySelector<HTMLSelectElement>('#currency');
-    if (currencySelect) {
-      const priceMap = JSON.parse(currencySelect.dataset.prices || '{}') as Record<string, number>;
-      const priceReady = JSON.parse(currencySelect.dataset.ready || '{}') as Record<
-        string,
-        boolean
-      >;
-      currencySelect.addEventListener('change', () => {
-        document.querySelectorAll<HTMLButtonElement>('[data-plan]').forEach((button) => {
-          const amount = priceMap[`${button.dataset.plan}_${currencySelect.value}`];
-          const label = button.querySelector<HTMLElement>('[data-amount]')!;
-          label.textContent = amount
-            ? new Intl.NumberFormat(currencySelect.value === 'brl' ? 'pt-BR' : 'en-US', {
-                style: 'currency',
-                currency: currencySelect.value.toUpperCase(),
-              }).format(amount / 100)
-            : document.documentElement.lang === 'en'
-              ? 'Coming soon'
-              : 'Em breve';
-          button.disabled = !priceReady[`${button.dataset.plan}_${currencySelect.value}`];
+          .querySelector('#close-site-controls')
+          ?.addEventListener('click', () => setControls(false));
+        panel.addEventListener('keydown', (event) => {
+          if (event.key === 'Escape') setControls(false);
         });
-      });
-      document.querySelectorAll<HTMLButtonElement>('[data-plan]').forEach((button) =>
-        button.addEventListener('click', async () => {
-          try {
-            const result = await checkout(
-              button.dataset.plan,
-              document.querySelector<HTMLSelectElement>('#currency')!.value,
-            );
-            location.href = result.url;
-          } catch (error) {
-            reportError(error, 'Falha ao iniciar compra');
-          }
-        }),
-      );
-      document.querySelector('#portal')?.addEventListener('click', async () => {
-        try {
-          const result = await billingPortal();
-          location.href = result.url;
-        } catch (error) {
-          reportError(error, 'Falha ao abrir cobrança');
-        }
-      });
-    }
-    document.querySelectorAll<HTMLElement>('[data-avatar-picker]').forEach(initAvatarPicker);
-    document
-      .querySelector<HTMLFormElement>('#account-profile-form')
-      ?.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        const form = event.currentTarget as HTMLFormElement;
-        const button = form.querySelector<HTMLButtonElement>('button[type=submit]');
-        if (button) button.disabled = true;
-        try {
-          const name = input(form, 'displayName');
-          const avatar = input(form, 'avatar') || null;
-          await updateAccountProfile(name, avatar);
-          const normalized = name.trim().replace(/\s+/g, ' ');
-          document.querySelectorAll<HTMLElement>('[data-account-label]').forEach((node) => {
-            node.textContent = normalized;
-          });
-          const initials = normalized
-            .split(/[^\p{L}\p{N}]+/u)
-            .filter(Boolean)
-            .slice(0, 2)
-            .map((part: string) => part[0].toLocaleUpperCase('pt-BR'))
-            .join('');
-          applyAvatarToMenu(avatar ?? '', initials);
-        } catch (error) {
-          reportError(error, 'Falha ao salvar o perfil');
-        } finally {
-          if (button) button.disabled = false;
-        }
-      });
-    document
-      .querySelector<HTMLFormElement>('#delete-account-form')
-      ?.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        const deletionForm = event.currentTarget as HTMLFormElement;
-        const email = input(deletionForm, 'email');
-        const warning =
-          document.documentElement.lang === 'en'
-            ? 'Delete your account, page and images? Any subscription will be canceled.'
-            : 'Excluir sua conta, página e imagens? Sua assinatura será cancelada.';
-        if (!confirm(warning)) return;
-        try {
-          await deleteAccount(email);
-          location.href = '/';
-        } catch (error) {
-          reportError(error, 'Falha ao excluir a conta');
-        }
-      });
-    if (document.querySelector('#metric-views')) {
-      getMetrics()
-        .then((data) => {
-          document.querySelector('#metric-views')!.textContent = String(data.views ?? 0);
-          document.querySelector('#metric-clicks')!.textContent = String(data.clicks ?? 0);
-        })
-        .catch(() => {
-          document.querySelector('#metric-views')!.textContent = '—';
-          document.querySelector('#metric-clicks')!.textContent = '—';
+
+        const sectionsRoot = form.querySelector<HTMLElement>('#sections')!;
+        const templatesRoot = form.querySelector<HTMLElement>('[data-section-templates]')!;
+        const sectionNodes = () => [
+          ...sectionsRoot.querySelectorAll<HTMLElement>('[data-section]'),
+        ];
+
+        const makeSection = (type: string) => {
+          const tpl = templatesRoot.querySelector<HTMLElement>(
+            `[data-section][data-type="${type}"]`,
+          )!;
+          const node = tpl.cloneNode(true) as HTMLElement;
+          node.removeAttribute('data-template');
+          node.classList.remove('hidden');
+          setField(node, 'field-id', crypto.randomUUID().slice(0, 12));
+          return node;
+        };
+
+        form.querySelector('#add-section')?.addEventListener('click', () => {
+          const type = form.querySelector<HTMLSelectElement>('#add-section-type')?.value || 'hero';
+          if (sectionNodes().length >= MAX_SECTIONS) return;
+          sectionsRoot.append(makeSection(type));
+          markChanged();
+          updatePreview();
         });
-    }
-    if (document.querySelector('#domain-status')) {
-      domainStatus()
-        .then((data) => {
-          const node = document.querySelector<HTMLElement>('#domain-status')!;
-          if (!data.domain) {
-            node.hidden = true;
+
+        form.addEventListener('click', (event) => {
+          const button = (event.target as HTMLElement).closest<HTMLButtonElement>('button');
+          if (!button) return;
+          const section = button.closest<HTMLElement>('[data-section]');
+          if (!section) return;
+          if (button.matches('[data-remove-section]')) {
+            section.remove();
+          } else if (button.matches('[data-move]')) {
+            const direction = button.dataset.move;
+            if (direction === 'up' && section.previousElementSibling)
+              section.parentElement!.insertBefore(section, section.previousElementSibling);
+            else if (direction === 'down' && section.nextElementSibling)
+              section.parentElement!.insertBefore(section.nextElementSibling, section);
+            else return;
+          } else if (button.matches('[data-add-item]')) {
+            const type = section.dataset.type || '';
+            const items = section.querySelector('[data-items]');
+            const template = section.querySelector<HTMLTemplateElement>('[data-item-template]');
+            if (!items || !template) return;
+            if (items.children.length >= (ITEM_LIMITS[type] ?? 0)) return;
+            items.append(template.content.firstElementChild!.cloneNode(true));
+          } else if (button.matches('[data-remove]')) {
+            button.closest('[data-item]')?.remove();
+          } else {
             return;
           }
-          node.textContent = `${data.domain.hostname}: ${data.domain.status}/${data.domain.sslStatus}`;
-        })
-        .catch(() => {
-          const node = document.querySelector<HTMLElement>('#domain-status');
-          if (node) node.hidden = true;
+          markChanged();
+          updatePreview();
         });
-    }
-    document
-      .querySelector<HTMLAnchorElement>('#export-data')
-      ?.addEventListener('click', async (event) => {
-        event.preventDefault();
-        try {
-          const file = await exportAccount();
-          const url = URL.createObjectURL(file);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = 'vira-dados.json';
-          link.click();
-          setTimeout(() => URL.revokeObjectURL(url), 1000);
-        } catch (error) {
-          reportError(error, 'Falha ao baixar dados');
+
+        async function upload(file: File) {
+          const body = new FormData();
+          body.set('file', file);
+          const data = await uploadMedia(body);
+          return data.url as string;
         }
-      });
+        async function iconFile(file: File, size: number): Promise<File> {
+          if (
+            file.size > 5 * 1024 * 1024 ||
+            !['image/png', 'image/jpeg', 'image/webp'].includes(file.type)
+          )
+            throw new Error(
+              document.documentElement.lang === 'en'
+                ? 'Use a PNG, JPG or WebP image up to 5 MB.'
+                : 'Use uma imagem PNG, JPG ou WebP de até 5 MB.',
+            );
+          const bitmap = await createImageBitmap(file);
+          try {
+            const canvas = document.createElement('canvas');
+            canvas.width = canvas.height = size;
+            const context = canvas.getContext('2d');
+            if (!context) throw new Error('Canvas indisponível');
+            context.fillStyle = input(form, 'backgroundColor');
+            context.fillRect(0, 0, size, size);
+            const scale = Math.min((size * 0.82) / bitmap.width, (size * 0.82) / bitmap.height);
+            const width = bitmap.width * scale;
+            const height = bitmap.height * scale;
+            context.drawImage(bitmap, (size - width) / 2, (size - height) / 2, width, height);
+            const blob = await new Promise<Blob>((resolve, reject) =>
+              canvas.toBlob(
+                (result) =>
+                  result ? resolve(result) : reject(new Error('Falha ao preparar ícone')),
+                'image/png',
+              ),
+            );
+            return new File([blob], `icon-${size}.png`, { type: 'image/png' });
+          } finally {
+            bitmap.close();
+          }
+        }
+        async function uploadInto(scope: ParentNode, name: string) {
+          const file = scope.querySelector<HTMLInputElement>(
+            '[name="field-file"], [name="item-file"]',
+          )?.files?.[0];
+          let image = input(scope, name);
+          if (file) {
+            image = await upload(file);
+            setField(scope, name, image);
+            scope.querySelectorAll<HTMLInputElement>('input[type="file"]').forEach((field) => {
+              field.value = '';
+            });
+          }
+          return image;
+        }
+        function itemValues(row: ParentNode) {
+          const value: Record<string, string> = {};
+          row
+            .querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('[name^="item-"]')
+            .forEach((field) => {
+              if (field.name !== 'item-image' && field.type !== 'file')
+                value[field.name.replace('item-', '')] = field.value.trim();
+            });
+          return value;
+        }
+        async function collect(uploadFiles = true) {
+          const logoFile = form.querySelector<HTMLInputElement>('#logo-file')?.files?.[0];
+          let logo = input(form, 'logo');
+          if (logoFile && uploadFiles) {
+            logo = await upload(logoFile);
+            setField(form, 'logo', logo);
+            form.querySelector<HTMLInputElement>('#logo-file')!.value = '';
+          }
+          const faviconFile = form.querySelector<HTMLInputElement>('#favicon-file')?.files?.[0];
+          let favicon = input(form, 'favicon');
+          if (faviconFile && uploadFiles) {
+            favicon = await upload(await iconFile(faviconFile, 64));
+            setField(form, 'favicon', favicon);
+            form.querySelector<HTMLInputElement>('#favicon-file')!.value = '';
+          }
+          const pwaFile = form.querySelector<HTMLInputElement>('#pwa-icon-file')?.files?.[0];
+          let pwaIcon192 = input(form, 'pwaIcon192');
+          let pwaIcon512 = input(form, 'pwaIcon512');
+          if (pwaFile && uploadFiles) {
+            pwaIcon192 = await upload(await iconFile(pwaFile, 192));
+            pwaIcon512 = await upload(await iconFile(pwaFile, 512));
+            setField(form, 'pwaIcon192', pwaIcon192);
+            setField(form, 'pwaIcon512', pwaIcon512);
+            form.querySelector<HTMLInputElement>('#pwa-icon-file')!.value = '';
+          }
+
+          const sections: Record<string, unknown>[] = [];
+          for (const node of sectionNodes()) {
+            const type = node.dataset.type || 'about';
+            const variant = input(node, 'field-variant');
+            const base: Record<string, unknown> = {
+              id: input(node, 'field-id') || crypto.randomUUID().slice(0, 12),
+              type,
+            };
+            if (variant) base.variant = variant;
+            for (const key of TEXT_KEYS) {
+              const field = node.querySelector(`[name="field-${key}"]`);
+              if (field) base[key] = input(node, `field-${key}`);
+            }
+            const imageField = node.querySelector('[name="field-image"]');
+            if (imageField) base.image = await uploadInto(node, 'field-image');
+            const rows = [...node.querySelectorAll<HTMLElement>('[data-item]')];
+            if (type === 'services' || type === 'gallery') {
+              const items = [];
+              for (const row of rows) {
+                const image = await uploadInto(row, 'item-image');
+                const values = itemValues(row);
+                items.push(
+                  type === 'gallery'
+                    ? { image }
+                    : {
+                        title: values.title || '',
+                        description: values.description || '',
+                        url: values.url || '',
+                        image,
+                      },
+                );
+              }
+              if (type === 'services') base.items = items;
+              else base.images = items;
+            } else if (type === 'contact' || type === 'footer') {
+              base.links = rows.map((row) => itemValues(row));
+            } else {
+              base.items = rows.map((row) => itemValues(row));
+            }
+            sections.push(base);
+          }
+          const hero = sections.find((item) => item.type === 'hero') as
+            { title?: string } | undefined;
+          return {
+            font: input(form, 'font'),
+            language: input(form, 'language'),
+            title: hero?.title || input(form, 'appName') || 'Vira',
+            appName: input(form, 'appName'),
+            logo,
+            showInShowcase:
+              form.querySelector<HTMLInputElement>('[name="showInShowcase"]')!.checked,
+            favicon,
+            pwaIcon192,
+            pwaIcon512,
+            themeColor: input(form, 'themeColor'),
+            backgroundColor: input(form, 'backgroundColor'),
+            textColor: input(form, 'textColor'),
+            accentColor: input(form, 'accentColor'),
+            assistant: form.querySelector<HTMLInputElement>('[name="assistant"]')!.checked,
+            sections,
+          };
+        }
+
+        async function save() {
+          clearTimeout(previewTimer);
+          previewRequest?.abort();
+          const content = await collect();
+          const savingVersion = changeVersion;
+          const result = await saveSite(content);
+          savedVersion = savingVersion;
+          const frame = document.querySelector<HTMLIFrameElement>('#preview-frame')!;
+          frame.removeAttribute('srcdoc');
+          frame.src = `/app/preview?t=${Date.now()}`;
+          return result;
+        }
+        let previewTimer: ReturnType<typeof setTimeout>;
+        let previewRequest: AbortController | undefined;
+        const updatePreview = () => {
+          clearTimeout(previewTimer);
+          previewRequest?.abort();
+          previewTimer = setTimeout(async () => {
+            const current = new AbortController();
+            previewRequest = current;
+            try {
+              const content = await collect(false);
+              if (current.signal.aborted) return;
+              const response = await fetch('/app/preview', {
+                method: 'POST',
+                credentials: 'same-origin',
+                signal: current.signal,
+                headers: { 'content-type': 'application/json' },
+                body: JSON.stringify(content),
+              });
+              if (!response.ok) return;
+              const html = await response.text();
+              if (!current.signal.aborted)
+                document.querySelector<HTMLIFrameElement>('#preview-frame')!.srcdoc = html;
+            } catch (error) {
+              if (!(error instanceof DOMException && error.name === 'AbortError'))
+                console.warn('Preview unavailable');
+            }
+          }, 500);
+        };
+        form.addEventListener('input', updatePreview);
+        form.addEventListener('change', updatePreview);
+        form.addEventListener('submit', async (event) => {
+          event.preventDefault();
+          try {
+            await save();
+          } catch (error) {
+            reportError(error, 'Falha ao salvar');
+          }
+        });
+        document.querySelector('#publish')?.addEventListener('click', async () => {
+          try {
+            await save();
+            await publishSite();
+          } catch (error) {
+            reportError(error, 'Falha ao publicar');
+          }
+        });
+        document.querySelector('#desktop-preview')?.addEventListener('click', () => {
+          document.querySelector('#desktop-preview')?.setAttribute('aria-pressed', 'true');
+          document.querySelector('#mobile-preview')?.setAttribute('aria-pressed', 'false');
+          document
+            .querySelector<HTMLIFrameElement>('#preview-frame')!
+            .classList.remove('max-w-[390px]');
+        });
+        document.querySelector('#mobile-preview')?.addEventListener('click', () => {
+          document.querySelector('#desktop-preview')?.setAttribute('aria-pressed', 'false');
+          document.querySelector('#mobile-preview')?.setAttribute('aria-pressed', 'true');
+          document
+            .querySelector<HTMLIFrameElement>('#preview-frame')!
+            .classList.add('max-w-[390px]');
+        });
+      }
+      const editorForm = document.querySelector<HTMLFormElement>('#editor');
+      if (editorForm) initEditor(editorForm);
+      document
+        .querySelector<HTMLFormElement>('#slug-form')
+        ?.addEventListener('submit', async (event) => {
+          event.preventDefault();
+          const form = event.currentTarget as HTMLFormElement;
+          try {
+            const result = await changeSlug(input(form, 'slug'));
+            document.querySelector<HTMLAnchorElement>('#public-url')!.href = result.url;
+            document.querySelector<HTMLAnchorElement>('#public-url')!.textContent = new URL(
+              result.url,
+            ).host;
+          } catch (error) {
+            reportError(error, 'Falha ao alterar endereço');
+          }
+        });
+      document
+        .querySelector<HTMLFormElement>('#domain-form')
+        ?.addEventListener('submit', async (event) => {
+          event.preventDefault();
+          const form = event.currentTarget as HTMLFormElement;
+          const target = document.querySelector<HTMLElement>('#domain-status')!;
+          target.hidden = false;
+          try {
+            const result = await connectDomain(input(form, 'hostname'));
+            target.textContent = `CNAME: ${result.hostname} → ${result.target}`;
+            target.classList.remove('alert-error');
+            target.classList.add('alert-success');
+          } catch (error) {
+            reportError(error, 'Falha ao conectar domínio');
+          }
+        });
+      const currencySelect = document.querySelector<HTMLSelectElement>('#currency');
+      if (currencySelect) {
+        const priceMap = JSON.parse(currencySelect.dataset.prices || '{}') as Record<
+          string,
+          number
+        >;
+        const priceReady = JSON.parse(currencySelect.dataset.ready || '{}') as Record<
+          string,
+          boolean
+        >;
+        currencySelect.addEventListener('change', () => {
+          document.querySelectorAll<HTMLButtonElement>('[data-plan]').forEach((button) => {
+            const amount = priceMap[`${button.dataset.plan}_${currencySelect.value}`];
+            const label = button.querySelector<HTMLElement>('[data-amount]')!;
+            label.textContent = amount
+              ? new Intl.NumberFormat(currencySelect.value === 'brl' ? 'pt-BR' : 'en-US', {
+                  style: 'currency',
+                  currency: currencySelect.value.toUpperCase(),
+                }).format(amount / 100)
+              : document.documentElement.lang === 'en'
+                ? 'Coming soon'
+                : 'Em breve';
+            button.disabled = !priceReady[`${button.dataset.plan}_${currencySelect.value}`];
+          });
+        });
+        document.querySelectorAll<HTMLButtonElement>('[data-plan]').forEach((button) =>
+          button.addEventListener('click', async () => {
+            try {
+              const result = await checkout(
+                button.dataset.plan,
+                document.querySelector<HTMLSelectElement>('#currency')!.value,
+              );
+              location.href = result.url;
+            } catch (error) {
+              reportError(error, 'Falha ao iniciar compra');
+            }
+          }),
+        );
+        document.querySelector('#portal')?.addEventListener('click', async () => {
+          try {
+            const result = await billingPortal();
+            location.href = result.url;
+          } catch (error) {
+            reportError(error, 'Falha ao abrir cobrança');
+          }
+        });
+      }
+      document.querySelectorAll<HTMLElement>('[data-avatar-picker]').forEach(initAvatarPicker);
+      document
+        .querySelector<HTMLFormElement>('#account-profile-form')
+        ?.addEventListener('submit', async (event) => {
+          event.preventDefault();
+          const form = event.currentTarget as HTMLFormElement;
+          const button = form.querySelector<HTMLButtonElement>('button[type=submit]');
+          if (button) button.disabled = true;
+          try {
+            const name = input(form, 'displayName');
+            const avatar = input(form, 'avatar') || null;
+            await updateAccountProfile(name, avatar);
+            const normalized = name.trim().replace(/\s+/g, ' ');
+            document.querySelectorAll<HTMLElement>('[data-account-label]').forEach((node) => {
+              node.textContent = normalized;
+            });
+            const initials = normalized
+              .split(/[^\p{L}\p{N}]+/u)
+              .filter(Boolean)
+              .slice(0, 2)
+              .map((part: string) => part[0].toLocaleUpperCase('pt-BR'))
+              .join('');
+            applyAvatarToMenu(avatar ?? '', initials);
+          } catch (error) {
+            reportError(error, 'Falha ao salvar o perfil');
+          } finally {
+            if (button) button.disabled = false;
+          }
+        });
+      document
+        .querySelector<HTMLFormElement>('#delete-account-form')
+        ?.addEventListener('submit', async (event) => {
+          event.preventDefault();
+          const deletionForm = event.currentTarget as HTMLFormElement;
+          const email = input(deletionForm, 'email');
+          const warning =
+            document.documentElement.lang === 'en'
+              ? 'Delete your account, page and images? Any subscription will be canceled.'
+              : 'Excluir sua conta, página e imagens? Sua assinatura será cancelada.';
+          if (!confirm(warning)) return;
+          try {
+            await deleteAccount(email);
+            location.href = '/';
+          } catch (error) {
+            reportError(error, 'Falha ao excluir a conta');
+          }
+        });
+      if (document.querySelector('#metric-views')) {
+        getMetrics()
+          .then((data) => {
+            document.querySelector('#metric-views')!.textContent = String(data.views ?? 0);
+            document.querySelector('#metric-clicks')!.textContent = String(data.clicks ?? 0);
+          })
+          .catch(() => {
+            document.querySelector('#metric-views')!.textContent = '—';
+            document.querySelector('#metric-clicks')!.textContent = '—';
+          });
+      }
+      if (document.querySelector('#domain-status')) {
+        domainStatus()
+          .then((data) => {
+            const node = document.querySelector<HTMLElement>('#domain-status')!;
+            if (!data.domain) {
+              node.hidden = true;
+              return;
+            }
+            node.textContent = `${data.domain.hostname}: ${data.domain.status}/${data.domain.sslStatus}`;
+          })
+          .catch(() => {
+            const node = document.querySelector<HTMLElement>('#domain-status');
+            if (node) node.hidden = true;
+          });
+      }
+      document
+        .querySelector<HTMLAnchorElement>('#export-data')
+        ?.addEventListener('click', async (event) => {
+          event.preventDefault();
+          try {
+            const file = await exportAccount();
+            const url = URL.createObjectURL(file);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'vira-dados.json';
+            link.click();
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+          } catch (error) {
+            reportError(error, 'Falha ao baixar dados');
+          }
+        });
+    });
   </script>
 </Base>

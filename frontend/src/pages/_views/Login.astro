@@ -385,233 +385,237 @@ const lastUsed = en ? 'Last used' : 'Último acesso';
     import { verifyEmail } from '@frontend/api/auth/verify-email';
     import { passwordLogin } from '@frontend/api/auth/password';
     import { reportError, showToast } from '@frontend/components/toast';
-    const root = document.querySelector<HTMLElement>('[data-login]')!;
-    const scope = root.dataset.loginScope === 'admin' ? 'admin' : 'app';
-    const en = document.documentElement.lang === 'en';
-    const start = root.querySelector<HTMLFormElement>('#login-start')!;
-    const codes = root.querySelector<HTMLFormElement>('#login-code')!;
-    const emailInput = root.querySelector<HTMLInputElement>('#login-email')!;
-    const oldPassword = root.querySelector<HTMLInputElement>('#login-password')!;
-    const codeInput = root.querySelector<HTMLInputElement>('#login-code-input')!;
-    const newPassword = root.querySelector<HTMLInputElement>('#new-password')!;
-    const confirmPassword = root.querySelector<HTMLInputElement>('#confirm-password')!;
-    const resend = root.querySelector<HTMLButtonElement>('[data-resend]')!;
-    const terms = root.querySelector<HTMLElement>('[data-terms]');
-    const startButton = root.querySelector<HTMLButtonElement>('[data-start-button]')!;
-    let mode: 'code' | 'password' | 'reset';
-    let pendingEmail = '';
-    let purpose: 'login' | 'password' = 'login';
-    let busy = false;
-    let resendAt = 0;
-    let needsConsent = false;
-    const rememberMethod = (method: 'code' | 'password') => {
-      document.cookie = `vira_last_login=${method}; Path=/; Max-Age=31536000; SameSite=Lax`;
-    };
-    const termsAccepted = () =>
-      root.querySelector<HTMLInputElement>('#accept-terms')?.checked ?? false;
-    const consentNeeded = (error: unknown) =>
-      Boolean((error as { data?: { consent?: boolean } })?.data?.consent);
-    const askConsent = () => {
-      needsConsent = true;
-      if (terms) terms.hidden = false;
-      startButton.textContent = en ? 'Create account' : 'Criar conta';
-      terms?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    };
-    const clearConsent = () => {
-      needsConsent = false;
-      if (terms) terms.hidden = true;
-      const box = root.querySelector<HTMLInputElement>('#accept-terms');
-      if (box) box.checked = false;
-    };
-    type GoogleId = {
-      initialize: (options: Record<string, unknown>) => void;
-      renderButton: (element: HTMLElement, options: Record<string, unknown>) => void;
-    };
-    const googleButton = root.querySelector<HTMLElement>('[data-google-button]');
-    const renderGoogle = () => {
-      const accounts = (window as unknown as { google?: { accounts?: { id?: GoogleId } } }).google
-        ?.accounts?.id;
-      if (!googleButton || !accounts) return false;
-      const width = Math.min(400, Math.max(200, Math.round(googleButton.clientWidth)));
-      accounts.initialize({
-        client_id: googleButton.dataset.clientId,
-        ux_mode: 'redirect',
-        login_uri: googleButton.dataset.loginUri,
-        auto_select: false,
-      });
-      accounts.renderButton(googleButton, {
-        type: 'standard',
-        theme: 'outline',
-        size: 'large',
-        text: 'signin_with',
-        shape: 'pill',
-        logo_alignment: 'left',
-        width,
-      });
-      return true;
-    };
-    if (googleButton && !renderGoogle()) {
-      let tries = 0;
-      const timer = window.setInterval(() => {
-        if (renderGoogle() || ++tries > 60) window.clearInterval(timer);
-      }, 100);
-    }
-    const cooldown = () => {
-      const seconds = Math.max(0, Math.ceil((resendAt - Date.now()) / 1000));
-      resend.disabled = busy || seconds > 0;
-      resend.textContent = seconds
-        ? `${en ? 'Resend in' : 'Reenviar em'} ${seconds}s`
-        : en
-          ? 'Resend code'
-          : 'Reenviar código';
-    };
-    const setBusy = (value: boolean) => {
-      busy = value;
-      root
-        .querySelectorAll<HTMLButtonElement>('button')
-        .forEach(
-          (button) =>
-            (button.disabled =
-              value || (button.dataset.loginMode === 'code' && root.dataset.emailReady !== 'true')),
-        );
-      cooldown();
-    };
-    const selectMode = (next: typeof mode) => {
-      if (busy) return;
-      mode = next;
-      clearConsent();
-      start.hidden = false;
-      codes.hidden = true;
-      codeInput.value = '';
-      oldPassword.value = '';
-      newPassword.value = '';
-      confirmPassword.value = '';
-      root
-        .querySelectorAll<HTMLButtonElement>('[data-login-mode]')
-        .forEach((button) =>
-          button.setAttribute('aria-pressed', String(button.dataset.loginMode === mode)),
-        );
-      const backToPassword = root.querySelector<HTMLElement>('[data-login-mode="password"]');
-      if (backToPassword) backToPassword.hidden = mode === 'password';
-      const recover = root.querySelector<HTMLElement>('[data-recover]');
-      if (recover) recover.hidden = mode !== 'password';
-      root.querySelector<HTMLElement>('[data-login-description]')!.hidden = mode === 'password';
-      root.querySelector<HTMLElement>('[data-password-login]')!.hidden = mode !== 'password';
-      oldPassword.disabled = mode !== 'password';
-      oldPassword.required = mode === 'password';
-      root.querySelector<HTMLElement>('[data-new-password]')!.hidden = mode !== 'reset';
-      newPassword.disabled = confirmPassword.disabled = mode !== 'reset';
-      newPassword.required = confirmPassword.required = mode === 'reset';
-      root.querySelector<HTMLElement>('[data-login-description]')!.textContent =
-        mode === 'password'
-          ? en
-            ? 'Sign in with your email and password.'
-            : 'Entre com seu e-mail e senha.'
-          : mode === 'reset'
-            ? en
-              ? 'Verify your email with a code to create or reset your password.'
-              : 'Confirme seu e-mail com um código para criar ou redefinir sua senha.'
-            : en
-              ? 'Receive a 6-digit code. No link or password needed.'
-              : 'Receba um código de 6 dígitos. Sem link e sem senha.';
-      startButton.textContent =
-        mode === 'password' ? (en ? 'Sign in' : 'Entrar') : en ? 'Send code' : 'Enviar código';
-    };
-    root.querySelectorAll<HTMLButtonElement>('[data-login-mode]').forEach((button) =>
-      button.addEventListener('click', () => {
-        const target = button.dataset.loginMode as typeof mode;
-        const wanted = target === 'code' && mode === 'code' ? 'password' : target;
-        selectMode(wanted);
-        if (!busy) emailInput.focus();
-      }),
-    );
-    root
-      .querySelector('[data-password-reset]')
-      ?.addEventListener('click', () => selectMode('reset'));
-    root.querySelector('[data-change-email]')?.addEventListener('click', () => selectMode(mode));
-    const needTerms = () => {
-      if (needsConsent && !termsAccepted()) {
-        showToast(
-          en
-            ? 'Accept the Terms of Use and the Privacy Policy to continue.'
-            : 'Aceite os Termos de Uso e a Política de Privacidade para continuar.',
-          'error',
-        );
+    document.addEventListener('astro:page-load', () => {
+      const root = document.querySelector<HTMLElement>('[data-login]');
+      if (!root) return;
+      const scope = root.dataset.loginScope === 'admin' ? 'admin' : 'app';
+      const en = document.documentElement.lang === 'en';
+      const start = root.querySelector<HTMLFormElement>('#login-start')!;
+      const codes = root.querySelector<HTMLFormElement>('#login-code')!;
+      const emailInput = root.querySelector<HTMLInputElement>('#login-email')!;
+      const oldPassword = root.querySelector<HTMLInputElement>('#login-password')!;
+      const codeInput = root.querySelector<HTMLInputElement>('#login-code-input')!;
+      const newPassword = root.querySelector<HTMLInputElement>('#new-password')!;
+      const confirmPassword = root.querySelector<HTMLInputElement>('#confirm-password')!;
+      const resend = root.querySelector<HTMLButtonElement>('[data-resend]')!;
+      const terms = root.querySelector<HTMLElement>('[data-terms]');
+      const startButton = root.querySelector<HTMLButtonElement>('[data-start-button]')!;
+      let mode: 'code' | 'password' | 'reset';
+      let pendingEmail = '';
+      let purpose: 'login' | 'password' = 'login';
+      let busy = false;
+      let resendAt = 0;
+      let needsConsent = false;
+      const rememberMethod = (method: 'code' | 'password') => {
+        document.cookie = `vira_last_login=${method}; Path=/; Max-Age=31536000; SameSite=Lax`;
+      };
+      const termsAccepted = () =>
+        root.querySelector<HTMLInputElement>('#accept-terms')?.checked ?? false;
+      const consentNeeded = (error: unknown) =>
+        Boolean((error as { data?: { consent?: boolean } })?.data?.consent);
+      const askConsent = () => {
+        needsConsent = true;
+        if (terms) terms.hidden = false;
+        startButton.textContent = en ? 'Create account' : 'Criar conta';
+        terms?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      };
+      const clearConsent = () => {
+        needsConsent = false;
+        if (terms) terms.hidden = true;
+        const box = root.querySelector<HTMLInputElement>('#accept-terms');
+        if (box) box.checked = false;
+      };
+      type GoogleId = {
+        initialize: (options: Record<string, unknown>) => void;
+        renderButton: (element: HTMLElement, options: Record<string, unknown>) => void;
+      };
+      const googleButton = root.querySelector<HTMLElement>('[data-google-button]');
+      const renderGoogle = () => {
+        const accounts = (window as unknown as { google?: { accounts?: { id?: GoogleId } } }).google
+          ?.accounts?.id;
+        if (!googleButton || !accounts) return false;
+        const width = Math.min(400, Math.max(200, Math.round(googleButton.clientWidth)));
+        accounts.initialize({
+          client_id: googleButton.dataset.clientId,
+          ux_mode: 'redirect',
+          login_uri: googleButton.dataset.loginUri,
+          auto_select: false,
+        });
+        accounts.renderButton(googleButton, {
+          type: 'standard',
+          theme: 'outline',
+          size: 'large',
+          text: 'signin_with',
+          shape: 'pill',
+          logo_alignment: 'left',
+          width,
+        });
         return true;
+      };
+      if (googleButton && !renderGoogle()) {
+        let tries = 0;
+        const timer = window.setInterval(() => {
+          if (renderGoogle() || ++tries > 60) window.clearInterval(timer);
+        }, 100);
       }
-      return false;
-    };
-    start.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      if (busy || needTerms()) return;
-      setBusy(true);
-      try {
-        const email = emailInput.value.trim();
-        if (mode === 'password') {
-          const result = await passwordLogin(email, oldPassword.value, scope, termsAccepted());
-          rememberMethod('password');
-          location.assign(result.redirect);
+      const cooldown = () => {
+        const seconds = Math.max(0, Math.ceil((resendAt - Date.now()) / 1000));
+        resend.disabled = busy || seconds > 0;
+        resend.textContent = seconds
+          ? `${en ? 'Resend in' : 'Reenviar em'} ${seconds}s`
+          : en
+            ? 'Resend code'
+            : 'Reenviar código';
+      };
+      const setBusy = (value: boolean) => {
+        busy = value;
+        root
+          .querySelectorAll<HTMLButtonElement>('button')
+          .forEach(
+            (button) =>
+              (button.disabled =
+                value ||
+                (button.dataset.loginMode === 'code' && root.dataset.emailReady !== 'true')),
+          );
+        cooldown();
+      };
+      const selectMode = (next: typeof mode) => {
+        if (busy) return;
+        mode = next;
+        clearConsent();
+        start.hidden = false;
+        codes.hidden = true;
+        codeInput.value = '';
+        oldPassword.value = '';
+        newPassword.value = '';
+        confirmPassword.value = '';
+        root
+          .querySelectorAll<HTMLButtonElement>('[data-login-mode]')
+          .forEach((button) =>
+            button.setAttribute('aria-pressed', String(button.dataset.loginMode === mode)),
+          );
+        const backToPassword = root.querySelector<HTMLElement>('[data-login-mode="password"]');
+        if (backToPassword) backToPassword.hidden = mode === 'password';
+        const recover = root.querySelector<HTMLElement>('[data-recover]');
+        if (recover) recover.hidden = mode !== 'password';
+        root.querySelector<HTMLElement>('[data-login-description]')!.hidden = mode === 'password';
+        root.querySelector<HTMLElement>('[data-password-login]')!.hidden = mode !== 'password';
+        oldPassword.disabled = mode !== 'password';
+        oldPassword.required = mode === 'password';
+        root.querySelector<HTMLElement>('[data-new-password]')!.hidden = mode !== 'reset';
+        newPassword.disabled = confirmPassword.disabled = mode !== 'reset';
+        newPassword.required = confirmPassword.required = mode === 'reset';
+        root.querySelector<HTMLElement>('[data-login-description]')!.textContent =
+          mode === 'password'
+            ? en
+              ? 'Sign in with your email and password.'
+              : 'Entre com seu e-mail e senha.'
+            : mode === 'reset'
+              ? en
+                ? 'Verify your email with a code to create or reset your password.'
+                : 'Confirme seu e-mail com um código para criar ou redefinir sua senha.'
+              : en
+                ? 'Receive a 6-digit code. No link or password needed.'
+                : 'Receba um código de 6 dígitos. Sem link e sem senha.';
+        startButton.textContent =
+          mode === 'password' ? (en ? 'Sign in' : 'Entrar') : en ? 'Send code' : 'Enviar código';
+      };
+      root.querySelectorAll<HTMLButtonElement>('[data-login-mode]').forEach((button) =>
+        button.addEventListener('click', () => {
+          const target = button.dataset.loginMode as typeof mode;
+          const wanted = target === 'code' && mode === 'code' ? 'password' : target;
+          selectMode(wanted);
+          if (!busy) emailInput.focus();
+        }),
+      );
+      root
+        .querySelector('[data-password-reset]')
+        ?.addEventListener('click', () => selectMode('reset'));
+      root.querySelector('[data-change-email]')?.addEventListener('click', () => selectMode(mode));
+      const needTerms = () => {
+        if (needsConsent && !termsAccepted()) {
+          showToast(
+            en
+              ? 'Accept the Terms of Use and the Privacy Policy to continue.'
+              : 'Aceite os Termos de Uso e a Política de Privacidade para continuar.',
+            'error',
+          );
+          return true;
+        }
+        return false;
+      };
+      start.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        if (busy || needTerms()) return;
+        setBusy(true);
+        try {
+          const email = emailInput.value.trim();
+          if (mode === 'password') {
+            const result = await passwordLogin(email, oldPassword.value, scope, termsAccepted());
+            rememberMethod('password');
+            location.assign(result.redirect);
+            return;
+          }
+          purpose = mode === 'reset' ? 'password' : 'login';
+          await startEmail(email, purpose);
+          pendingEmail = email;
+          root.querySelector<HTMLElement>('[data-code-recipient]')!.textContent =
+            `${en ? 'Code sent to' : 'Código enviado para'} ${pendingEmail}. ${en ? 'Valid for 10 minutes.' : 'Válido por 10 minutos.'}`;
+          start.hidden = true;
+          codes.hidden = false;
+          resendAt = Date.now() + 60_000;
+          codeInput.focus();
+        } catch (error) {
+          if (consentNeeded(error)) askConsent();
+          else reportError(error, en ? 'Unable to sign in' : 'Falha no acesso');
+        } finally {
+          setBusy(false);
+        }
+      });
+      codes.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        if (busy || needTerms()) return;
+        if (purpose === 'password' && newPassword.value !== confirmPassword.value) {
+          showToast(en ? 'Passwords do not match.' : 'As senhas não coincidem.', 'error');
           return;
         }
-        purpose = mode === 'reset' ? 'password' : 'login';
-        await startEmail(email, purpose);
-        pendingEmail = email;
-        root.querySelector<HTMLElement>('[data-code-recipient]')!.textContent =
-          `${en ? 'Code sent to' : 'Código enviado para'} ${pendingEmail}. ${en ? 'Valid for 10 minutes.' : 'Válido por 10 minutos.'}`;
-        start.hidden = true;
-        codes.hidden = false;
-        resendAt = Date.now() + 60_000;
-        codeInput.focus();
-      } catch (error) {
-        if (consentNeeded(error)) askConsent();
-        else reportError(error, en ? 'Unable to sign in' : 'Falha no acesso');
-      } finally {
-        setBusy(false);
-      }
+        setBusy(true);
+        try {
+          const result = await verifyEmail(
+            pendingEmail,
+            codeInput.value.trim(),
+            purpose,
+            purpose === 'password' ? newPassword.value : undefined,
+            scope,
+            termsAccepted(),
+          );
+          rememberMethod('code');
+          location.assign(result.redirect);
+        } catch (error) {
+          if (consentNeeded(error)) askConsent();
+          else reportError(error, en ? 'Unable to verify code' : 'Falha ao validar código');
+        } finally {
+          setBusy(false);
+        }
+      });
+      resend.addEventListener('click', async () => {
+        if (busy || Date.now() < resendAt) return;
+        setBusy(true);
+        try {
+          await startEmail(pendingEmail, purpose);
+          resendAt = Date.now() + 60_000;
+        } catch (error) {
+          reportError(error, en ? 'Unable to resend' : 'Falha ao reenviar');
+        } finally {
+          setBusy(false);
+        }
+      });
+      setInterval(cooldown, 1000);
+      selectMode(
+        root.dataset.reset === 'true' && root.dataset.emailReady === 'true' ? 'reset' : 'password',
+      );
+      const loginError = root.querySelector<HTMLInputElement>('#login-error')?.value;
+      if (loginError) showToast(loginError, 'error');
     });
-    codes.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      if (busy || needTerms()) return;
-      if (purpose === 'password' && newPassword.value !== confirmPassword.value) {
-        showToast(en ? 'Passwords do not match.' : 'As senhas não coincidem.', 'error');
-        return;
-      }
-      setBusy(true);
-      try {
-        const result = await verifyEmail(
-          pendingEmail,
-          codeInput.value.trim(),
-          purpose,
-          purpose === 'password' ? newPassword.value : undefined,
-          scope,
-          termsAccepted(),
-        );
-        rememberMethod('code');
-        location.assign(result.redirect);
-      } catch (error) {
-        if (consentNeeded(error)) askConsent();
-        else reportError(error, en ? 'Unable to verify code' : 'Falha ao validar código');
-      } finally {
-        setBusy(false);
-      }
-    });
-    resend.addEventListener('click', async () => {
-      if (busy || Date.now() < resendAt) return;
-      setBusy(true);
-      try {
-        await startEmail(pendingEmail, purpose);
-        resendAt = Date.now() + 60_000;
-      } catch (error) {
-        reportError(error, en ? 'Unable to resend' : 'Falha ao reenviar');
-      } finally {
-        setBusy(false);
-      }
-    });
-    setInterval(cooldown, 1000);
-    selectMode(
-      root.dataset.reset === 'true' && root.dataset.emailReady === 'true' ? 'reset' : 'password',
-    );
-    const loginError = root.querySelector<HTMLInputElement>('#login-error')?.value;
-    if (loginError) showToast(loginError, 'error');
   </script>
 </Base>

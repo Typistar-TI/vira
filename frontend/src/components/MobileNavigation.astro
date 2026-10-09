@@ -61,14 +61,19 @@ const closeLabel = lang === 'en' ? 'Close menu' : 'Fechar menu';
 </div>
 
 <script>
-  document.querySelectorAll<HTMLElement>('[data-mobile-navigation]').forEach((root) => {
-    const dialog = root.querySelector<HTMLDialogElement>('[data-navigation-dialog]')!;
-    root
-      .querySelector('[data-open-navigation]')
-      ?.addEventListener('click', () => dialog.showModal());
-    root.querySelector('[data-close-navigation]')?.addEventListener('click', () => dialog.close());
-    root
-      .querySelectorAll<HTMLAnchorElement>('a')
-      .forEach((link) => link.addEventListener('click', () => dialog.close()));
+  document.addEventListener('astro:page-load', () => {
+    document.querySelectorAll<HTMLElement>('[data-mobile-navigation]').forEach((root) => {
+      const dialog = root.querySelector<HTMLDialogElement>('[data-navigation-dialog]');
+      if (!dialog) return;
+      root
+        .querySelector('[data-open-navigation]')
+        ?.addEventListener('click', () => dialog.showModal());
+      root
+        .querySelector('[data-close-navigation]')
+        ?.addEventListener('click', () => dialog.close());
+      root
+        .querySelectorAll<HTMLAnchorElement>('a')
+        .forEach((link) => link.addEventListener('click', () => dialog.close()));
+    });
   });
 </script>

@@ -117,9 +117,6 @@
 }
 
 /* View transitions (browser API; no utility equivalent) */
-@view-transition {
-  navigation: auto;
-}
 ::view-transition-old(root),
 ::view-transition-new(root),
 ::view-transition-old(admin-navigation),

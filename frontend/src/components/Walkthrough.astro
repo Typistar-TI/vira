@@ -163,82 +163,84 @@ const captions = en
   </div>
 </section>
 <script>
-  const root = document.querySelector<HTMLElement>('[data-walkthrough]');
-  if (root) {
-    const items = [...root.querySelectorAll<HTMLElement>('[data-step-item]')];
-    const panels = [...root.querySelectorAll<HTMLElement>('[data-step-panel]')];
-    const dots = [...root.querySelectorAll<HTMLElement>('[data-step-dot]')];
-    const badges = [...root.querySelectorAll<HTMLElement>('[data-step-badge]')];
-    const counter = root.querySelector<HTMLElement>('[data-step-counter]');
-    const caption = root.querySelector<HTMLElement>('[data-step-caption]');
-    const stage = root.querySelector<HTMLElement>('[data-step-stage]');
-    let captions: string[] = [];
-    try {
-      captions = JSON.parse(root.dataset.captions || '[]');
-    } catch {
-      captions = [];
-    }
-    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    let current = 0;
-    const replay = (el: HTMLElement, cls: string) => {
-      el.classList.remove(cls);
-      void el.offsetWidth;
-      el.classList.add(cls);
-    };
-    const activePanel = (index: number, animateChange = true) => {
-      const forward = index >= current;
-      current = index;
-      panels.forEach((panel, i) => {
-        panel.classList.remove('animate-panel-forward', 'animate-panel-back');
-        if (i === index) {
-          panel.classList.remove('hidden');
-          if (animateChange && !reduced) {
-            replay(panel, forward ? 'animate-panel-forward' : 'animate-panel-back');
-          }
-        } else {
-          panel.classList.add('hidden');
-        }
-      });
-      if (animateChange && !reduced && stage) {
-        stage.classList.add('ring-2', 'ring-[#b88333]/50');
-        window.setTimeout(() => stage.classList.remove('ring-2', 'ring-[#b88333]/50'), 650);
+  document.addEventListener('astro:page-load', () => {
+    const root = document.querySelector<HTMLElement>('[data-walkthrough]');
+    if (root) {
+      const items = [...root.querySelectorAll<HTMLElement>('[data-step-item]')];
+      const panels = [...root.querySelectorAll<HTMLElement>('[data-step-panel]')];
+      const dots = [...root.querySelectorAll<HTMLElement>('[data-step-dot]')];
+      const badges = [...root.querySelectorAll<HTMLElement>('[data-step-badge]')];
+      const counter = root.querySelector<HTMLElement>('[data-step-counter]');
+      const caption = root.querySelector<HTMLElement>('[data-step-caption]');
+      const stage = root.querySelector<HTMLElement>('[data-step-stage]');
+      let captions: string[] = [];
+      try {
+        captions = JSON.parse(root.dataset.captions || '[]');
+      } catch {
+        captions = [];
       }
-      dots.forEach((dot, i) => {
-        dot.classList.toggle('w-8', i === index);
-        dot.classList.toggle('bg-[#b88333]', i === index);
-        dot.classList.toggle('w-3', i !== index);
-        dot.classList.toggle('bg-[#e5ded2]', i !== index);
-      });
-      badges.forEach((badge, i) => {
-        badge.classList.toggle('border-[#17130d]', i === index);
-        badge.classList.toggle('bg-[#17130d]', i === index);
-        badge.classList.toggle('text-white', i === index);
-        badge.classList.toggle('shadow-[0_14px_30px_-14px_#17130d]', i === index);
-        badge.classList.toggle('ring-4', i === index);
-        badge.classList.toggle('ring-[#b88333]/25', i === index);
-        badge.classList.toggle('border-[#e5ded2]', i !== index);
-        badge.classList.toggle('bg-[#f5f2eb]', i !== index);
-        badge.classList.toggle('text-[#8b8174]', i !== index);
-      });
-      if (counter) counter.textContent = String(index + 1).padStart(2, '0');
-      if (caption) {
-        caption.textContent = captions[index] ?? '';
-        if (animateChange && !reduced) replay(caption, 'animate-bubble');
-      }
-    };
-    activePanel(0, false);
-    if ('IntersectionObserver' in window && items.length) {
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              activePanel(Number((entry.target as HTMLElement).dataset.stepItem));
+      const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      let current = 0;
+      const replay = (el: HTMLElement, cls: string) => {
+        el.classList.remove(cls);
+        void el.offsetWidth;
+        el.classList.add(cls);
+      };
+      const activePanel = (index: number, animateChange = true) => {
+        const forward = index >= current;
+        current = index;
+        panels.forEach((panel, i) => {
+          panel.classList.remove('animate-panel-forward', 'animate-panel-back');
+          if (i === index) {
+            panel.classList.remove('hidden');
+            if (animateChange && !reduced) {
+              replay(panel, forward ? 'animate-panel-forward' : 'animate-panel-back');
             }
-          });
-        },
-        { rootMargin: '-45% 0px -45% 0px', threshold: 0 },
-      );
-      items.forEach((item) => observer.observe(item));
+          } else {
+            panel.classList.add('hidden');
+          }
+        });
+        if (animateChange && !reduced && stage) {
+          stage.classList.add('ring-2', 'ring-[#b88333]/50');
+          window.setTimeout(() => stage.classList.remove('ring-2', 'ring-[#b88333]/50'), 650);
+        }
+        dots.forEach((dot, i) => {
+          dot.classList.toggle('w-8', i === index);
+          dot.classList.toggle('bg-[#b88333]', i === index);
+          dot.classList.toggle('w-3', i !== index);
+          dot.classList.toggle('bg-[#e5ded2]', i !== index);
+        });
+        badges.forEach((badge, i) => {
+          badge.classList.toggle('border-[#17130d]', i === index);
+          badge.classList.toggle('bg-[#17130d]', i === index);
+          badge.classList.toggle('text-white', i === index);
+          badge.classList.toggle('shadow-[0_14px_30px_-14px_#17130d]', i === index);
+          badge.classList.toggle('ring-4', i === index);
+          badge.classList.toggle('ring-[#b88333]/25', i === index);
+          badge.classList.toggle('border-[#e5ded2]', i !== index);
+          badge.classList.toggle('bg-[#f5f2eb]', i !== index);
+          badge.classList.toggle('text-[#8b8174]', i !== index);
+        });
+        if (counter) counter.textContent = String(index + 1).padStart(2, '0');
+        if (caption) {
+          caption.textContent = captions[index] ?? '';
+          if (animateChange && !reduced) replay(caption, 'animate-bubble');
+        }
+      };
+      activePanel(0, false);
+      if ('IntersectionObserver' in window && items.length) {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                activePanel(Number((entry.target as HTMLElement).dataset.stepItem));
+              }
+            });
+          },
+          { rootMargin: '-45% 0px -45% 0px', threshold: 0 },
+        );
+        items.forEach((item) => observer.observe(item));
+      }
     }
-  }
+  });
 </script>

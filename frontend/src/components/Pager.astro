@@ -79,7 +79,9 @@ const label = (value: number) =>
   </div>
 </div>
 <script>
-  document
-    .querySelectorAll<HTMLSelectElement>('[data-pager-size]')
-    .forEach((select) => select.addEventListener('change', () => select.form?.requestSubmit()));
+  document.addEventListener('astro:page-load', () => {
+    document
+      .querySelectorAll<HTMLSelectElement>('[data-pager-size]')
+      .forEach((select) => select.addEventListener('change', () => select.form?.requestSubmit()));
+  });
 </script>

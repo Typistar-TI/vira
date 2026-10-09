@@ -33,8 +33,9 @@ const en = lang === 'en';
   </button>
 </div>
 <script>
-  const notice = document.querySelector<HTMLElement>('[data-cookie-notice]');
-  if (notice) {
+  document.addEventListener('astro:page-load', () => {
+    const notice = document.querySelector<HTMLElement>('[data-cookie-notice]');
+    if (!notice) return;
     let stored = '';
     try {
       stored = localStorage.getItem('vira-cookie-consent') || '';
@@ -60,5 +61,5 @@ const en = lang === 'en';
         /* recorded later */
       }
     });
-  }
+  });
 </script>

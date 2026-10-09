@@ -128,11 +128,13 @@ const links = [
 </header>
 
 <script>
-  const dashboardDialog = document.querySelector<HTMLDialogElement>('[data-dashboard-dialog]');
-  document
-    .querySelectorAll<HTMLElement>('[data-dashboard-open]')
-    .forEach((button) => button.addEventListener('click', () => dashboardDialog?.showModal()));
-  dashboardDialog
-    ?.querySelector('[data-dashboard-close]')
-    ?.addEventListener('click', () => dashboardDialog?.close());
+  document.addEventListener('astro:page-load', () => {
+    const dashboardDialog = document.querySelector<HTMLDialogElement>('[data-dashboard-dialog]');
+    document
+      .querySelectorAll<HTMLElement>('[data-dashboard-open]')
+      .forEach((button) => button.addEventListener('click', () => dashboardDialog?.showModal()));
+    dashboardDialog
+      ?.querySelector('[data-dashboard-close]')
+      ?.addEventListener('click', () => dashboardDialog?.close());
+  });
 </script>
