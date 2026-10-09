@@ -935,11 +935,11 @@ const deliveryStatus: Record<string, string> = {
             method="get"
             action="/admin/usuarios"
             data-filter-form
-            class="mb-5 flex flex-wrap items-end gap-3"
+            class="mb-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end"
           >
             <label class="flex flex-col gap-1 text-sm">
               <span class="text-[#625a51]">Tipo</span>
-              <select name="role" class="select select-bordered h-10 rounded-lg">
+              <select name="role" class="select select-bordered h-10 w-full rounded-lg sm:w-auto">
                 <option value="" selected={!roleFilter}>
                   Todos
                 </option>
@@ -954,7 +954,7 @@ const deliveryStatus: Record<string, string> = {
             <label class="flex flex-col gap-1 text-sm">
               <span class="text-[#625a51]">Buscar</span>
               <input
-                class="input input-bordered h-10 w-64 rounded-lg"
+                class="input input-bordered h-10 w-full rounded-lg sm:w-64"
                 name="q"
                 type="search"
                 value={search}
@@ -1145,10 +1145,14 @@ const deliveryStatus: Record<string, string> = {
       )}
       {section === 'logs' && (
         <section id="logs" class="scroll-mt-24">
-          <form method="get" data-filter-form class="mb-5 flex flex-wrap items-end gap-3">
+          <form
+            method="get"
+            data-filter-form
+            class="mb-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end"
+          >
             <label class="flex flex-col gap-1 text-sm">
               <span class="text-[#625a51]">Tipo</span>
-              <select name="kind" class="select select-bordered h-10 rounded-lg">
+              <select name="kind" class="select select-bordered h-10 w-full rounded-lg sm:w-auto">
                 <option value="" selected={!logFilters.kind}>
                   Todos
                 </option>
@@ -1161,7 +1165,7 @@ const deliveryStatus: Record<string, string> = {
             </label>
             <label class="flex flex-col gap-1 text-sm">
               <span class="text-[#625a51]">Nível</span>
-              <select name="level" class="select select-bordered h-10 rounded-lg">
+              <select name="level" class="select select-bordered h-10 w-full rounded-lg sm:w-auto">
                 <option value="" selected={!logFilters.level}>
                   Todos
                 </option>
@@ -1175,7 +1179,7 @@ const deliveryStatus: Record<string, string> = {
             <label class="flex flex-col gap-1 text-sm">
               <span class="text-[#625a51]">Buscar</span>
               <input
-                class="input input-bordered h-10 w-72 rounded-lg"
+                class="input input-bordered h-10 w-full rounded-lg sm:w-72"
                 name="q"
                 type="search"
                 value={search}

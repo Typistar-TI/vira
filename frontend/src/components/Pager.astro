@@ -26,8 +26,8 @@ const label = (value: number) =>
   value === 0 ? 'Nenhum registro' : value === 1 ? '1 registro' : `${value} registros`;
 ---
 
-<div class="mt-4 flex flex-nowrap items-center justify-between gap-2">
-  <form method="get" action={base} class="flex min-w-0 items-center gap-2">
+<div class="mt-4 flex flex-wrap items-center justify-between gap-2">
+  <form method="get" action={base} class="flex min-w-0 flex-wrap items-center gap-2">
     {hidden.map(([name, value]) => (
       <input type="hidden" name={name} value={value} />
     ))}
@@ -46,13 +46,8 @@ const label = (value: number) =>
         ))}
       </select>
     </label>
-    <span class="truncate text-xs text-[#625a51] sm:text-sm">
-      <span class="sm:hidden">
-        {page}/{pages}
-      </span>
-      <span class="hidden sm:inline">
-        Página {page} de {pages} · {label(total)}
-      </span>
+    <span class="text-xs text-[#625a51] sm:text-sm">
+      Página {page} de {pages} · {label(total)}
     </span>
   </form>
   <div class="join shrink-0">
@@ -66,7 +61,7 @@ const label = (value: number) =>
     </a>
     {numbers.map((number) => (
       <a
-        class:list={['btn btn-sm join-item max-sm:hidden', number === page && 'btn-active']}
+        class:list={['btn btn-sm join-item', number === page && 'btn-active']}
         href={href(number)}
         aria-current={number === page ? 'page' : undefined}
       >
