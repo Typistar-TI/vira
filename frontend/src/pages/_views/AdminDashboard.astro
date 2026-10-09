@@ -476,7 +476,7 @@ const deliveryStatus: Record<string, string> = {
           <div class:list={['grid gap-4 lg:grid-cols-2', clientDetail?.found && 'hidden']}>
             <div class="rounded-2xl border border-[#ead8bd] bg-white p-6">
               <h2 class="mb-5 font-[Outfit] text-xl">Sites</h2>
-              <div class="flex flex-wrap items-center gap-6">
+              <div class="flex flex-col items-center gap-6 sm:flex-row">
                 <div
                   class="tooltip relative h-[168px] w-[168px] shrink-0"
                   data-tip={`Publicados: ${counts.published} · Rascunhos: ${counts.drafts}`}
@@ -509,7 +509,7 @@ const deliveryStatus: Record<string, string> = {
                     <span class="mt-1 text-xs text-[#625a51]">publicados</span>
                   </div>
                 </div>
-                <dl class="min-w-[190px] flex-1 divide-y divide-[#f0e6d5] text-sm">
+                <dl class="w-full flex-1 divide-y divide-[#f0e6d5] text-sm sm:min-w-[190px]">
                   <div class="flex items-center justify-between gap-3 py-2">
                     <dt class="text-[#625a51]">Publicados</dt>
                     <dd class="font-semibold tabular-nums text-[#17130d]">{counts.published}</dd>
@@ -579,7 +579,7 @@ const deliveryStatus: Record<string, string> = {
             <div class="flex h-44 items-end gap-1.5">
               {days.map((item) => (
                 <div
-                  class="tooltip flex flex-1 flex-col items-center gap-2"
+                  class="tooltip flex min-w-0 flex-1 flex-col items-center gap-2"
                   data-tip={`${item.day}: ${item.total}`}
                 >
                   <span class="text-[10px] font-semibold tabular-nums text-[#9b6823]">
@@ -589,7 +589,7 @@ const deliveryStatus: Record<string, string> = {
                     class="w-full rounded-t bg-[#b88333]"
                     style={`height:${Math.max(3, (item.total / maxSignups) * 112).toFixed(0)}px`}
                   ></div>
-                  <span class="text-[9px] tabular-nums text-[#b0a89c]">
+                  <span class="text-[9px] tabular-nums text-[#b0a89c] max-sm:hidden">
                     {item.day.slice(8, 10)}/{item.day.slice(5, 7)}
                   </span>
                 </div>
