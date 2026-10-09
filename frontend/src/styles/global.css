@@ -138,17 +138,18 @@
   min-height: 2rem;
 }
 
-/* Hover dourado consistente (mesmo efeito do rodapé). */
+/* Hover dourado consistente (mesmo efeito do rodapé): só a cor da fonte, sem fundo. */
 .menu :where(li > a, li > button) {
-  transition:
-    color 0.3s ease,
-    background-color 0.3s ease,
-    border-color 0.3s ease;
+  transition: color 0.3s ease;
 }
 
 .menu :where(li > a, li > button):hover {
   color: #9b6823;
-  background-color: #fff9ef;
+}
+
+/* Sem fundo no hover (só a fonte), preservando o item ativo. */
+.menu :where(li > a, li > button):not([aria-current='page']):hover {
+  background-color: transparent;
 }
 
 .select:hover {

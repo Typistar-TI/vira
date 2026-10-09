@@ -56,9 +56,7 @@ const navigation = [
           aria-current={section === item.key ? 'page' : undefined}
           class:list={[
             'flex items-center gap-1.5 rounded-full px-3 py-1.5 whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-[#b88333]',
-            section === item.key
-              ? 'font-semibold text-[#6f4716]'
-              : 'hover:bg-[#fff9ef] hover:text-[#9b6823]',
+            section === item.key ? 'font-semibold text-[#6f4716]' : 'hover:text-[#9b6823]',
           ]}
         >
           <svg
