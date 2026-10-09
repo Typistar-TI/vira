@@ -249,6 +249,7 @@ const actionLabels: Record<string, string> = {
   domain_connected: 'Domínio conectado',
   domain_updated: 'Domínio atualizado',
   user_update: 'Usuário alterado',
+  user_create: 'Usuário criado',
   error: 'Erro',
 };
 const actionLabel = (action: string) => actionLabels[action] ?? action;
@@ -1022,6 +1023,13 @@ const deliveryStatus: Record<string, string> = {
                 Limpar
               </a>
             )}
+            <button
+              type="button"
+              class="btn btn-primary h-10 rounded-lg sm:ml-auto"
+              data-user-create-open
+            >
+              Novo usuário
+            </button>
           </form>
           <div class="overflow-x-auto rounded-xl border border-[#ead8bd] [&_td]:whitespace-nowrap">
             <table class="table w-full min-w-[880px]">
@@ -1187,6 +1195,81 @@ const deliveryStatus: Record<string, string> = {
               </form>
             </dialog>
           ))}
+
+          <dialog id="user-create-modal" class="modal">
+            <div class="modal-box max-w-lg">
+              <h3 class="font-[Outfit] text-xl">Novo usuário</h3>
+              <p class="mt-1 text-sm text-[#625a51]">
+                Crie um cliente ou um administrador. O acesso é feito por e-mail (código ou Google).
+              </p>
+              <form data-user-create-form class="mt-4 grid gap-4 sm:grid-cols-2">
+                <label class="flex flex-col gap-1 text-sm sm:col-span-2">
+                  <span class="font-semibold text-[#17130d]">Tipo</span>
+                  <select class="select select-bordered w-full" name="type" data-user-create-type>
+                    <option value="user" selected>
+                      Cliente
+                    </option>
+                    <option value="admin">Administrador</option>
+                  </select>
+                </label>
+                <label class="flex flex-col gap-1 text-sm sm:col-span-2">
+                  <span class="font-semibold text-[#17130d]">E-mail</span>
+                  <input
+                    class="input input-bordered w-full"
+                    name="email"
+                    type="email"
+                    maxlength="320"
+                    required
+                  />
+                </label>
+                <label class="flex flex-col gap-1 text-sm sm:col-span-2">
+                  <span class="font-semibold text-[#17130d]">
+                    Nome de exibição
+                    <span class="font-normal text-[#8b8174]">(opcional)</span>
+                  </span>
+                  <input
+                    class="input input-bordered w-full"
+                    name="displayName"
+                    type="text"
+                    maxlength="80"
+                  />
+                </label>
+                <div class="grid gap-4 sm:col-span-2 sm:grid-cols-2" data-user-create-customer>
+                  <label class="flex flex-col gap-1 text-sm">
+                    <span class="font-semibold text-[#17130d]">Plano</span>
+                    <select class="select select-bordered w-full" name="plan">
+                      {['trial', 'monthly', 'yearly', 'expired'].map((plan) => (
+                        <option value={plan}>{planLabels[plan] ?? plan}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <label class="flex flex-col gap-1 text-sm">
+                    <span class="font-semibold text-[#17130d]">Teste até</span>
+                    <input class="input input-bordered w-full" name="trial_ends_at" type="date" />
+                  </label>
+                  <label class="flex flex-col gap-1 text-sm">
+                    <span class="font-semibold text-[#17130d]">Acesso até</span>
+                    <input class="input input-bordered w-full" name="access_until" type="date" />
+                  </label>
+                  <label class="flex flex-col gap-1 text-sm">
+                    <span class="font-semibold text-[#17130d]">Encerrado em</span>
+                    <input class="input input-bordered w-full" name="expired_at" type="date" />
+                  </label>
+                </div>
+                <div class="modal-action sm:col-span-2">
+                  <button class="btn btn-ghost" type="button" data-user-create-close>
+                    Fechar
+                  </button>
+                  <button class="btn btn-primary" type="submit">
+                    Criar usuário
+                  </button>
+                </div>
+              </form>
+            </div>
+            <form method="dialog" class="modal-backdrop">
+              <button>fechar</button>
+            </form>
+          </dialog>
 
           <Pager
             page={page}
@@ -1428,6 +1511,77 @@ const deliveryStatus: Record<string, string> = {
           }
         }),
       );
+      const createDialog = document.getElementById('user-create-modal') as HTMLDialogElement | null;
+      const createForm = document.querySelector<HTMLFormElement>('[data-user-create-form]');
+      if (createDialog && createForm) {
+        const customerFields = createForm.querySelector<HTMLElement>('[data-user-create-customer]');
+        const typeSelect = createForm.querySelector<HTMLSelectElement>('[data-user-create-type]');
+        const iso = (date: Date) => date.toISOString().slice(0, 10);
+        const setDate = (name: string, value: string) => {
+          const hidden = createForm.elements.namedItem(name) as HTMLInputElement | null;
+          if (!hidden || hidden.value) return;
+          hidden.value = value;
+          const visible = hidden.previousElementSibling as HTMLInputElement | null;
+          if (visible?.dataset.datePicker === 'ready') {
+            const [year, month, day] = value.split('-');
+            visible.value = `${day}/${month}/${year}`;
+          }
+        };
+        const syncType = () =>
+          customerFields?.classList.toggle('hidden', typeSelect?.value === 'admin');
+        typeSelect?.addEventListener('change', syncType);
+        document.querySelectorAll<HTMLButtonElement>('[data-user-create-open]').forEach((button) =>
+          button.addEventListener('click', () => {
+            const now = new Date();
+            const plus = (days: number) => {
+              const date = new Date(now);
+              date.setDate(date.getDate() + days);
+              return iso(date);
+            };
+            setDate('trial_ends_at', plus(1));
+            setDate('access_until', plus(30));
+            syncType();
+            createDialog.showModal();
+          }),
+        );
+        document
+          .querySelectorAll<HTMLButtonElement>('[data-user-create-close]')
+          .forEach((button) => button.addEventListener('click', () => createDialog.close()));
+        createForm.addEventListener('submit', async (event) => {
+          event.preventDefault();
+          const button = createForm.querySelector<HTMLButtonElement>('button[type=submit]');
+          if (button) button.disabled = true;
+          const field = (name: string) =>
+            (createForm.elements.namedItem(name) as HTMLInputElement | HTMLSelectElement | null)
+              ?.value ?? '';
+          const type = field('type') === 'admin' ? 'admin' : 'user';
+          try {
+            await updateUser(
+              type === 'admin'
+                ? {
+                    mode: 'create',
+                    type: 'admin',
+                    email: field('email'),
+                    displayName: field('displayName'),
+                  }
+                : {
+                    mode: 'create',
+                    type: 'user',
+                    email: field('email'),
+                    displayName: field('displayName'),
+                    plan: field('plan'),
+                    trial_ends_at: field('trial_ends_at'),
+                    access_until: field('access_until'),
+                    expired_at: field('expired_at'),
+                  },
+            );
+            window.location.reload();
+          } catch (error) {
+            reportError(error, 'Falha ao criar');
+            if (button) button.disabled = false;
+          }
+        });
+      }
       const pricesForm = document.getElementById('prices-form') as HTMLFormElement | null;
       pricesForm?.addEventListener('submit', async (event) => {
         event.preventDefault();
