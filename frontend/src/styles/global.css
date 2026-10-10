@@ -185,6 +185,18 @@
 [data-mode='guided'] [data-section][data-active] {
   border-color: #b88333;
 }
+[data-mode='guided'] .sec-hint {
+  display: block;
+}
+.sec-hint {
+  display: none;
+}
+[data-section][data-dragging] {
+  opacity: 0.5;
+}
+[data-drag-handle] {
+  touch-action: none;
+}
 
 /* No mobile, os botões de ação dos painéis ocupam a largura toda e empilham,
    como os campos de formulário. Botões compactos (ícone, xs, sm, paginação)

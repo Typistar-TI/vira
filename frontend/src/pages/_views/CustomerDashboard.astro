@@ -17,6 +17,31 @@ import { preferredLanguage } from '@frontend/i18n/preferred-language';
 const { user, site, section = 'conteudo' } = Astro.props;
 const content = parseSiteContent(JSON.parse(site.draft_json));
 const templates = siteTemplates(preferredLanguage(Astro.request) === 'en' ? 'en' : 'pt');
+const barStyle = (type: string) => {
+  const colors: Record<string, string> = {
+    hero: '#b88333',
+    about: '#d8ae73',
+    services: '#c9a06a',
+    gallery: '#e0c9a0',
+    stats: '#9b6823',
+    steps: '#d8ae73',
+    faq: '#e5ded2',
+    contact: '#b88333',
+    footer: '#efe8dc',
+  };
+  const heights: Record<string, number> = {
+    hero: 22,
+    gallery: 26,
+    services: 18,
+    stats: 12,
+    steps: 18,
+    faq: 14,
+    contact: 14,
+    about: 14,
+    footer: 8,
+  };
+  return `height:${heights[type] ?? 12}px;background:${colors[type] ?? '#d8ae73'}`;
+};
 const active = userHasAccess(user);
 const en = preferredLanguage(Astro.request) === 'en';
 const sectionTitles: Record<string, [string, string]> = {
@@ -951,6 +976,11 @@ const planLabel = (plan: string) => planLabels[plan] ?? plan;
                     class="rounded-2xl border border-[#ead8bd] bg-white p-4 text-left transition-colors hover:border-[#b88333] hover:bg-[#fff9ef]"
                     data-template={template.key}
                   >
+                    <span class="mb-3 flex flex-col gap-1 rounded-lg border border-[#ead8bd] bg-[#fcfaf6] p-2">
+                      {template.sections.map((section) => (
+                        <span class="block w-full rounded-sm" style={barStyle(section.type)}></span>
+                      ))}
+                    </span>
                     <strong class="block font-[Outfit] text-lg text-[#17130d]">
                       {template.name}
                     </strong>
@@ -1000,6 +1030,11 @@ const planLabel = (plan: string) => planLabels[plan] ?? plan;
                     class="rounded-2xl border border-[#ead8bd] bg-white p-4 text-left transition-colors hover:border-[#b88333] hover:bg-[#fff9ef]"
                     data-wizard-template={template.key}
                   >
+                    <span class="mb-3 flex flex-col gap-1 rounded-lg border border-[#ead8bd] bg-[#fcfaf6] p-2">
+                      {template.sections.map((section) => (
+                        <span class="block w-full rounded-sm" style={barStyle(section.type)}></span>
+                      ))}
+                    </span>
                     <strong class="block font-[Outfit] text-lg text-[#17130d]">
                       {template.name}
                     </strong>
@@ -1500,6 +1535,51 @@ const planLabel = (plan: string) => planLabels[plan] ?? plan;
           }),
         );
         setAdvanced(false);
+
+        let dragSection: HTMLElement | null = null;
+        let dragActive = false;
+        let dragStartY = 0;
+        sectionsRoot.addEventListener('pointerdown', (event) => {
+          if (event.pointerType === 'mouse' && event.button !== 0) return;
+          const handle = (event.target as HTMLElement).closest<HTMLElement>('[data-drag-handle]');
+          if (!handle) return;
+          const section = (event.target as HTMLElement).closest<HTMLElement>('[data-section]');
+          if (!section) return;
+          dragSection = section;
+          dragActive = false;
+          dragStartY = event.clientY;
+          handle.setPointerCapture?.(event.pointerId);
+        });
+        sectionsRoot.addEventListener('pointermove', (event) => {
+          if (!dragSection) return;
+          if (!dragActive) {
+            if (Math.abs(event.clientY - dragStartY) < 5) return;
+            dragActive = true;
+            dragSection.setAttribute('data-dragging', '');
+          }
+          event.preventDefault();
+          const over = document
+            .elementFromPoint(event.clientX, event.clientY)
+            ?.closest<HTMLElement>('[data-section]');
+          if (!over || over === dragSection || !over.parentElement) return;
+          const rect = over.getBoundingClientRect();
+          const after = event.clientY > rect.top + rect.height / 2;
+          over.parentElement.insertBefore(dragSection, after ? over.nextElementSibling : over);
+        });
+        const endDrag = () => {
+          if (!dragSection) return;
+          const moved = dragActive;
+          dragSection.removeAttribute('data-dragging');
+          dragSection = null;
+          dragActive = false;
+          if (moved) {
+            markChanged();
+            updateGuided();
+            updatePreview();
+          }
+        };
+        sectionsRoot.addEventListener('pointerup', endDrag);
+        sectionsRoot.addEventListener('pointercancel', endDrag);
 
         const wizard = document.querySelector<HTMLDialogElement>('#wizard-dialog');
         if (wizard) {

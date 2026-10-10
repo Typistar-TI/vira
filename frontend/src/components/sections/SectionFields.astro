@@ -15,6 +15,7 @@ const L = en
       moveUp: 'Move up',
       moveDown: 'Move down',
       remove: 'Remove block',
+      drag: 'Drag to reorder',
       variant: 'Style',
       background: 'Background',
       spacing: 'Spacing',
@@ -46,25 +47,41 @@ const L = en
       addItem: 'Add item',
       item: 'Item',
       types: {
-        hero: 'Hero',
-        about: 'About',
-        services: 'Services',
+        hero: 'Opening',
+        about: 'About you',
+        services: 'What you offer',
         gallery: 'Gallery',
         stats: 'Numbers',
-        steps: 'Steps',
+        steps: 'How it works',
         experience: 'Experience',
         testimonials: 'Testimonials',
         faq: 'FAQ',
         video: 'Video',
-        map: 'Map',
+        map: 'Location',
         contact: 'Contact',
         footer: 'Footer',
+      } as Record<SectionType, string>,
+      hints: {
+        hero: 'Headline, introduction and main button.',
+        about: 'Tell who you are and what you do.',
+        services: 'List your products or services.',
+        gallery: 'Show images of your work.',
+        stats: 'Highlight important numbers.',
+        steps: 'Explain the step by step.',
+        experience: 'Career and background.',
+        testimonials: 'What clients say.',
+        faq: 'Common customer questions.',
+        video: 'Embed a video.',
+        map: 'Show where you are.',
+        contact: 'How to reach you.',
+        footer: 'Footer text and links.',
       } as Record<SectionType, string>,
     }
   : {
       moveUp: 'Mover para cima',
       moveDown: 'Mover para baixo',
       remove: 'Remover bloco',
+      drag: 'Arraste para reordenar',
       variant: 'Estilo',
       background: 'Fundo',
       spacing: 'Espaçamento',
@@ -96,19 +113,34 @@ const L = en
       addItem: 'Adicionar item',
       item: 'Item',
       types: {
-        hero: 'Herói',
-        about: 'Sobre',
-        services: 'Serviços',
+        hero: 'Abertura',
+        about: 'Sobre você',
+        services: 'O que você oferece',
         gallery: 'Galeria',
         stats: 'Números',
-        steps: 'Passos',
+        steps: 'Como funciona',
         experience: 'Experiência',
         testimonials: 'Depoimentos',
         faq: 'Perguntas frequentes',
         video: 'Vídeo',
-        map: 'Mapa',
+        map: 'Localização',
         contact: 'Contato',
         footer: 'Rodapé',
+      } as Record<SectionType, string>,
+      hints: {
+        hero: 'Título, apresentação e botão principal.',
+        about: 'Conte quem você é e o que faz.',
+        services: 'Liste seus produtos ou serviços.',
+        gallery: 'Mostre imagens do seu trabalho.',
+        stats: 'Destaque números importantes.',
+        steps: 'Explique o passo a passo.',
+        experience: 'Carreira e histórico.',
+        testimonials: 'O que os clientes dizem.',
+        faq: 'Dúvidas comuns dos clientes.',
+        video: 'Incorpore um vídeo.',
+        map: 'Mostre onde você fica.',
+        contact: 'Como falar com você.',
+        footer: 'Texto e links do rodapé.',
       } as Record<SectionType, string>,
     };
 
@@ -225,8 +257,30 @@ const layout = section.layout ?? {
     data-section-head
     class="flex items-center justify-between gap-2 border-b border-[#e2d8c6] bg-[#fbf6ec] px-3 py-2.5"
   >
-    <strong class="text-[0.95rem]">{L.types[section.type]}</strong>
-    <span class="flex gap-1">
+    <span class="flex min-w-0 items-center gap-2">
+      <span
+        data-drag-handle
+        class="shrink-0 cursor-grab text-[#c3b39b] hover:text-[#b88333] active:cursor-grabbing"
+        title={L.drag}
+        aria-hidden="true"
+      >
+        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+          <circle cx="9" cy="6" r="1.5"></circle>
+          <circle cx="15" cy="6" r="1.5"></circle>
+          <circle cx="9" cy="12" r="1.5"></circle>
+          <circle cx="15" cy="12" r="1.5"></circle>
+          <circle cx="9" cy="18" r="1.5"></circle>
+          <circle cx="15" cy="18" r="1.5"></circle>
+        </svg>
+      </span>
+      <span class="min-w-0">
+        <strong class="block text-[0.95rem]">{L.types[section.type]}</strong>
+        <span class="sec-hint mt-0.5 block text-xs font-normal text-[#8b8174]">
+          {L.hints[section.type]}
+        </span>
+      </span>
+    </span>
+    <span class="flex shrink-0 gap-1">
       <button
         type="button"
         class="h-[30px] w-[30px] cursor-pointer rounded-lg border border-[#e2d8c6] bg-white leading-none hover:border-[#b88333]"
