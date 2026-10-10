@@ -13,7 +13,7 @@ const single = section.variant === 'single';
 
 {items.length > 0 && (
   <section class="px-5 py-[var(--sec-py)] text-[var(--fg)] sm:px-10" data-vs-section="testimonials">
-    <div class="mx-auto w-full max-w-[1180px]">
+    <div class="mx-auto w-full max-w-[var(--sec-max,1180px)]">
       <SectionHeading title={section.title} />
       <div
         class:list={[single ? 'mx-auto max-w-[760px]' : 'grid gap-5 sm:grid-cols-2 lg:grid-cols-3']}

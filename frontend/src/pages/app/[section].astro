@@ -5,7 +5,11 @@ import { siteForUser } from '@frontend/api/sites/site-for-user';
 
 const section = Astro.params.section;
 if (section === 'conteudo') return Astro.redirect('/app');
-if (!section || !['plano', 'dominio', 'conta'].includes(section)) return Astro.rewrite('/404');
+if (
+  !section ||
+  !['aparencia', 'identidade', 'assistente', 'plano', 'dominio', 'conta'].includes(section)
+)
+  return Astro.rewrite('/404');
 const user = await sessionUser(Astro.request);
 if (!user) return Astro.redirect('/login?next=app');
 const site = await siteForUser(user.id);

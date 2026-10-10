@@ -25,6 +25,13 @@ const L = en
       spSm: 'Small',
       spMd: 'Medium',
       spLg: 'Large',
+      width: 'Width',
+      align: 'Alignment',
+      wNormal: 'Default',
+      wWide: 'Wide',
+      wFull: 'Full width',
+      alLeft: 'Left',
+      alCenter: 'Center',
       title: 'Heading',
       eyebrow: 'Small label',
       subtitle: 'Introduction',
@@ -68,6 +75,13 @@ const L = en
       spSm: 'Pequeno',
       spMd: 'Médio',
       spLg: 'Grande',
+      width: 'Largura',
+      align: 'Alinhamento',
+      wNormal: 'Padrão',
+      wWide: 'Ampla',
+      wFull: 'Total',
+      alLeft: 'Esquerda',
+      alCenter: 'Centro',
       title: 'Título',
       eyebrow: 'Etiqueta curta',
       subtitle: 'Apresentação',
@@ -190,7 +204,12 @@ const itemList =
               ? section.links
               : [];
 const variants = variantLabels[section.type];
-const layout = section.layout ?? { background: 'default', spacing: 'md' };
+const layout = section.layout ?? {
+  background: 'default',
+  spacing: 'md',
+  width: 'normal',
+  align: 'left',
+};
 ---
 
 <div
@@ -277,6 +296,33 @@ const layout = section.layout ?? { background: 'default', spacing: 'md' };
           </option>
           <option value="lg" selected={layout.spacing === 'lg'}>
             {L.spLg}
+          </option>
+        </select>
+      </label>
+    </div>
+    <div class="grid grid-cols-2 gap-2">
+      <label class="flex flex-col gap-1 text-[0.8rem] font-bold text-[#4a4238]">
+        <span>{L.width}</span>
+        <select class="select select-bordered" name="field-layout-width">
+          <option value="normal" selected={layout.width === 'normal'}>
+            {L.wNormal}
+          </option>
+          <option value="wide" selected={layout.width === 'wide'}>
+            {L.wWide}
+          </option>
+          <option value="full" selected={layout.width === 'full'}>
+            {L.wFull}
+          </option>
+        </select>
+      </label>
+      <label class="flex flex-col gap-1 text-[0.8rem] font-bold text-[#4a4238]">
+        <span>{L.align}</span>
+        <select class="select select-bordered" name="field-layout-align">
+          <option value="left" selected={layout.align === 'left'}>
+            {L.alLeft}
+          </option>
+          <option value="center" selected={layout.align === 'center'}>
+            {L.alCenter}
           </option>
         </select>
       </label>

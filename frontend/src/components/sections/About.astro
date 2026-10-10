@@ -14,7 +14,7 @@ const imageLeft = section.variant === 'image-left';
 <section class="px-5 py-[var(--sec-py)] text-[var(--fg)] sm:px-10" data-vs-section="about">
   <div
     class:list={[
-      'mx-auto flex w-full max-w-[1180px] flex-col gap-8 sm:gap-12',
+      'mx-auto flex w-full max-w-[var(--sec-max,1180px)] flex-col gap-8 sm:gap-12',
       hasImage ? 'lg:grid lg:grid-cols-2 lg:items-center' : 'max-w-[780px] text-center',
     ]}
   >

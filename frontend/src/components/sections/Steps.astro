@@ -13,7 +13,7 @@ const cards = section.variant === 'cards';
 
 {items.length > 0 && (
   <section class="px-5 py-[var(--sec-py)] text-[var(--fg)] sm:px-10" data-vs-section="steps">
-    <div class="mx-auto w-full max-w-[1180px]">
+    <div class="mx-auto w-full max-w-[var(--sec-max,1180px)]">
       <SectionHeading title={section.title} />
       <ul
         class:list={[

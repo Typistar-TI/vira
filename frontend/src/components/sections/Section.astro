@@ -22,7 +22,17 @@ interface Props {
 }
 const { section, preview, productOffset = 0, brand } = Astro.props;
 
-const layout = section.layout ?? { background: 'default', spacing: 'md' };
+const layout = section.layout ?? {
+  background: 'default',
+  spacing: 'md',
+  width: 'normal',
+  align: 'left',
+};
+const widthStyle: Record<string, string> = {
+  normal: '',
+  wide: '--sec-max:1440px;',
+  full: '--sec-max:100%;',
+};
 const backgroundClass: Record<string, string> = {
   default: '',
   soft: 'bg-[color-mix(in_srgb,var(--bg)_90%,var(--fg))]',
@@ -40,9 +50,10 @@ const darkStyle =
   class:list={[
     'relative',
     section.type === 'footer' && 'mt-auto',
+    layout.align === 'center' && 'text-center',
     backgroundClass[layout.background],
   ]}
-  style={`--sec-py:${spacing[layout.spacing]};${darkStyle}`}
+  style={`--sec-py:${spacing[layout.spacing]};${widthStyle[layout.width]}${darkStyle}`}
   data-vs-layout={layout.background}
 >
   {section.type === 'hero' && <Hero section={section} preview={preview} />}

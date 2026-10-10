@@ -17,6 +17,15 @@ const { user, site, section = 'conteudo' } = Astro.props;
 const content = parseSiteContent(JSON.parse(site.draft_json));
 const active = userHasAccess(user);
 const en = preferredLanguage(Astro.request) === 'en';
+const sectionTitles: Record<string, [string, string]> = {
+  aparencia: ['Appearance', 'Aparência'],
+  identidade: ['Identity and app', 'Identidade e aplicativo'],
+  assistente: ['Assistant', 'Assistente'],
+  plano: ['Plan and billing', 'Plano e cobrança'],
+  dominio: ['Domain', 'Domínio'],
+  conta: ['Account and data', 'Conta e dados'],
+};
+const sectionTitle = sectionTitles[section]?.[en ? 0 : 1] ?? '';
 const domain = await getRootDomain();
 const accountName = user.display_name || (user.email ?? '').split('@')[0] || 'V';
 const accountInitials = accountName
@@ -293,7 +302,25 @@ const trialLeft = en
           : 'max-w-[1380px] px-5 pb-24 pt-8 sm:px-8',
       ]}
     >
-      <h1 class="sr-only">{t.dashboard}</h1>
+      {section === 'conteudo' ? (
+        <h1 class="sr-only">{t.dashboard}</h1>
+      ) : (
+        <>
+          <nav
+            class="mb-1 text-xs text-[#9b6823]"
+            aria-label={en ? 'Breadcrumb' : 'Trilha de navegação'}
+          >
+            <a href="/app" class="hover:underline">
+              {en ? 'Dashboard' : 'Painel'}
+            </a>
+            <span aria-hidden="true"> / </span>
+            <span class="font-semibold">{sectionTitle}</span>
+          </nav>
+          <h1 class="mb-6 font-[Outfit] text-2xl font-medium tracking-[-0.02em] text-[#17130d]">
+            {sectionTitle}
+          </h1>
+        </>
+      )}
       {!active && (
         <div class="alert alert-error my-3 [hidden]:hidden mb-5">
           {en
@@ -302,8 +329,180 @@ const trialLeft = en
         </div>
       )}
       <div>
+        {section === 'assistente' && (
+          <form
+            id="editor"
+            class="rounded-2xl border border-[#ead8bd] bg-white p-6 [&_h2]:mb-4 [&_h2]:text-[1.45rem] [&_h2]:text-[#17130d] [&_h3]:mt-6 [&_h3]:mb-3 [&_h3]:text-lg [&_label]:mt-4 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold [&_.input]:w-full [&_.textarea]:w-full [&_.select]:w-full [&_small]:text-[#625a51] mb-5"
+            data-initial={JSON.stringify(content)}
+          >
+            <label class="flex items-start gap-3 text-sm font-medium text-[#17130d]">
+              <input
+                class="checkbox checkbox-primary mt-0.5 shrink-0 border border-[#b88333]"
+                name="assistant"
+                type="checkbox"
+                checked={content.assistant}
+              />
+              <span>{t.assistantToggle}</span>
+            </label>
+            <small>{t.assistantToggleHint}</small>
+
+            <div class="mt-5">
+              <button class="btn btn-primary" type="submit">
+                {t.save}
+              </button>
+            </div>
+          </form>
+        )}
+        {section === 'aparencia' && (
+          <form
+            id="editor"
+            class="rounded-2xl border border-[#ead8bd] bg-white p-6 [&_h2]:mb-4 [&_h2]:text-[1.45rem] [&_h2]:text-[#17130d] [&_h3]:mt-6 [&_h3]:mb-3 [&_h3]:text-lg [&_label]:mt-4 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold [&_.input]:w-full [&_.textarea]:w-full [&_.select]:w-full [&_small]:text-[#625a51] mb-5"
+            data-initial={JSON.stringify(content)}
+          >
+            <h3>{t.style}</h3>
+            <label for="font">{t.font}</label>
+            <select class="select select-bordered" name="font" id="font">
+              <option value="outfit" selected={content.font === 'outfit'}>
+                Outfit
+              </option>
+              <option value="bricolage" selected={content.font === 'bricolage'}>
+                Bricolage Grotesque + Manrope
+              </option>
+              <option value="inter" selected={content.font === 'inter'}>
+                Inter
+              </option>
+              <option value="instrument" selected={content.font === 'instrument'}>
+                Instrument Serif + Manrope
+              </option>
+              <option value="gilda" selected={content.font === 'gilda'}>
+                Gilda Display
+              </option>
+            </select>
+            <label for="language">{t.language}</label>
+            <select class="select select-bordered" name="language" id="language">
+              <option value="pt" selected={content.language === 'pt'}>
+                Português
+              </option>
+              <option value="en" selected={content.language === 'en'}>
+                English
+              </option>
+            </select>
+            <div class="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label for="themeColor">{t.browserColor}</label>
+                <input
+                  class="input input-bordered p-1"
+                  id="themeColor"
+                  name="themeColor"
+                  type="color"
+                  value={content.themeColor}
+                />
+              </div>
+              <div>
+                <label for="backgroundColor">{t.pageColor}</label>
+                <input
+                  class="input input-bordered p-1"
+                  id="backgroundColor"
+                  name="backgroundColor"
+                  type="color"
+                  value={content.backgroundColor}
+                />
+              </div>
+              <div>
+                <label for="textColor">{t.textColor}</label>
+                <input
+                  class="input input-bordered p-1"
+                  id="textColor"
+                  name="textColor"
+                  type="color"
+                  value={content.textColor}
+                />
+              </div>
+              <div>
+                <label for="accentColor">{t.accentColor}</label>
+                <input
+                  class="input input-bordered p-1"
+                  id="accentColor"
+                  name="accentColor"
+                  type="color"
+                  value={content.accentColor}
+                />
+              </div>
+            </div>
+
+            <div class="mt-5">
+              <button class="btn btn-primary" type="submit">
+                {t.save}
+              </button>
+            </div>
+          </form>
+        )}
+        {section === 'identidade' && (
+          <form
+            id="editor"
+            class="rounded-2xl border border-[#ead8bd] bg-white p-6 [&_h2]:mb-4 [&_h2]:text-[1.45rem] [&_h2]:text-[#17130d] [&_h3]:mt-6 [&_h3]:mb-3 [&_h3]:text-lg [&_label]:mt-4 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold [&_.input]:w-full [&_.textarea]:w-full [&_.select]:w-full [&_small]:text-[#625a51] mb-5"
+            data-initial={JSON.stringify(content)}
+          >
+            <h3>{t.identity}</h3>
+            <p class="text-sm text-[#625a51]">{t.identityHint}</p>
+            <label for="logo-file">{t.logo}</label>
+            <ImageUpload id="logo-file" name="" lang={en ? 'en' : 'pt'} src={content.logo} />
+            <input type="hidden" name="logo" value={content.logo} />
+            <small>{t.logoHint}</small>
+            <label class="mt-4 flex items-start gap-3 text-sm font-medium text-[#17130d]">
+              <input
+                class="checkbox checkbox-primary mt-0.5 shrink-0 border border-[#b88333]"
+                name="showInShowcase"
+                type="checkbox"
+                checked={content.showInShowcase}
+              />
+              <span>{t.showcaseConsent}</span>
+            </label>
+            <div class="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label for="favicon-file">{t.favicon}</label>
+                <ImageUpload
+                  id="favicon-file"
+                  name=""
+                  lang={en ? 'en' : 'pt'}
+                  src={content.favicon}
+                  compact
+                />
+                <input type="hidden" name="favicon" value={content.favicon} />
+              </div>
+              <div>
+                <label for="pwa-icon-file">{t.appIcon}</label>
+                <ImageUpload
+                  id="pwa-icon-file"
+                  name=""
+                  lang={en ? 'en' : 'pt'}
+                  src={content.pwaIcon192}
+                  compact
+                />
+                <input type="hidden" name="pwaIcon192" value={content.pwaIcon192} />
+                <input type="hidden" name="pwaIcon512" value={content.pwaIcon512} />
+              </div>
+            </div>
+            <small>{t.iconHint}</small>
+            <label for="appName">{t.appName}</label>
+            <input
+              class="input input-bordered"
+              id="appName"
+              name="appName"
+              maxlength="50"
+              value={content.appName}
+              placeholder={content.title}
+            />
+
+            <div class="mt-5">
+              <button class="btn btn-primary" type="submit">
+                {t.save}
+              </button>
+            </div>
+          </form>
+        )}
         {section === 'dominio' && (
-          <section class="card rounded-none border-x-0 border-b-0 border-[#d8ae73] bg-white p-6 px-0 shadow-none [&_h2]:font-['Outfit',sans-serif] [&_h2]:font-medium [&_h2]:tracking-[-0.03em] [&_h2]:mb-4 [&_h2]:text-[1.45rem] [&_h2]:text-[#17130d] [&_h3]:mt-7 [&_h3]:mb-3 [&_h3]:text-lg [&_label]:mt-4 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold [&_.input]:w-full [&_.textarea]:w-full [&_.select]:w-full [&_small]:text-[#625a51] mb-5">
+          <section class="rounded-2xl border border-[#ead8bd] bg-white p-6 shadow-none [&_h2]:font-['Outfit',sans-serif] [&_h2]:font-medium [&_h2]:tracking-[-0.03em] [&_h2]:mb-4 [&_h2]:text-[1.45rem] [&_h2]:text-[#17130d] [&_h3]:mt-7 [&_h3]:mb-3 [&_h3]:text-lg [&_label]:mt-4 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold [&_.input]:w-full [&_.textarea]:w-full [&_.select]:w-full [&_small]:text-[#625a51] mb-5">
             <h2>{t.address}</h2>
             <p class="text-sm text-[#625a51]">
               {t.publicLink}:{' '}
@@ -397,142 +596,9 @@ const trialLeft = en
                 </div>
                 <form
                   id="editor"
-                  class="card rounded-xl border border-[#d8ae73] bg-white p-5 [&_h2]:mb-4 [&_h2]:text-[1.45rem] [&_h2]:text-[#17130d] [&_h3]:mt-6 [&_h3]:mb-3 [&_h3]:text-lg [&_label]:mt-4 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold [&_.input]:w-full [&_.textarea]:w-full [&_.select]:w-full [&_small]:text-[#625a51] mb-5"
+                  class="rounded-2xl border border-[#ead8bd] bg-white p-6 [&_h2]:mb-4 [&_h2]:text-[1.45rem] [&_h2]:text-[#17130d] [&_h3]:mt-6 [&_h3]:mb-3 [&_h3]:text-lg [&_label]:mt-4 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold [&_.input]:w-full [&_.textarea]:w-full [&_.select]:w-full [&_small]:text-[#625a51] mb-5"
                   data-initial={JSON.stringify(content)}
                 >
-                  <label class="flex items-start gap-3 text-sm font-medium text-[#17130d]">
-                    <input
-                      class="checkbox checkbox-primary mt-0.5 shrink-0 border border-[#b88333]"
-                      name="assistant"
-                      type="checkbox"
-                      checked={content.assistant}
-                    />
-                    <span>{t.assistantToggle}</span>
-                  </label>
-                  <small>{t.assistantToggleHint}</small>
-
-                  <h3>{t.style}</h3>
-                  <label for="font">{t.font}</label>
-                  <select class="select select-bordered" name="font" id="font">
-                    <option value="outfit" selected={content.font === 'outfit'}>
-                      Outfit
-                    </option>
-                    <option value="bricolage" selected={content.font === 'bricolage'}>
-                      Bricolage Grotesque + Manrope
-                    </option>
-                    <option value="inter" selected={content.font === 'inter'}>
-                      Inter
-                    </option>
-                    <option value="instrument" selected={content.font === 'instrument'}>
-                      Instrument Serif + Manrope
-                    </option>
-                    <option value="gilda" selected={content.font === 'gilda'}>
-                      Gilda Display
-                    </option>
-                  </select>
-                  <label for="language">{t.language}</label>
-                  <select class="select select-bordered" name="language" id="language">
-                    <option value="pt" selected={content.language === 'pt'}>
-                      Português
-                    </option>
-                    <option value="en" selected={content.language === 'en'}>
-                      English
-                    </option>
-                  </select>
-                  <div class="grid gap-4 sm:grid-cols-2">
-                    <div>
-                      <label for="themeColor">{t.browserColor}</label>
-                      <input
-                        class="input input-bordered p-1"
-                        id="themeColor"
-                        name="themeColor"
-                        type="color"
-                        value={content.themeColor}
-                      />
-                    </div>
-                    <div>
-                      <label for="backgroundColor">{t.pageColor}</label>
-                      <input
-                        class="input input-bordered p-1"
-                        id="backgroundColor"
-                        name="backgroundColor"
-                        type="color"
-                        value={content.backgroundColor}
-                      />
-                    </div>
-                    <div>
-                      <label for="textColor">{t.textColor}</label>
-                      <input
-                        class="input input-bordered p-1"
-                        id="textColor"
-                        name="textColor"
-                        type="color"
-                        value={content.textColor}
-                      />
-                    </div>
-                    <div>
-                      <label for="accentColor">{t.accentColor}</label>
-                      <input
-                        class="input input-bordered p-1"
-                        id="accentColor"
-                        name="accentColor"
-                        type="color"
-                        value={content.accentColor}
-                      />
-                    </div>
-                  </div>
-
-                  <h3>{t.identity}</h3>
-                  <p class="text-sm text-[#625a51]">{t.identityHint}</p>
-                  <label for="logo-file">{t.logo}</label>
-                  <ImageUpload id="logo-file" name="" lang={en ? 'en' : 'pt'} src={content.logo} />
-                  <input type="hidden" name="logo" value={content.logo} />
-                  <small>{t.logoHint}</small>
-                  <label class="mt-4 flex items-start gap-3 text-sm font-medium text-[#17130d]">
-                    <input
-                      class="checkbox checkbox-primary mt-0.5 shrink-0 border border-[#b88333]"
-                      name="showInShowcase"
-                      type="checkbox"
-                      checked={content.showInShowcase}
-                    />
-                    <span>{t.showcaseConsent}</span>
-                  </label>
-                  <div class="grid gap-4 sm:grid-cols-2">
-                    <div>
-                      <label for="favicon-file">{t.favicon}</label>
-                      <ImageUpload
-                        id="favicon-file"
-                        name=""
-                        lang={en ? 'en' : 'pt'}
-                        src={content.favicon}
-                        compact
-                      />
-                      <input type="hidden" name="favicon" value={content.favicon} />
-                    </div>
-                    <div>
-                      <label for="pwa-icon-file">{t.appIcon}</label>
-                      <ImageUpload
-                        id="pwa-icon-file"
-                        name=""
-                        lang={en ? 'en' : 'pt'}
-                        src={content.pwaIcon192}
-                        compact
-                      />
-                      <input type="hidden" name="pwaIcon192" value={content.pwaIcon192} />
-                      <input type="hidden" name="pwaIcon512" value={content.pwaIcon512} />
-                    </div>
-                  </div>
-                  <small>{t.iconHint}</small>
-                  <label for="appName">{t.appName}</label>
-                  <input
-                    class="input input-bordered"
-                    id="appName"
-                    name="appName"
-                    maxlength="50"
-                    value={content.appName}
-                    placeholder={content.title}
-                  />
-
                   <h3>{t.blocks}</h3>
                   <div id="sections">
                     {content.sections.map((item) => (
@@ -577,7 +643,7 @@ const trialLeft = en
           </section>
         )}
         {section === 'plano' && (
-          <section class="card rounded-none border-x-0 border-b-0 border-[#d8ae73] bg-white p-6 px-0 shadow-none [&_h2]:font-['Outfit',sans-serif] [&_h2]:font-medium [&_h2]:tracking-[-0.03em] [&_h2]:mb-4 [&_h2]:text-[1.45rem] [&_h2]:text-[#17130d] [&_h3]:mt-7 [&_h3]:mb-3 [&_h3]:text-lg [&_label]:mt-4 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold [&_.input]:w-full [&_.textarea]:w-full [&_.select]:w-full [&_small]:text-[#625a51] mb-5">
+          <section class="rounded-2xl border border-[#ead8bd] bg-white p-6 shadow-none [&_h2]:font-['Outfit',sans-serif] [&_h2]:font-medium [&_h2]:tracking-[-0.03em] [&_h2]:mb-4 [&_h2]:text-[1.45rem] [&_h2]:text-[#17130d] [&_h3]:mt-7 [&_h3]:mb-3 [&_h3]:text-lg [&_label]:mt-4 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold [&_.input]:w-full [&_.textarea]:w-full [&_.select]:w-full [&_small]:text-[#625a51] mb-5">
             <h2>{t.plans}</h2>
             <p class="text-[#625a51]">{user.plan === 'trial' ? trialLeft : user.plan}</p>
             <div class="mt-5 flex flex-wrap gap-2.5">
@@ -616,7 +682,7 @@ const trialLeft = en
           </section>
         )}
         {section === 'dominio' && (
-          <section class="card rounded-none border-x-0 border-b-0 border-[#d8ae73] bg-white p-6 px-0 shadow-none [&_h2]:font-['Outfit',sans-serif] [&_h2]:font-medium [&_h2]:tracking-[-0.03em] [&_h2]:mb-4 [&_h2]:text-[1.45rem] [&_h2]:text-[#17130d] [&_h3]:mt-7 [&_h3]:mb-3 [&_h3]:text-lg [&_label]:mt-4 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold [&_.input]:w-full [&_.textarea]:w-full [&_.select]:w-full [&_small]:text-[#625a51] mb-5">
+          <section class="rounded-2xl border border-[#ead8bd] bg-white p-6 shadow-none [&_h2]:font-['Outfit',sans-serif] [&_h2]:font-medium [&_h2]:tracking-[-0.03em] [&_h2]:mb-4 [&_h2]:text-[1.45rem] [&_h2]:text-[#17130d] [&_h3]:mt-7 [&_h3]:mb-3 [&_h3]:text-lg [&_label]:mt-4 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold [&_.input]:w-full [&_.textarea]:w-full [&_.select]:w-full [&_small]:text-[#625a51] mb-5">
             <h2>{t.domain}</h2>
             <p class="text-[#625a51] text-sm">{t.domainHint}</p>
             <form id="domain-form" class="mt-4 flex flex-col gap-2 sm:flex-row">
@@ -641,7 +707,7 @@ const trialLeft = en
         {section === 'conta' && (
           <section
             id="account"
-            class="card rounded-none border-x-0 border-b-0 border-[#d8ae73] bg-white p-6 px-0 shadow-none [&_h2]:font-['Outfit',sans-serif] [&_h2]:font-medium [&_h2]:tracking-[-0.03em] [&_h2]:mb-4 [&_h2]:text-[1.45rem] [&_h2]:text-[#17130d] [&_h3]:mt-7 [&_h3]:mb-3 [&_h3]:text-lg [&_label]:mt-4 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold [&_.input]:w-full [&_.textarea]:w-full [&_.select]:w-full [&_small]:text-[#625a51] mb-5"
+            class="rounded-2xl border border-[#ead8bd] bg-white p-6 shadow-none [&_h2]:font-['Outfit',sans-serif] [&_h2]:font-medium [&_h2]:tracking-[-0.03em] [&_h2]:mb-4 [&_h2]:text-[1.45rem] [&_h2]:text-[#17130d] [&_h3]:mt-7 [&_h3]:mb-3 [&_h3]:text-lg [&_label]:mt-4 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold [&_.input]:w-full [&_.textarea]:w-full [&_.select]:w-full [&_small]:text-[#625a51] mb-5"
           >
             <h2>{t.account}</h2>
             <form id="account-profile-form" class="max-w-xl">
@@ -810,8 +876,11 @@ const trialLeft = en
           event.preventDefault();
           event.returnValue = '';
         });
-        const panel = document.querySelector<HTMLElement>('#site-controls')!;
-        const toggle = document.querySelector<HTMLButtonElement>('#toggle-site-controls')!;
+        const panel =
+          document.querySelector<HTMLElement>('#site-controls') ?? document.createElement('div');
+        const toggle =
+          document.querySelector<HTMLButtonElement>('#toggle-site-controls') ??
+          document.createElement('button');
         const setControls = (open: boolean) => {
           panel.hidden = !open;
           toggle.setAttribute('aria-expanded', String(open));
@@ -827,8 +896,11 @@ const trialLeft = en
           if (event.key === 'Escape') setControls(false);
         });
 
-        const sectionsRoot = form.querySelector<HTMLElement>('#sections')!;
-        const templatesRoot = form.querySelector<HTMLElement>('[data-section-templates]')!;
+        const sectionsRoot =
+          form.querySelector<HTMLElement>('#sections') ?? document.createElement('div');
+        const templatesRoot =
+          form.querySelector<HTMLElement>('[data-section-templates]') ??
+          document.createElement('div');
         const sectionNodes = () => [
           ...sectionsRoot.querySelectorAll<HTMLElement>('[data-section]'),
         ];
@@ -916,7 +988,7 @@ const trialLeft = en
             canvas.width = canvas.height = size;
             const context = canvas.getContext('2d');
             if (!context) throw new Error('Canvas indisponível');
-            context.fillStyle = input(form, 'backgroundColor');
+            context.fillStyle = field('backgroundColor', snapshot().backgroundColor);
             context.fillRect(0, 0, size, size);
             const scale = Math.min((size * 0.82) / bitmap.width, (size * 0.82) / bitmap.height);
             const width = bitmap.width * scale;
@@ -958,24 +1030,31 @@ const trialLeft = en
             });
           return value;
         }
+        const snapshot = (): Record<string, any> => JSON.parse(form.dataset.initial || '{}');
+        const field = (name: string, fallback: unknown) =>
+          form.querySelector(`[name="${name}"]`) ? input(form, name) : String(fallback ?? '');
+        const flag = (name: string, fallback: unknown) => {
+          const el = form.querySelector<HTMLInputElement>(`[name="${name}"]`);
+          return el ? el.checked : Boolean(fallback);
+        };
         async function collect(uploadFiles = true) {
           const logoFile = form.querySelector<HTMLInputElement>('#logo-file')?.files?.[0];
-          let logo = input(form, 'logo');
+          let logo = field('logo', snapshot().logo);
           if (logoFile && uploadFiles) {
             logo = await upload(logoFile);
             setField(form, 'logo', logo);
             form.querySelector<HTMLInputElement>('#logo-file')!.value = '';
           }
           const faviconFile = form.querySelector<HTMLInputElement>('#favicon-file')?.files?.[0];
-          let favicon = input(form, 'favicon');
+          let favicon = field('favicon', snapshot().favicon);
           if (faviconFile && uploadFiles) {
             favicon = await upload(await iconFile(faviconFile, 64));
             setField(form, 'favicon', favicon);
             form.querySelector<HTMLInputElement>('#favicon-file')!.value = '';
           }
           const pwaFile = form.querySelector<HTMLInputElement>('#pwa-icon-file')?.files?.[0];
-          let pwaIcon192 = input(form, 'pwaIcon192');
-          let pwaIcon512 = input(form, 'pwaIcon512');
+          let pwaIcon192 = field('pwaIcon192', snapshot().pwaIcon192);
+          let pwaIcon512 = field('pwaIcon512', snapshot().pwaIcon512);
           if (pwaFile && uploadFiles) {
             pwaIcon192 = await upload(await iconFile(pwaFile, 192));
             pwaIcon512 = await upload(await iconFile(pwaFile, 512));
@@ -985,7 +1064,8 @@ const trialLeft = en
           }
 
           const sections: Record<string, unknown>[] = [];
-          for (const node of sectionNodes()) {
+          const hasBlocks = Boolean(form.querySelector('#sections'));
+          for (const node of hasBlocks ? sectionNodes() : []) {
             const type = node.dataset.type || 'about';
             const variant = input(node, 'field-variant');
             const base: Record<string, unknown> = {
@@ -996,6 +1076,8 @@ const trialLeft = en
             base.layout = {
               background: input(node, 'field-layout-background') || 'default',
               spacing: input(node, 'field-layout-spacing') || 'md',
+              width: input(node, 'field-layout-width') || 'normal',
+              align: input(node, 'field-layout-align') || 'left',
             };
             for (const key of TEXT_KEYS) {
               const field = node.querySelector(`[name="field-${key}"]`);
@@ -1029,25 +1111,27 @@ const trialLeft = en
             }
             sections.push(base);
           }
-          const hero = sections.find((item) => item.type === 'hero') as
+          const finalSections: Record<string, any>[] = hasBlocks
+            ? sections
+            : (snapshot().sections ?? []);
+          const hero = finalSections.find((item) => item.type === 'hero') as
             { title?: string } | undefined;
           return {
-            font: input(form, 'font'),
-            language: input(form, 'language'),
-            title: hero?.title || input(form, 'appName') || 'Vira',
-            appName: input(form, 'appName'),
+            font: field('font', snapshot().font),
+            language: field('language', snapshot().language),
+            title: hero?.title || field('appName', snapshot().appName) || 'Vira',
+            appName: field('appName', snapshot().appName),
             logo,
-            showInShowcase:
-              form.querySelector<HTMLInputElement>('[name="showInShowcase"]')!.checked,
+            showInShowcase: flag('showInShowcase', snapshot().showInShowcase),
             favicon,
             pwaIcon192,
             pwaIcon512,
-            themeColor: input(form, 'themeColor'),
-            backgroundColor: input(form, 'backgroundColor'),
-            textColor: input(form, 'textColor'),
-            accentColor: input(form, 'accentColor'),
-            assistant: form.querySelector<HTMLInputElement>('[name="assistant"]')!.checked,
-            sections,
+            themeColor: field('themeColor', snapshot().themeColor),
+            backgroundColor: field('backgroundColor', snapshot().backgroundColor),
+            textColor: field('textColor', snapshot().textColor),
+            accentColor: field('accentColor', snapshot().accentColor),
+            assistant: flag('assistant', snapshot().assistant),
+            sections: finalSections,
           };
         }
 
@@ -1058,14 +1142,18 @@ const trialLeft = en
           const savingVersion = changeVersion;
           const result = await saveSite(content);
           savedVersion = savingVersion;
-          const frame = document.querySelector<HTMLIFrameElement>('#preview-frame')!;
-          frame.removeAttribute('srcdoc');
-          frame.src = `/app/preview?t=${Date.now()}`;
+          form.dataset.initial = JSON.stringify(content);
+          const frame = document.querySelector<HTMLIFrameElement>('#preview-frame');
+          if (frame) {
+            frame.removeAttribute('srcdoc');
+            frame.src = `/app/preview?t=${Date.now()}`;
+          }
           return result;
         }
         let previewTimer: ReturnType<typeof setTimeout>;
         let previewRequest: AbortController | undefined;
         const updatePreview = () => {
+          if (!document.querySelector('#preview-frame')) return;
           clearTimeout(previewTimer);
           previewRequest?.abort();
           previewTimer = setTimeout(async () => {

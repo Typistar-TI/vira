@@ -11,10 +11,48 @@ interface Props {
 }
 const { email, en, section, displayName = '', avatar = null } = Astro.props;
 const links = [
-  { key: 'conteudo', href: '/app', label: en ? 'Content' : 'Conteúdo' },
-  { key: 'plano', href: '/app/plano', label: en ? 'Plan and billing' : 'Plano e cobrança' },
-  { key: 'dominio', href: '/app/dominio', label: en ? 'Domain' : 'Domínio' },
-  { key: 'conta', href: '/app/conta', label: en ? 'Account' : 'Conta' },
+  {
+    key: 'conteudo',
+    href: '/app',
+    label: en ? 'Content' : 'Conteúdo',
+    icon: '<path d="M16.862 4.487l1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"/>',
+  },
+  {
+    key: 'aparencia',
+    href: '/app/aparencia',
+    label: en ? 'Appearance' : 'Aparência',
+    icon: '<path d="M9.53 16.122a3 3 0 0 0-5.78 1.128 2.25 2.25 0 0 1-2.4 2.245 4.5 4.5 0 0 0 8.4-2.245c0-.399-.078-.78-.22-1.128Zm0 0a15.998 15.998 0 0 0 3.388-1.62m-5.043-.025a15.994 15.994 0 0 1 1.622-3.395m3.42 3.42a15.995 15.995 0 0 0 4.764-4.648l3.876-5.814a1.151 1.151 0 0 0-1.597-1.597L14.146 6.32a15.996 15.996 0 0 0-4.649 4.763m3.42 3.42a6.776 6.776 0 0 0-3.42-3.42"/>',
+  },
+  {
+    key: 'identidade',
+    href: '/app/identidade',
+    label: en ? 'Identity' : 'Identidade',
+    icon: '<path d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Zm6-10.125a1.875 1.875 0 1 1-3.75 0 1.875 1.875 0 0 1 3.75 0Zm1.294 6.336a6.721 6.721 0 0 1-3.17.789 6.721 6.721 0 0 1-3.168-.789 3.376 3.376 0 0 1 6.338 0Z"/>',
+  },
+  {
+    key: 'assistente',
+    href: '/app/assistente',
+    label: en ? 'Assistant' : 'Assistente',
+    icon: '<path d="M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a5.969 5.969 0 0 1-.474-.065 4.48 4.48 0 0 0 .978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z"/>',
+  },
+  {
+    key: 'plano',
+    href: '/app/plano',
+    label: en ? 'Plan and billing' : 'Plano e cobrança',
+    icon: '<path d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z"/>',
+  },
+  {
+    key: 'dominio',
+    href: '/app/dominio',
+    label: en ? 'Domain' : 'Domínio',
+    icon: '<path d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582"/>',
+  },
+  {
+    key: 'conta',
+    href: '/app/conta',
+    label: en ? 'Account' : 'Conta',
+    icon: '<path d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/>',
+  },
 ];
 ---
 
@@ -22,7 +60,7 @@ const links = [
   <div class="mx-auto flex max-w-[1380px] flex-wrap items-center justify-between gap-3 px-5 py-4 sm:px-8">
     <Brand href="/app" tone="light" />
     <nav
-      class="hidden items-center gap-1 overflow-x-auto rounded-full border border-[#d8ae73] bg-white/95 px-3 py-2 text-sm text-[#605448] shadow-[0_8px_30px_-22px_rgba(131,85,21,0.35)] xl:flex"
+      class="hidden h-10 items-center gap-1 overflow-x-auto rounded-full border border-[#d8ae73] bg-white/95 px-4 text-sm text-[#605448] shadow-[0_8px_30px_-22px_rgba(131,85,21,0.35)] xl:flex"
       aria-label={en ? 'Dashboard sections' : 'Seções do painel'}
     >
       {links.map((link) => (
@@ -30,13 +68,22 @@ const links = [
           href={link.href}
           aria-current={section === link.key ? 'page' : undefined}
           class:list={[
-            'rounded-full px-3 py-1.5 whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-[#b88333]',
-            section === link.key
-              ? 'bg-[#fff4df] font-semibold text-[#6f4716]'
-              : 'hover:text-[#9b6823]',
+            'flex items-center gap-1.5 rounded-full px-3 py-1.5 whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-[#b88333]',
+            section === link.key ? 'font-semibold text-[#6f4716]' : 'hover:text-[#9b6823]',
           ]}
         >
-          {link.label}
+          <svg
+            class="h-4 w-4 shrink-0"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+            set:html={link.icon}
+          />
+          <span>{link.label}</span>
         </a>
       ))}
     </nav>
@@ -45,7 +92,12 @@ const links = [
         <MobileNavigation
           label={en ? 'Sections' : 'Seções'}
           lang={en ? 'en' : 'pt'}
-          links={links.map((link) => ({ ...link, current: section === link.key }))}
+          iconOnly
+          links={links.map((link) => ({
+            href: link.href,
+            label: link.label,
+            current: section === link.key,
+          }))}
         />
       </div>
       <AccountMenu

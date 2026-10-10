@@ -16,9 +16,13 @@ export const sectionBackgrounds = ['default', 'soft', 'accent', 'dark'] as const
 export const sectionSpacings = ['sm', 'md', 'lg'] as const;
 export type SectionBackground = (typeof sectionBackgrounds)[number];
 export type SectionSpacing = (typeof sectionSpacings)[number];
+export const sectionWidths = ['normal', 'wide', 'full'] as const;
+export const sectionAligns = ['left', 'center'] as const;
 export const sectionLayout = z.object({
   background: z.enum(sectionBackgrounds).default('default'),
   spacing: z.enum(sectionSpacings).default('md'),
+  width: z.enum(sectionWidths).default('normal'),
+  align: z.enum(sectionAligns).default('left'),
 });
 
 export const MAX_SECTIONS = 20;
@@ -245,7 +249,7 @@ const blank: { [T in SectionType]: () => SectionOf<T> } = {
 export function blankSection<T extends SectionType>(type: T): SectionOf<T> {
   return {
     ...blank[type](),
-    layout: { background: 'default', spacing: 'md' },
+    layout: { background: 'default', spacing: 'md', width: 'normal', align: 'left' },
   } as SectionOf<T>;
 }
 
