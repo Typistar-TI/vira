@@ -22,7 +22,6 @@ export const POST = async (request: Request): Promise<Response> => {
   }
   const email = normalizeEmail(body.email);
   if (!email) return json({ error: 'Informe um e-mail válido' }, 400);
-  if (!(await loginLimits(request, email, 'password'))) return rateLimited();
   const fail = async () => {
     await logEvent(request, {
       kind: 'security',
@@ -35,13 +34,15 @@ export const POST = async (request: Request): Promise<Response> => {
     });
     return json({ error: 'E-mail ou senha inválidos. / Invalid email or password.' }, 401);
   };
-  if (typeof body.password !== 'string' || body.password.length > 128) return fail();
   const accepted = body.acceptTerms === true || body.acceptTerms === 'true';
-  const row = await env.DB.prepare(
-    'SELECT password_hash, salt, iterations FROM auth_passwords WHERE email = ?',
-  )
-    .bind(email)
-    .first<{ password_hash: string; salt: string; iterations: number }>();
+  const [allowed, row] = await Promise.all([
+    loginLimits(request, email, 'password'),
+    env.DB.prepare('SELECT password_hash, salt, iterations FROM auth_passwords WHERE email = ?')
+      .bind(email)
+      .first<{ password_hash: string; salt: string; iterations: number }>(),
+  ]);
+  if (!allowed) return rateLimited();
+  if (typeof body.password !== 'string' || body.password.length > 128) return fail();
   if (!row) {
     const [existing, admin] = await Promise.all([
       env.DB.prepare('SELECT 1 FROM users WHERE email = ?').bind(email).first(),

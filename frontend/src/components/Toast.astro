@@ -18,35 +18,51 @@
       if (dismiss) dismiss();
       else oldest.remove();
     }
+    const palette: Record<string, { wrapper: string; badge: string; icon: string }> = {
+      success: {
+        wrapper: 'border-[#e0b878] bg-[#fff9ef] text-[#6f4716]',
+        badge: 'bg-[#f6e6c8] text-[#b88333]',
+        icon: '<path d="m4.5 12.75 6 6 9-13.5" />',
+      },
+      error: {
+        wrapper: 'border-[#e8bdba] bg-[#fff4f3] text-[#812929]',
+        badge: 'bg-[#f7dcdc] text-[#b73535]',
+        icon: '<path d="M12 9v3.75m9.303 3.376c.866 1.5-.217 3.374-1.948 3.374H4.645c-1.73 0-2.813-1.874-1.948-3.374L10.051 3.378c.866-1.5 3.032-1.5 3.898 0L21.303 16.126ZM12 15.75h.007v.008H12v-.008Z" />',
+      },
+      info: {
+        wrapper: 'border-[#d8ae73] bg-white text-[#5b4428]',
+        badge: 'bg-[#f3e9d7] text-[#9b6823]',
+        icon: '<path d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />',
+      },
+    };
+    const style = palette[kind] ?? palette.info;
     const toast = document.createElement('div');
     toast.className = [
-      'flex items-start gap-3',
       'pointer-events-auto',
+      'flex items-center gap-3',
       'w-fit max-w-full min-w-0 touch-none select-none',
-      'rounded-2xl',
-      'border',
-      'px-4',
-      'py-3',
-      'text-sm',
+      'rounded-2xl border px-4 py-3 text-sm leading-snug',
       'shadow-[0_18px_45px_-18px_rgba(32,23,10,0.32)]',
-      kind === 'error'
-        ? 'border-[#b73535] bg-[#fff4f3] text-[#812929]'
-        : kind === 'success'
-          ? 'border-[#b88333] bg-[#fff9ef] text-[#6f4716]'
-          : 'border-[#d8ae73] bg-white text-[#5b4428]',
+      style.wrapper,
     ].join(' ');
     toast.setAttribute('role', kind === 'error' ? 'alert' : 'status');
+    const badge = document.createElement('span');
+    badge.className = `grid h-6 w-6 shrink-0 place-items-center rounded-full ${style.badge}`;
+    badge.setAttribute('aria-hidden', 'true');
+    badge.innerHTML = `<svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${style.icon}</svg>`;
     const text = document.createElement('span');
-    text.className = 'min-w-0 flex-1 self-center whitespace-pre-wrap [overflow-wrap:anywhere]';
+    text.className = 'min-w-0 flex-1 whitespace-pre-wrap [overflow-wrap:anywhere]';
     text.textContent = message;
     const close = document.createElement('button');
     close.type = 'button';
-    close.className = 'btn btn-ghost btn-sm btn-circle ml-auto shrink-0';
+    close.className =
+      'ml-auto -mr-1 shrink-0 rounded-full p-1 text-current opacity-55 transition-opacity duration-300 hover:opacity-100';
     close.setAttribute(
       'aria-label',
       document.documentElement.lang === 'en' ? 'Dismiss notification' : 'Fechar aviso',
     );
-    close.textContent = '×';
+    close.innerHTML =
+      '<svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>';
     const lifetime = kind === 'error' ? 7000 : 4500;
     let timer: number;
     let dismissed = false;
@@ -128,7 +144,7 @@
       else dismiss();
     });
     close.addEventListener('click', () => dismiss(true));
-    toast.append(text, close);
+    toast.append(badge, text, close);
     container.append(toast);
     schedule();
   });

@@ -144,15 +144,15 @@ export async function establishLogin(
 ): Promise<Response> {
   const [admin, existing, controller, contact] = await Promise.all([
     env.DB.prepare('SELECT email FROM admin_accounts WHERE email = ?').bind(email).first(),
-    env.DB.prepare('SELECT id FROM users WHERE email = ?').bind(email).first(),
+    env.DB.prepare('SELECT id FROM users WHERE email = ?').bind(email).first<{ id: string }>(),
     setting('PRIVACY_CONTROLLER_NAME'),
     setting('PRIVACY_CONTACT_EMAIL'),
   ]);
   const isAdmin = Boolean(admin);
   if (!isAdmin && !existing && (!controller || !contact))
     return json({ error: 'Cadastro temporariamente indisponível' }, 403);
-  let user: { id: string } | null = null;
-  if (!isAdmin) {
+  let user: { id: string } | null = existing;
+  if (!isAdmin && !user) {
     try {
       user = await getOrCreateEmailUser(email, languageFromRequest(request), accepted);
     } catch (error) {
@@ -170,16 +170,19 @@ export async function establishLogin(
   }
   if (password) await storePassword(email, password);
   const created = !isAdmin && !existing;
-  await logEvent(request, {
-    kind: isAdmin ? 'admin' : 'auth',
-    action: created ? 'signup' : 'login',
-    actorType: isAdmin ? 'admin' : 'user',
-    actorId: email,
-    target: email,
-    metadata: { method },
-  });
+  const [cookie] = await Promise.all([
+    isAdmin ? createAdminSession(email) : createSession(user!.id),
+    logEvent(request, {
+      kind: isAdmin ? 'admin' : 'auth',
+      action: created ? 'signup' : 'login',
+      actorType: isAdmin ? 'admin' : 'user',
+      actorId: email,
+      target: email,
+      metadata: { method },
+    }),
+  ]);
   return json({ redirect: isAdmin ? '/admin' : '/app' }, 200, {
-    'set-cookie': isAdmin ? await createAdminSession(email) : await createSession(user!.id),
+    'set-cookie': cookie,
     'cache-control': 'no-store',
   });
 }
