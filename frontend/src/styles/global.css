@@ -87,6 +87,18 @@
       transform: none;
     }
   }
+
+  --animate-step-pulse: step-pulse 2.4s ease-in-out infinite;
+
+  @keyframes step-pulse {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.07);
+    }
+  }
 }
 @plugin 'daisyui/theme' {
   name: vira-light;

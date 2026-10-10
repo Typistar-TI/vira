@@ -129,7 +129,7 @@ const stepIcons = [
                 data-step-badge={index}
                 class={`grid h-12 w-12 place-items-center rounded-full border font-['Outfit',sans-serif] text-lg font-semibold transition-all duration-300 ${
                   index === 0
-                    ? 'border-[#17130d] bg-[#17130d] text-white shadow-[0_14px_30px_-14px_#17130d] ring-4 ring-[#b88333]/25'
+                    ? 'border-[#b88333] bg-[#b88333] text-white shadow-[0_14px_30px_-14px_#b88333] ring-4 ring-[#b88333]/30 animate-step-pulse'
                     : 'border-[#e5ded2] bg-[#f5f2eb] text-[#8b8174]'
                 }`}
               >
@@ -217,12 +217,13 @@ const stepIcons = [
           dot.classList.toggle('bg-[#e5ded2]', i !== index);
         });
         badges.forEach((badge, i) => {
-          badge.classList.toggle('border-[#17130d]', i === index);
-          badge.classList.toggle('bg-[#17130d]', i === index);
+          badge.classList.toggle('border-[#b88333]', i === index);
+          badge.classList.toggle('bg-[#b88333]', i === index);
           badge.classList.toggle('text-white', i === index);
-          badge.classList.toggle('shadow-[0_14px_30px_-14px_#17130d]', i === index);
+          badge.classList.toggle('shadow-[0_14px_30px_-14px_#b88333]', i === index);
           badge.classList.toggle('ring-4', i === index);
-          badge.classList.toggle('ring-[#b88333]/25', i === index);
+          badge.classList.toggle('ring-[#b88333]/30', i === index);
+          badge.classList.toggle('animate-step-pulse', i === index);
           badge.classList.toggle('border-[#e5ded2]', i !== index);
           badge.classList.toggle('bg-[#f5f2eb]', i !== index);
           badge.classList.toggle('text-[#8b8174]', i !== index);
