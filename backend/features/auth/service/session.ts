@@ -55,6 +55,71 @@ export function lastLoginCookie(method: 'google' | 'code' | 'password'): string 
   return `vira_last_login=${method}; Path=/; Max-Age=31536000; SameSite=Lax`;
 }
 
+const pendingCookieName = 'vira_google_pending';
+
+export interface PendingGoogle {
+  sub: string;
+  email: string;
+  lang: 'pt' | 'en';
+  exp: number;
+}
+
+function toBase64Url(value: string): string {
+  const bytes = new TextEncoder().encode(value);
+  let binary = '';
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+function fromBase64Url(value: string): string {
+  const padded = value.replace(/-/g, '+').replace(/_/g, '/');
+  const binary = atob(padded + '='.repeat((4 - (padded.length % 4)) % 4));
+  return new TextDecoder().decode(Uint8Array.from(binary, (char) => char.charCodeAt(0)));
+}
+
+async function pendingSignature(value: string): Promise<string> {
+  if (!env.CONFIG_ENCRYPTION_KEY) throw new Error('Chave de configuração não definida');
+  const key = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(env.CONFIG_ENCRYPTION_KEY),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign'],
+  );
+  const signature = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(value));
+  return [...new Uint8Array(signature)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
+/** Signed, short-lived cookie holding a verified Google identity awaiting terms acceptance. */
+export async function googlePendingCookie(payload: PendingGoogle): Promise<string> {
+  const body = toBase64Url(JSON.stringify(payload));
+  return `${pendingCookieName}=${body}.${await pendingSignature(body)}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=900`;
+}
+
+export async function readGooglePending(request: Request): Promise<PendingGoogle | null> {
+  const token = request.headers
+    .get('cookie')
+    ?.split(';')
+    .map((x) => x.trim())
+    .find((x) => x.startsWith(`${pendingCookieName}=`))
+    ?.slice(pendingCookieName.length + 1);
+  if (!token) return null;
+  const [body, signature] = token.split('.');
+  if (!body || !signature || (await pendingSignature(body)) !== signature) return null;
+  try {
+    const data = JSON.parse(fromBase64Url(body)) as PendingGoogle;
+    if (!data.sub || !data.email || typeof data.exp !== 'number') return null;
+    if (data.exp < Math.floor(Date.now() / 1000)) return null;
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+export function clearGooglePendingCookie(): string {
+  return `${pendingCookieName}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0`;
+}
+
 export async function getSessionAdmin(
   request: Request,
 ): Promise<{ id: string; email: string; displayName: string; avatar: string | null } | null> {

@@ -470,7 +470,7 @@ const planLabel = (plan: string) => planLabels[plan] ?? plan;
             <p class="text-sm text-[#625a51]">{t.aiHint}</p>
             <p class="mt-2 text-xs text-[#8b8174]">{t.assistantKnowledgeNote}</p>
 
-            <label class="mt-4 flex items-center gap-3 text-sm font-medium text-[#17130d]">
+            <label class="mt-4 flex! items-center gap-3 text-sm font-medium text-[#17130d]">
               <input
                 class="checkbox checkbox-primary shrink-0 border border-[#b88333]"
                 name="assistant"
@@ -641,7 +641,7 @@ const planLabel = (plan: string) => planLabels[plan] ?? plan;
             <ImageUpload id="logo-file" name="" lang={en ? 'en' : 'pt'} src={content.logo} />
             <input type="hidden" name="logo" value={content.logo} />
             <small>{t.logoHint}</small>
-            <label class="mt-4 flex items-center gap-3 text-sm font-medium text-[#17130d]">
+            <label class="mt-4 flex! items-center gap-3 text-sm font-medium text-[#17130d]">
               <input
                 class="checkbox checkbox-primary shrink-0 border border-[#b88333]"
                 name="showInShowcase"

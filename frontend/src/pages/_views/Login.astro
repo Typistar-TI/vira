@@ -17,6 +17,7 @@ const [clientId, controller, contact, resendKey, emailFrom, emailEnabled] = awai
 const emailReady = Boolean(resendKey && emailFrom && emailEnabled);
 const legalReady = Boolean(controller && contact);
 const reset = url.searchParams.get('password') === '1';
+const googleConsent = url.searchParams.get('google_consent') === '1';
 const error = url.searchParams.get('error')?.slice(0, 150);
 const lastLogin =
   /(?:^|;\s*)vira_last_login=(google|code|password)/.exec(
@@ -82,6 +83,7 @@ const lastUsed = en ? 'Last used' : 'Último acesso';
         data-login
         data-reset={reset ? 'true' : undefined}
         data-email-ready={emailReady ? 'true' : undefined}
+        data-google-consent={googleConsent ? 'true' : undefined}
         aria-label={en ? 'Sign in or create account' : 'Entrar ou criar conta'}
         class="w-full max-w-[500px] rounded-[26px] border border-[#ead8bf] bg-white/80 p-7 text-center backdrop-blur-xl sm:p-9 [&_[hidden]]:hidden! [&_form]:text-left [&_label]:mb-2 [&_label]:block [&_label]:text-base [&_label]:font-semibold [&_.input]:w-full [&_.input]:text-base"
         style="box-shadow:0 50px 120px -55px rgba(70,40,5,0.45)"
@@ -146,38 +148,53 @@ const lastUsed = en ? 'Last used' : 'Último acesso';
             </button>
           </div>
         </form>
-        <div
-          data-terms
-          hidden
-          class="mt-4 rounded-2xl border border-[#ead8bf] bg-[#fff9ef] p-4 text-left"
-        >
-          <p class="text-sm leading-relaxed text-[#625a51]">
-            {en
-              ? 'This account does not exist yet. Accept the terms to create it:'
-              : 'Esta conta ainda não existe. Para criá-la, aceite os termos:'}
-          </p>
-          <label class="mt-3 flex! items-start gap-2">
-            <input
-              id="accept-terms"
-              type="checkbox"
-              class="checkbox checkbox-primary mt-0 shrink-0 border border-[#b88333]"
-            />
-            <span class="text-sm leading-6 text-[#625a51]">
-              {en ? 'I accept the ' : 'Aceito os '}
-              <a class="font-semibold text-[#8b5b1e] underline" href={en ? '/en/terms' : '/termos'}>
-                {en ? 'Terms of Use' : 'Termos de Uso'}
-              </a>
-              {en ? ' and the ' : ' e a '}
-              <a
-                class="font-semibold text-[#8b5b1e] underline"
-                href={en ? '/en/privacy' : '/privacidade'}
-              >
-                {en ? 'Privacy Policy' : 'Política de Privacidade'}
-              </a>
-              .
-            </span>
-          </label>
-        </div>
+        <dialog data-consent class="modal">
+          <div class="modal-box max-w-md border border-[#ead8bf] text-left">
+            <h2 class="font-[Outfit] text-xl text-[#17130d]">
+              {en ? 'Terms and privacy' : 'Termos e privacidade'}
+            </h2>
+            <p class="mt-2 text-sm leading-relaxed text-[#625a51]">
+              {en
+                ? 'This account does not exist yet. To create it, accept the terms below.'
+                : 'Esta conta ainda não existe. Para criá-la, aceite os termos abaixo.'}
+            </p>
+            <label class="mt-4 flex! items-start gap-2">
+              <input
+                id="accept-terms"
+                type="checkbox"
+                class="checkbox checkbox-primary mt-0 shrink-0 border border-[#b88333]"
+              />
+              <span class="text-sm leading-6 text-[#625a51]">
+                {en ? 'I accept the ' : 'Aceito os '}
+                <a
+                  class="font-semibold text-[#8b5b1e] underline"
+                  href={en ? '/en/terms' : '/termos'}
+                >
+                  {en ? 'Terms of Use' : 'Termos de Uso'}
+                </a>
+                {en ? ' and the ' : ' e a '}
+                <a
+                  class="font-semibold text-[#8b5b1e] underline"
+                  href={en ? '/en/privacy' : '/privacidade'}
+                >
+                  {en ? 'Privacy Policy' : 'Política de Privacidade'}
+                </a>
+                .
+              </span>
+            </label>
+            <div class="modal-action">
+              <button type="button" data-consent-cancel class="btn btn-ghost">
+                {en ? 'Cancel' : 'Cancelar'}
+              </button>
+              <button type="button" data-consent-accept class="btn btn-primary" disabled>
+                {en ? 'Accept and continue' : 'Aceitar e continuar'}
+              </button>
+            </div>
+          </div>
+          <form method="dialog" class="modal-backdrop">
+            <button>fechar</button>
+          </form>
+        </dialog>
         {emailReady && (
           <div data-recover class="mt-4 text-center">
             <button
@@ -379,6 +396,7 @@ const lastUsed = en ? 'Last used' : 'Último acesso';
     import { startEmail } from '@frontend/api/auth/start-email';
     import { verifyEmail } from '@frontend/api/auth/verify-email';
     import { passwordLogin } from '@frontend/api/auth/password';
+    import { googleConsent } from '@frontend/api/auth/google-consent';
     import { reportError, showToast } from '@frontend/components/toast';
     document.addEventListener('astro:page-load', () => {
       const root = document.querySelector<HTMLElement>('[data-login]');
@@ -392,7 +410,10 @@ const lastUsed = en ? 'Last used' : 'Último acesso';
       const newPassword = root.querySelector<HTMLInputElement>('#new-password')!;
       const confirmPassword = root.querySelector<HTMLInputElement>('#confirm-password')!;
       const resend = root.querySelector<HTMLButtonElement>('[data-resend]')!;
-      const terms = root.querySelector<HTMLElement>('[data-terms]');
+      const consentDialog = root.querySelector<HTMLDialogElement>('[data-consent]')!;
+      const consentBox = consentDialog.querySelector<HTMLInputElement>('#accept-terms')!;
+      const consentAccept =
+        consentDialog.querySelector<HTMLButtonElement>('[data-consent-accept]')!;
       const startButton = root.querySelector<HTMLButtonElement>('[data-start-button]')!;
       let mode: 'code' | 'password' | 'reset';
       let pendingEmail = '';
@@ -400,25 +421,54 @@ const lastUsed = en ? 'Last used' : 'Último acesso';
       let busy = false;
       let resendAt = 0;
       let needsConsent = false;
+      let consentSource: 'password' | 'code' | 'google' = 'password';
+      let consentForm: HTMLFormElement | null = null;
       const rememberMethod = (method: 'code' | 'password') => {
         document.cookie = `vira_last_login=${method}; Path=/; Max-Age=31536000; SameSite=Lax`;
       };
-      const termsAccepted = () =>
-        root.querySelector<HTMLInputElement>('#accept-terms')?.checked ?? false;
+      const termsAccepted = () => consentBox.checked;
       const consentNeeded = (error: unknown) =>
         Boolean((error as { data?: { consent?: boolean } })?.data?.consent);
-      const askConsent = () => {
+      const updateConsentButton = () => {
+        consentAccept.disabled = !consentBox.checked;
+      };
+      consentBox.addEventListener('change', updateConsentButton);
+      const askConsent = (source: 'password' | 'code' | 'google', form: HTMLFormElement | null) => {
         needsConsent = true;
-        if (terms) terms.hidden = false;
-        startButton.textContent = en ? 'Create account' : 'Criar conta';
-        terms?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        consentSource = source;
+        consentForm = form;
+        consentBox.checked = false;
+        updateConsentButton();
+        consentDialog.showModal();
       };
       const clearConsent = () => {
         needsConsent = false;
-        if (terms) terms.hidden = true;
-        const box = root.querySelector<HTMLInputElement>('#accept-terms');
-        if (box) box.checked = false;
+        consentBox.checked = false;
+        updateConsentButton();
       };
+      consentAccept.addEventListener('click', async () => {
+        if (!consentBox.checked) return;
+        if (consentSource === 'google') {
+          consentAccept.disabled = true;
+          try {
+            const result = await googleConsent();
+            location.assign(result.redirect);
+          } catch (error) {
+            reportError(error, en ? 'Unable to continue' : 'Falha ao continuar');
+            consentAccept.disabled = false;
+          }
+          return;
+        }
+        consentDialog.close();
+        consentForm?.requestSubmit();
+      });
+      consentDialog.querySelector('[data-consent-cancel]')?.addEventListener('click', () => {
+        consentDialog.close();
+        clearConsent();
+      });
+      consentDialog.addEventListener('close', () => {
+        if (needsConsent && !consentBox.checked) clearConsent();
+      });
       type GoogleId = {
         initialize: (options: Record<string, unknown>) => void;
         renderButton: (element: HTMLElement, options: Record<string, unknown>) => void;
@@ -472,6 +522,7 @@ const lastUsed = en ? 'Last used' : 'Último acesso';
                 (button.dataset.loginMode === 'code' && root.dataset.emailReady !== 'true')),
           );
         cooldown();
+        updateConsentButton();
       };
       const selectMode = (next: typeof mode) => {
         if (busy) return;
@@ -560,7 +611,7 @@ const lastUsed = en ? 'Last used' : 'Último acesso';
           resendAt = Date.now() + 60_000;
           codeInput.focus();
         } catch (error) {
-          if (consentNeeded(error)) askConsent();
+          if (consentNeeded(error)) askConsent('password', start);
           else reportError(error, en ? 'Unable to sign in' : 'Falha no acesso');
         } finally {
           setBusy(false);
@@ -585,7 +636,7 @@ const lastUsed = en ? 'Last used' : 'Último acesso';
           rememberMethod('code');
           location.assign(result.redirect);
         } catch (error) {
-          if (consentNeeded(error)) askConsent();
+          if (consentNeeded(error)) askConsent('code', codes);
           else reportError(error, en ? 'Unable to verify code' : 'Falha ao validar código');
         } finally {
           setBusy(false);
@@ -607,6 +658,7 @@ const lastUsed = en ? 'Last used' : 'Último acesso';
       selectMode(
         root.dataset.reset === 'true' && root.dataset.emailReady === 'true' ? 'reset' : 'password',
       );
+      if (root.dataset.googleConsent === 'true') askConsent('google', null);
       const loginError = root.querySelector<HTMLInputElement>('#login-error')?.value;
       if (loginError) showToast(loginError, 'error');
     });

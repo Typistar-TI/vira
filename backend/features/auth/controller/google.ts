@@ -3,6 +3,7 @@ import { createRemoteJWKSet, jwtVerify } from 'jose';
 import {
   createAdminSession,
   createSession,
+  googlePendingCookie,
   lastLoginCookie,
   loginScope,
   sha256,
@@ -75,8 +76,9 @@ export const POST = async (request: Request): Promise<Response> => {
     )
       return failLogin('Conta Google sem e-mail verificado');
 
-    const [existing, admin, controller, contact] = await Promise.all([
+    const [existing, existingEmail, admin, controller, contact] = await Promise.all([
       env.DB.prepare('SELECT id FROM users WHERE google_sub = ?').bind(sub).first(),
+      env.DB.prepare('SELECT id FROM users WHERE email = ?').bind(email).first(),
       env.DB.prepare(
         'SELECT email, google_sub FROM admin_accounts WHERE email = ? OR google_sub = ?',
       )
@@ -86,8 +88,26 @@ export const POST = async (request: Request): Promise<Response> => {
       setting('PRIVACY_CONTACT_EMAIL'),
     ]);
     const isAdmin = Boolean(admin && (!admin.google_sub || admin.google_sub === sub));
-    if (!existing && !isAdmin && (!controller || !contact))
+    const isNew = !existing && !existingEmail && !isAdmin;
+    if (isNew && (!controller || !contact))
       return failLogin('Cadastro temporariamente indisponível');
+    if (isNew) {
+      // A new account must accept the terms first; the verified identity waits in a signed cookie.
+      const headers = new Headers({
+        location: `/login?next=${scope}&google_consent=1`,
+        'cache-control': 'no-store',
+      });
+      headers.append(
+        'set-cookie',
+        await googlePendingCookie({
+          sub,
+          email,
+          lang: languageFromRequest(request),
+          exp: Math.floor(Date.now() / 1000) + 900,
+        }),
+      );
+      return new Response(null, { status: 303, headers });
+    }
     if (isAdmin && admin && !admin.google_sub) {
       await env.DB.prepare(
         'UPDATE admin_accounts SET google_sub = ? WHERE email = ? AND google_sub IS NULL',
