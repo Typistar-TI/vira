@@ -10,7 +10,7 @@ const active = userHasAccess(tenant.user);
 const content = tenant.site.published_json
   ? parseSiteContent(JSON.parse(tenant.site.published_json))
   : null;
-if (active && content) recordView(tenant.site.id);
+if (active && content) await recordView(tenant.site.id, Astro.request);
 const canonical = `https://${url.hostname}/`;
 const hero = content?.sections.find((section) => section.type === 'hero');
 const description = hero && hero.type === 'hero' ? hero.subtitle : '';

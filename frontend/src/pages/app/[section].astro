@@ -4,10 +4,19 @@ import { sessionUser } from '@frontend/api/auth/session-user';
 import { siteForUser } from '@frontend/api/sites/site-for-user';
 
 const section = Astro.params.section;
-if (section === 'conteudo') return Astro.redirect('/app');
+if (section === 'visao') return Astro.redirect('/app');
 if (
   !section ||
-  !['aparencia', 'identidade', 'assistente', 'plano', 'dominio', 'conta'].includes(section)
+  ![
+    'conteudo',
+    'aparencia',
+    'identidade',
+    'assistente',
+    'metricas',
+    'plano',
+    'dominio',
+    'conta',
+  ].includes(section)
 )
   return Astro.rewrite('/404');
 const user = await sessionUser(Astro.request);

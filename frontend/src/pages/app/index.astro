@@ -8,4 +8,4 @@ const site = await siteForUser(user.id);
 if (!site) return Astro.rewrite('/404');
 ---
 
-<CustomerDashboard user={user} site={site} />
+<CustomerDashboard user={user} site={site} section="visao" />

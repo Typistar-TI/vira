@@ -18,6 +18,9 @@ const content = parseSiteContent(JSON.parse(site.draft_json));
 const active = userHasAccess(user);
 const en = preferredLanguage(Astro.request) === 'en';
 const sectionTitles: Record<string, [string, string]> = {
+  visao: ['Overview', 'Visão geral'],
+  conteudo: ['Content', 'Conteúdo'],
+  metricas: ['Metrics', 'Métricas'],
   aparencia: ['Appearance', 'Aparência'],
   identidade: ['Identity and app', 'Identidade e aplicativo'],
   assistente: ['Assistant', 'Assistente'],
@@ -138,6 +141,14 @@ const t = en
       metrics: 'Last 30 days',
       views: 'Views',
       clicks: 'Button clicks',
+      overview: 'Overview',
+      metricsPage: 'Metrics',
+      metricsHint:
+        'Detailed performance of your published page: views, clicks and traffic sources.',
+      published: 'Published',
+      draft: 'Draft',
+      editPage: 'Edit page',
+      managePlan: 'Manage plan',
       aiAssistant: 'AI assistant',
       aiHint:
         'A chat assistant is included on your published page. It answers visitors using the content you write here. Publish to update what it knows.',
@@ -247,6 +258,14 @@ const t = en
       metrics: 'Últimos 30 dias',
       views: 'Visualizações',
       clicks: 'Cliques nos botões',
+      overview: 'Visão geral',
+      metricsPage: 'Métricas',
+      metricsHint:
+        'Desempenho detalhado da sua página publicada: visualizações, cliques e origem do tráfego.',
+      published: 'Publicada',
+      draft: 'Rascunho',
+      editPage: 'Editar página',
+      managePlan: 'Gerenciar plano',
       aiAssistant: 'Assistente de IA',
       aiHint:
         'Um assistente de chat acompanha sua página publicada. Ele responde aos visitantes com base no conteúdo que você escreve aqui. Publique para atualizar o que ele sabe.',
@@ -329,6 +348,78 @@ const trialLeft = en
         </div>
       )}
       <div>
+        {section === 'visao' && (
+          <section id="visao" class="scroll-mt-24">
+            <div class="mb-5 grid gap-4 lg:grid-cols-2">
+              <div class="rounded-2xl border border-[#ead8bd] bg-white p-6">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                  <h2 class="font-[Outfit] text-xl text-[#17130d]">{t.yourPage}</h2>
+                  <span
+                    class:list={[
+                      'badge',
+                      site.published_at
+                        ? 'border-[#b88333] bg-[#fff4df] text-[#6f4716]'
+                        : 'border-[#d8ae73] bg-white text-[#625a51]',
+                    ]}
+                  >
+                    {site.published_at ? t.published : t.draft}
+                  </span>
+                </div>
+                <p class="mt-3 text-sm text-[#625a51]">
+                  {t.publicLink}:{' '}
+                  <a
+                    class="font-semibold text-[#8b5b1e] hover:text-[#9b6823]"
+                    href={`https://${site.slug}.${domain}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {site.slug}.{domain}
+                  </a>
+                </p>
+                <div class="mt-5 flex flex-wrap items-center gap-3">
+                  <a class="btn btn-outline" href="/app/conteudo">
+                    {t.editPage}
+                  </a>
+                  <a
+                    class="btn btn-ghost"
+                    href={`https://${site.slug}.${domain}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {t.preview}
+                  </a>
+                </div>
+              </div>
+              <div class="rounded-2xl border border-[#ead8bd] bg-white p-6">
+                <h2 class="font-[Outfit] text-xl text-[#17130d]">{t.plans}</h2>
+                <p class="mt-3 text-sm text-[#625a51]">
+                  {user.plan === 'trial' ? trialLeft : user.plan}
+                </p>
+                <div class="mt-5">
+                  <a class="btn btn-outline" href="/app/plano">
+                    {t.managePlan}
+                  </a>
+                </div>
+              </div>
+            </div>
+            <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
+              <h2 class="font-[Outfit] text-xl text-[#17130d]">{t.metricsPage}</h2>
+              <a
+                class="text-sm font-semibold text-[#8b5b1e] hover:text-[#9b6823]"
+                href="/app/metricas"
+              >
+                {t.metricsPage} →
+              </a>
+            </div>
+            <div data-site-metrics data-variant="overview" data-days="30"></div>
+          </section>
+        )}
+        {section === 'metricas' && (
+          <section id="metricas" class="scroll-mt-24">
+            <p class="mb-5 max-w-2xl text-sm text-[#625a51]">{t.metricsHint}</p>
+            <div data-site-metrics data-variant="full" data-days="30"></div>
+          </section>
+        )}
         {section === 'assistente' && (
           <form
             id="editor"
@@ -625,23 +716,6 @@ const trialLeft = en
                     ))}
                   </div>
                 </form>
-                <details class="border-t border-[#d8ae73] py-4 text-sm text-[#625a51]">
-                  <summary class="cursor-pointer font-semibold">{t.metrics}</summary>
-                  <div class="mt-3 grid grid-cols-2 gap-3">
-                    <p>
-                      <strong id="metric-views">
-                        <span class="inline-block h-4 w-10 animate-pulse rounded bg-[#efe8dc] align-middle"></span>
-                      </strong>{' '}
-                      · {t.views}
-                    </p>
-                    <p>
-                      <strong id="metric-clicks">
-                        <span class="inline-block h-4 w-10 animate-pulse rounded bg-[#efe8dc] align-middle"></span>
-                      </strong>{' '}
-                      · {t.clicks}
-                    </p>
-                  </div>
-                </details>
               </aside>
             </div>
           </section>
@@ -828,7 +902,7 @@ const trialLeft = en
     import { exportAccount } from '@frontend/api/accounts/export';
     import { updateAccountProfile } from '@frontend/api/accounts/profile';
     import { initAvatarPicker, applyAvatarToMenu } from '@frontend/pages/_scripts/avatar-picker';
-    import { getMetrics } from '@frontend/api/analytics/metrics';
+    import { initSiteMetrics } from '@frontend/pages/_scripts/site-metrics';
     import { reportError } from '@frontend/components/toast';
     document.addEventListener('astro:page-load', () => {
       const input = (scope: ParentNode, name: string) =>
@@ -1344,17 +1418,7 @@ const trialLeft = en
             reportError(error, 'Falha ao excluir a conta');
           }
         });
-      if (document.querySelector('#metric-views')) {
-        getMetrics()
-          .then((data) => {
-            document.querySelector('#metric-views')!.textContent = String(data.views ?? 0);
-            document.querySelector('#metric-clicks')!.textContent = String(data.clicks ?? 0);
-          })
-          .catch(() => {
-            document.querySelector('#metric-views')!.textContent = '—';
-            document.querySelector('#metric-clicks')!.textContent = '—';
-          });
-      }
+      initSiteMetrics();
       if (document.querySelector('#domain-status')) {
         domainStatus()
           .then((data) => {

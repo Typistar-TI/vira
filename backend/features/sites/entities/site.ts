@@ -387,10 +387,10 @@ export function siteImages(content: SiteContent): string[] {
 }
 
 /** Products across services sections, kept in a stable order for click tracking. */
-export function siteProducts(content: SiteContent): { url: string }[] {
+export function siteProducts(content: SiteContent): { url: string; title: string }[] {
   return content.sections
     .filter((section) => section.type === 'services')
-    .flatMap((section) => section.items.map((item) => ({ url: item.url })));
+    .flatMap((section) => section.items.map((item) => ({ url: item.url, title: item.title })));
 }
 
 /** The first call to action on the page. */
@@ -398,6 +398,15 @@ export function sitePrimaryUrl(content: SiteContent): string {
   for (const section of content.sections) {
     if (section.type === 'hero' && section.primaryUrl) return section.primaryUrl;
     if (section.type === 'contact' && section.primaryUrl) return section.primaryUrl;
+  }
+  return '';
+}
+
+/** Label of the first call to action, used to name the tracked click. */
+export function sitePrimaryLabel(content: SiteContent): string {
+  for (const section of content.sections) {
+    if (section.type === 'hero' && section.primaryUrl) return section.primaryLabel;
+    if (section.type === 'contact' && section.primaryUrl) return section.primaryLabel;
   }
   return '';
 }

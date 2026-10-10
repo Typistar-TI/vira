@@ -7,6 +7,7 @@ import { POST as updateEmailTemplate } from './controller/email-templates';
 import { POST as updateProfile } from './controller/profile';
 import { POST as updateUser } from './controller/users';
 import { GET as exportLogs } from './controller/logs-export';
+import { GET as metrics } from '@backend/features/analytics/controller/admin-metrics';
 
 export const routes = new Hono();
 routes.get('/settings', (c) => getSettings(c.req.raw));
@@ -16,4 +17,5 @@ routes.post('/prices', (c) => updatePrices(c.req.raw));
 routes.post('/email-templates', (c) => updateEmailTemplate(c.req.raw));
 routes.post('/profile', (c) => updateProfile(c.req.raw));
 routes.post('/users', (c) => updateUser(c.req.raw));
+routes.get('/metrics', (c) => metrics(c.req.raw));
 routes.get('/logs/export', (c) => exportLogs(c.req.raw));

@@ -368,6 +368,16 @@ const deliveryStatus: Record<string, string> = {
                 ))}
               </div>
 
+              <div class="mb-6">
+                <h3 class="mb-3 font-[Outfit] text-lg">Métricas do site</h3>
+                <div
+                  data-site-metrics
+                  data-site={clientDetail.account.slug}
+                  data-variant="admin"
+                  data-days="30"
+                ></div>
+              </div>
+
               <dl class="grid gap-x-8 gap-y-2 text-sm sm:grid-cols-2 [&_dd]:font-medium [&_dt]:text-[#625a51]">
                 <dt>Cadastro</dt>
                 <dd>{dateTime(clientDetail.account.created_at)}</dd>
@@ -1444,8 +1454,10 @@ const deliveryStatus: Record<string, string> = {
     import { updatePrice } from '@frontend/api/admin/update-price';
     import { updateEmailTemplate } from '@frontend/api/admin/update-email-template';
     import { updateUser } from '@frontend/api/admin/update-user';
+    import { initSiteMetrics } from '@frontend/pages/_scripts/site-metrics';
     import { reportError } from '@frontend/components/toast';
     document.addEventListener('astro:page-load', () => {
+      initSiteMetrics();
       const debounce = (fn: () => void, ms: number) => {
         let timer = 0;
         return () => {
