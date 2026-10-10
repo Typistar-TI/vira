@@ -80,6 +80,26 @@ const t = en
       nextBlock: 'Next block',
       cancel: 'Cancel',
       replaceConfirm: 'Replace your current page with this template?',
+      wizard: 'Assistant',
+      wizardStep: 'Step',
+      wizardStep1: 'Start from a template',
+      wizardStep1Hint: 'Pick a ready page. You can edit everything after.',
+      wizardStep2: 'Fill the essentials',
+      wizardStep2Hint: 'Just the basics. You can refine later.',
+      wizardStep3: 'All set',
+      wizardStep3Hint: 'Publish to put your page online.',
+      wizardTitleLabel: 'Headline',
+      wizardSubtitleLabel: 'Introduction',
+      wizardButtonLabel: 'Button text',
+      wizardButtonUrlLabel: 'Button link',
+      wizardNext: 'Next',
+      wizardBack: 'Back',
+      wizardPublish: 'Publish',
+      wizardSkip: 'Skip',
+      firstRunTitle: 'Let’s build your page',
+      firstRunHint:
+        'Your page starts from a ready example. Answer a few questions to make it yours.',
+      firstRunCta: 'Start now',
       blockTypes: {
         hero: 'Hero',
         about: 'About',
@@ -229,6 +249,26 @@ const t = en
       nextBlock: 'Próximo bloco',
       cancel: 'Cancelar',
       replaceConfirm: 'Substituir sua página atual por este modelo?',
+      wizard: 'Assistente',
+      wizardStep: 'Passo',
+      wizardStep1: 'Comece por um modelo',
+      wizardStep1Hint: 'Escolha uma página pronta. Você pode editar tudo depois.',
+      wizardStep2: 'Preencha o essencial',
+      wizardStep2Hint: 'Só o básico. Você ajusta depois.',
+      wizardStep3: 'Tudo pronto',
+      wizardStep3Hint: 'Publique para colocar sua página no ar.',
+      wizardTitleLabel: 'Título principal',
+      wizardSubtitleLabel: 'Apresentação',
+      wizardButtonLabel: 'Texto do botão',
+      wizardButtonUrlLabel: 'Link do botão',
+      wizardNext: 'Avançar',
+      wizardBack: 'Voltar',
+      wizardPublish: 'Publicar',
+      wizardSkip: 'Pular',
+      firstRunTitle: 'Vamos montar sua página',
+      firstRunHint:
+        'Sua página começa com um exemplo pronto. Responda algumas perguntas para deixá-la com a sua cara.',
+      firstRunCta: 'Começar agora',
       blockTypes: {
         hero: 'Herói',
         about: 'Sobre',
@@ -472,6 +512,17 @@ const planLabel = (plan: string) => planLabels[plan] ?? plan;
                 </div>
               </div>
             </div>
+            {site.auto_published && (
+              <div class="mb-5 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-[#b88333] bg-[#fff9ef] p-6">
+                <div class="min-w-0">
+                  <h2 class="font-[Outfit] text-xl text-[#17130d]">{t.firstRunTitle}</h2>
+                  <p class="mt-1 text-sm text-[#625a51]">{t.firstRunHint}</p>
+                </div>
+                <a class="btn btn-primary" href="/app/conteudo">
+                  {t.firstRunCta}
+                </a>
+              </div>
+            )}
             <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
               <h2 class="font-[Outfit] text-xl text-[#17130d]">{t.metricsPage}</h2>
               <a
@@ -820,6 +871,9 @@ const planLabel = (plan: string) => planLabels[plan] ?? plan;
                   </button>
                 </div>
                 <div class="mb-4 flex flex-wrap items-center gap-2" data-guided-bar>
+                  <button type="button" class="btn btn-sm btn-outline" data-open-wizard>
+                    {t.wizard}
+                  </button>
                   <button type="button" class="btn btn-sm btn-outline" data-open-templates>
                     {t.templates}
                   </button>
@@ -907,6 +961,108 @@ const planLabel = (plan: string) => planLabels[plan] ?? plan;
               <div class="modal-action">
                 <button type="button" class="btn btn-ghost" data-close-templates>
                   {t.cancel}
+                </button>
+              </div>
+            </div>
+            <form method="dialog" class="modal-backdrop">
+              <button>fechar</button>
+            </form>
+          </dialog>
+        )}
+        {section === 'conteudo' && (
+          <dialog
+            id="wizard-dialog"
+            class="modal"
+            data-first-run={site.auto_published ? 'true' : undefined}
+            data-title1={t.wizardStep1}
+            data-hint1={t.wizardStep1Hint}
+            data-title2={t.wizardStep2}
+            data-hint2={t.wizardStep2Hint}
+            data-title3={t.wizardStep3}
+            data-hint3={t.wizardStep3Hint}
+            data-next={t.wizardNext}
+            data-back={t.wizardBack}
+            data-publish={t.wizardPublish}
+            data-step-label={t.wizardStep}
+          >
+            <div class="modal-box max-w-2xl border border-[#d8ae73] text-left">
+              <div
+                class="mb-2 text-xs font-semibold uppercase tracking-wide text-[#9b6823]"
+                data-wizard-progress
+              ></div>
+              <h2 class="font-[Outfit] text-xl text-[#17130d]" data-wizard-title></h2>
+              <p class="mt-1 text-sm text-[#625a51]" data-wizard-hint></p>
+
+              <div data-wizard-panel="1" class="mt-4 grid gap-3 sm:grid-cols-2">
+                {templates.map((template) => (
+                  <button
+                    type="button"
+                    class="rounded-2xl border border-[#ead8bd] bg-white p-4 text-left transition-colors hover:border-[#b88333] hover:bg-[#fff9ef]"
+                    data-wizard-template={template.key}
+                  >
+                    <strong class="block font-[Outfit] text-lg text-[#17130d]">
+                      {template.name}
+                    </strong>
+                    <span class="mt-1 block text-sm text-[#625a51]">{template.description}</span>
+                  </button>
+                ))}
+              </div>
+
+              <div data-wizard-panel="2" hidden class="mt-4 space-y-3">
+                <label class="block text-sm font-bold text-[#17130d]">
+                  {t.wizardTitleLabel}
+                  <input
+                    class="input input-bordered mt-1 w-full"
+                    data-wizard-field="title"
+                    maxlength="100"
+                  />
+                </label>
+                <label class="block text-sm font-bold text-[#17130d]">
+                  {t.wizardSubtitleLabel}
+                  <textarea
+                    class="textarea textarea-bordered mt-1 w-full"
+                    data-wizard-field="subtitle"
+                    maxlength="320"
+                  ></textarea>
+                </label>
+                <div class="grid gap-3 sm:grid-cols-2">
+                  <label class="block text-sm font-bold text-[#17130d]">
+                    {t.wizardButtonLabel}
+                    <input
+                      class="input input-bordered mt-1 w-full"
+                      data-wizard-field="primaryLabel"
+                      maxlength="40"
+                    />
+                  </label>
+                  <label class="block text-sm font-bold text-[#17130d]">
+                    {t.wizardButtonUrlLabel}
+                    <input
+                      class="input input-bordered mt-1 w-full"
+                      data-wizard-field="primaryUrl"
+                      maxlength="300"
+                      placeholder="https://"
+                    />
+                  </label>
+                </div>
+              </div>
+
+              <div
+                data-wizard-panel="3"
+                hidden
+                class="mt-4 rounded-2xl border border-[#ead8bd] bg-[#fcfaf6] p-4 text-sm text-[#625a51]"
+              >
+                {t.wizardStep3Hint}
+              </div>
+
+              <div class="modal-action">
+                <button type="button" class="btn btn-ghost" data-wizard-skip>
+                  {t.wizardSkip}
+                </button>
+                <button type="button" class="btn btn-outline" data-wizard-back hidden>
+                  {t.wizardBack}
+                </button>
+                <button type="button" class="btn btn-primary" data-wizard-next>
+                  {t.wizardNext}
                 </button>
               </div>
             </div>
@@ -1143,7 +1299,7 @@ const planLabel = (plan: string) => planLabels[plan] ?? plan;
     import { initAvatarPicker, applyAvatarToMenu } from '@frontend/pages/_scripts/avatar-picker';
     import { initSiteMetrics } from '@frontend/pages/_scripts/site-metrics';
     import { initPushPrompt, initPushSettings } from '@frontend/pages/_scripts/push';
-    import { reportError } from '@frontend/components/toast';
+    import { reportError, showToast } from '@frontend/components/toast';
     document.addEventListener('astro:page-load', () => {
       const input = (scope: ParentNode, name: string) =>
         (
@@ -1309,38 +1465,130 @@ const planLabel = (plan: string) => planLabels[plan] ?? plan;
         templatesDialog
           ?.querySelector('[data-close-templates]')
           ?.addEventListener('click', () => templatesDialog.close());
+        const applyTemplate = (key: string, askConfirm: boolean) => {
+          const wrapper = pageTemplatesRoot?.querySelector<HTMLElement>(
+            `[data-page-template="${key}"]`,
+          );
+          if (!wrapper) return;
+          if (
+            askConfirm &&
+            sectionNodes().length > 0 &&
+            !confirm(
+              document.documentElement.lang === 'en'
+                ? 'Replace your current page with this template?'
+                : 'Substituir sua página atual por este modelo?',
+            )
+          )
+            return;
+          sectionsRoot.innerHTML = '';
+          wrapper.querySelectorAll<HTMLElement>('[data-section]').forEach((tpl) => {
+            const node = tpl.cloneNode(true) as HTMLElement;
+            node.removeAttribute('data-template');
+            node.classList.remove('hidden');
+            setField(node, 'field-id', crypto.randomUUID().slice(0, 12));
+            sectionsRoot.append(node);
+            reinitUploads(node);
+          });
+          markChanged();
+          setActiveSection(sectionNodes()[0] ?? null);
+          updatePreview();
+        };
         templatesDialog?.querySelectorAll<HTMLButtonElement>('[data-template]').forEach((button) =>
           button.addEventListener('click', () => {
-            const key = button.dataset.template || '';
-            const wrapper = pageTemplatesRoot?.querySelector<HTMLElement>(
-              `[data-page-template="${key}"]`,
-            );
-            if (!wrapper) return;
-            if (
-              sectionNodes().length > 0 &&
-              !confirm(
-                document.documentElement.lang === 'en'
-                  ? 'Replace your current page with this template?'
-                  : 'Substituir sua página atual por este modelo?',
-              )
-            )
-              return;
-            sectionsRoot.innerHTML = '';
-            wrapper.querySelectorAll<HTMLElement>('[data-section]').forEach((tpl) => {
-              const node = tpl.cloneNode(true) as HTMLElement;
-              node.removeAttribute('data-template');
-              node.classList.remove('hidden');
-              setField(node, 'field-id', crypto.randomUUID().slice(0, 12));
-              sectionsRoot.append(node);
-              reinitUploads(node);
-            });
+            applyTemplate(button.dataset.template || '', true);
             templatesDialog.close();
-            markChanged();
-            setActiveSection(sectionNodes()[0] ?? null);
-            updatePreview();
           }),
         );
         setAdvanced(false);
+
+        const wizard = document.querySelector<HTMLDialogElement>('#wizard-dialog');
+        if (wizard) {
+          const wizardEn = document.documentElement.lang === 'en';
+          const wizardTitle = wizard.querySelector<HTMLElement>('[data-wizard-title]');
+          const wizardHint = wizard.querySelector<HTMLElement>('[data-wizard-hint]');
+          const wizardProgress = wizard.querySelector<HTMLElement>('[data-wizard-progress]');
+          const wizardNext = wizard.querySelector<HTMLButtonElement>('[data-wizard-next]');
+          const wizardBack = wizard.querySelector<HTMLButtonElement>('[data-wizard-back]');
+          const wizardField = (name: string) =>
+            wizard.querySelector<HTMLInputElement | HTMLTextAreaElement>(
+              `[data-wizard-field="${name}"]`,
+            )?.value ?? '';
+          const setWizardField = (name: string, value: string) => {
+            const field = wizard.querySelector<HTMLInputElement | HTMLTextAreaElement>(
+              `[data-wizard-field="${name}"]`,
+            );
+            if (field) field.value = value;
+          };
+          const heroNode = () =>
+            sectionsRoot.querySelector<HTMLElement>('[data-section][data-type="hero"]');
+          const loadHero = () => {
+            const node = heroNode();
+            setWizardField('title', node ? input(node, 'field-title') : '');
+            setWizardField('subtitle', node ? input(node, 'field-subtitle') : '');
+            setWizardField('primaryLabel', node ? input(node, 'field-primaryLabel') : '');
+            setWizardField('primaryUrl', node ? input(node, 'field-primaryUrl') : '');
+          };
+          const saveHero = () => {
+            const node = heroNode();
+            if (!node) return;
+            setField(node, 'field-title', wizardField('title'));
+            setField(node, 'field-subtitle', wizardField('subtitle'));
+            setField(node, 'field-primaryLabel', wizardField('primaryLabel'));
+            setField(node, 'field-primaryUrl', wizardField('primaryUrl'));
+            markChanged();
+            updatePreview();
+          };
+          let wizardStep = 1;
+          const setWizardStep = (step: number) => {
+            wizardStep = step;
+            wizard.querySelectorAll<HTMLElement>('[data-wizard-panel]').forEach((panel) => {
+              panel.hidden = panel.dataset.wizardPanel !== String(step);
+            });
+            if (wizardTitle) wizardTitle.textContent = wizard.dataset[`title${step}`] || '';
+            if (wizardHint) wizardHint.textContent = wizard.dataset[`hint${step}`] || '';
+            if (wizardProgress)
+              wizardProgress.textContent = `${wizard.dataset.stepLabel || 'Step'} ${step} / 3`;
+            if (wizardBack) wizardBack.hidden = step === 1;
+            if (wizardNext)
+              wizardNext.textContent =
+                step === 3 ? wizard.dataset.publish || 'Publish' : wizard.dataset.next || 'Next';
+          };
+          wizard.querySelectorAll<HTMLButtonElement>('[data-wizard-template]').forEach((button) =>
+            button.addEventListener('click', () => {
+              applyTemplate(button.dataset.wizardTemplate || '', false);
+              loadHero();
+              setWizardStep(2);
+            }),
+          );
+          wizardNext?.addEventListener('click', async () => {
+            if (wizardStep === 1) return;
+            if (wizardStep === 2) {
+              saveHero();
+              setWizardStep(3);
+              return;
+            }
+            try {
+              await save();
+              await publishSite();
+              wizard.close();
+              showToast(wizardEn ? 'Published!' : 'Publicado!', 'success');
+            } catch (error) {
+              reportError(error, wizardEn ? 'Could not publish' : 'Falha ao publicar');
+            }
+          });
+          wizardBack?.addEventListener('click', () => setWizardStep(Math.max(1, wizardStep - 1)));
+          wizard
+            .querySelector('[data-wizard-skip]')
+            ?.addEventListener('click', () => wizard.close());
+          document.querySelectorAll<HTMLElement>('[data-open-wizard]').forEach((button) =>
+            button.addEventListener('click', () => {
+              setWizardStep(1);
+              wizard.showModal();
+            }),
+          );
+          setWizardStep(1);
+          if (wizard.dataset.firstRun === 'true') wizard.showModal();
+        }
 
         form.querySelector('#add-section')?.addEventListener('click', () => {
           const type = form.querySelector<HTMLSelectElement>('#add-section-type')?.value || 'hero';
