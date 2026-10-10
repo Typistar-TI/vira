@@ -19,3 +19,5 @@ export {
 } from '@backend/features/sites/entities/sections';
 export type { Section, SectionType } from '@backend/features/sites/entities/sections';
 export { exampleSite, exampleSections } from '@backend/features/sites/entities/example';
+export { siteTemplates } from '@backend/features/sites/entities/templates';
+export type { SiteTemplate } from '@backend/features/sites/entities/templates';

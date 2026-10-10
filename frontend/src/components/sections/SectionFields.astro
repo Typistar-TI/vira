@@ -221,7 +221,10 @@ const layout = section.layout ?? {
   data-type={section.type}
   data-template={template ? 'true' : undefined}
 >
-  <div class="flex items-center justify-between gap-2 border-b border-[#e2d8c6] bg-[#fbf6ec] px-3 py-2.5">
+  <div
+    data-section-head
+    class="flex items-center justify-between gap-2 border-b border-[#e2d8c6] bg-[#fbf6ec] px-3 py-2.5"
+  >
     <strong class="text-[0.95rem]">{L.types[section.type]}</strong>
     <span class="flex gap-1">
       <button
@@ -253,7 +256,7 @@ const layout = section.layout ?? {
       </button>
     </span>
   </div>
-  <div class="flex flex-col gap-2 p-3">
+  <div data-section-body class="flex flex-col gap-2 p-3">
     <input type="hidden" name="field-id" value={section.id} />
     {variants.length > 0 && (
       <label class="flex flex-col gap-1 text-[0.8rem] font-bold text-[#4a4238]">

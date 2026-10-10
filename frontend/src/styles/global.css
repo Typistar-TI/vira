@@ -175,6 +175,17 @@
   color: #9b6823;
 }
 
+/* Editor guiado de conteúdo: mostra um bloco por vez. */
+[data-mode='guided'] [data-section-head] {
+  cursor: pointer;
+}
+[data-mode='guided'] [data-section]:not([data-active]) [data-section-body] {
+  display: none;
+}
+[data-mode='guided'] [data-section][data-active] {
+  border-color: #b88333;
+}
+
 /* No mobile, os botões de ação dos painéis ocupam a largura toda e empilham,
    como os campos de formulário. Botões compactos (ícone, xs, sm, paginação)
    permanecem inline. */

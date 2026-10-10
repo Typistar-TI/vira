@@ -10,11 +10,13 @@ import {
   parseSiteContent,
   blankSection,
   sectionTypes,
+  siteTemplates,
   type SectionType,
 } from '@frontend/api/sites/parse-site';
 import { preferredLanguage } from '@frontend/i18n/preferred-language';
 const { user, site, section = 'conteudo' } = Astro.props;
 const content = parseSiteContent(JSON.parse(site.draft_json));
+const templates = siteTemplates(preferredLanguage(Astro.request) === 'en' ? 'en' : 'pt');
 const active = userHasAccess(user);
 const en = preferredLanguage(Astro.request) === 'en';
 const sectionTitles: Record<string, [string, string]> = {
@@ -70,6 +72,14 @@ const t = en
       style: 'Typography and colors',
       blocks: 'Page blocks',
       addBlock: 'Add block',
+      templates: 'Templates',
+      templatesTitle: 'Start from a template',
+      templatesHint: 'Pick a ready page to start. You can edit everything after.',
+      advancedMode: 'Advanced mode',
+      guidedMode: 'Guided mode',
+      nextBlock: 'Next block',
+      cancel: 'Cancel',
+      replaceConfirm: 'Replace your current page with this template?',
       blockTypes: {
         hero: 'Hero',
         about: 'About',
@@ -211,6 +221,14 @@ const t = en
       style: 'Tipografia e cores',
       blocks: 'Blocos da página',
       addBlock: 'Adicionar bloco',
+      templates: 'Modelos',
+      templatesTitle: 'Comece por um modelo',
+      templatesHint: 'Escolha uma página pronta para começar. Você pode editar tudo depois.',
+      advancedMode: 'Modo avançado',
+      guidedMode: 'Modo guiado',
+      nextBlock: 'Próximo bloco',
+      cancel: 'Cancelar',
+      replaceConfirm: 'Substituir sua página atual por este modelo?',
       blockTypes: {
         hero: 'Herói',
         about: 'Sobre',
@@ -766,6 +784,9 @@ const planLabel = (plan: string) => planLabels[plan] ?? plan;
                 >
                   {t.mobile}
                 </button>
+                <button class="btn btn-sm btn-outline" type="button" data-open-templates>
+                  {t.templates}
+                </button>
                 <button class="btn btn-sm btn-outline" type="submit" form="editor">
                   {t.save}
                 </button>
@@ -798,6 +819,28 @@ const planLabel = (plan: string) => planLabels[plan] ?? plan;
                     {en ? 'Close' : 'Fechar'} ×
                   </button>
                 </div>
+                <div class="mb-4 flex flex-wrap items-center gap-2" data-guided-bar>
+                  <button type="button" class="btn btn-sm btn-outline" data-open-templates>
+                    {t.templates}
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-ghost"
+                    data-toggle-advanced
+                    data-advanced-label={t.advancedMode}
+                    data-guided-label={t.guidedMode}
+                    aria-pressed="false"
+                  >
+                    {t.advancedMode}
+                  </button>
+                  <span
+                    class="ml-auto text-xs font-semibold text-[#9b6823]"
+                    data-guided-progress
+                  ></span>
+                  <button type="button" class="btn btn-sm btn-primary" data-guided-next>
+                    {t.nextBlock} →
+                  </button>
+                </div>
                 <form
                   id="editor"
                   class="rounded-2xl border border-[#ead8bd] bg-white p-6 [&_h2]:mb-4 [&_h2]:text-[1.45rem] [&_h2]:text-[#17130d] [&_h3]:mt-6 [&_h3]:mb-3 [&_h3]:text-lg [&_label]:mt-4 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold [&_.input]:w-full [&_.textarea]:w-full [&_.select]:w-full [&_small]:text-[#625a51] mb-5"
@@ -828,10 +871,49 @@ const planLabel = (plan: string) => planLabels[plan] ?? plan;
                       <SectionFields section={blankSection(type)} en={en} template />
                     ))}
                   </div>
+                  <div hidden data-page-templates>
+                    {templates.map((template) => (
+                      <div data-page-template={template.key}>
+                        {template.sections.map((item) => (
+                          <SectionFields section={item} en={en} template />
+                        ))}
+                      </div>
+                    ))}
+                  </div>
                 </form>
               </aside>
             </div>
           </section>
+        )}
+        {section === 'conteudo' && (
+          <dialog id="templates-dialog" class="modal">
+            <div class="modal-box max-w-2xl border border-[#d8ae73] text-left">
+              <h2 class="font-[Outfit] text-xl text-[#17130d]">{t.templatesTitle}</h2>
+              <p class="mt-1 text-sm text-[#625a51]">{t.templatesHint}</p>
+              <div class="mt-4 grid gap-3 sm:grid-cols-2">
+                {templates.map((template) => (
+                  <button
+                    type="button"
+                    class="rounded-2xl border border-[#ead8bd] bg-white p-4 text-left transition-colors hover:border-[#b88333] hover:bg-[#fff9ef]"
+                    data-template={template.key}
+                  >
+                    <strong class="block font-[Outfit] text-lg text-[#17130d]">
+                      {template.name}
+                    </strong>
+                    <span class="mt-1 block text-sm text-[#625a51]">{template.description}</span>
+                  </button>
+                ))}
+              </div>
+              <div class="modal-action">
+                <button type="button" class="btn btn-ghost" data-close-templates>
+                  {t.cancel}
+                </button>
+              </div>
+            </div>
+            <form method="dialog" class="modal-backdrop">
+              <button>fechar</button>
+            </form>
+          </dialog>
         )}
         {section === 'plano' && (
           <section class="rounded-2xl border border-[#ead8bd] bg-white p-6 shadow-none [&_h2]:font-['Outfit',sans-serif] [&_h2]:font-medium [&_h2]:tracking-[-0.03em] [&_h2]:mb-4 [&_h2]:text-[1.45rem] [&_h2]:text-[#17130d] [&_h3]:mt-7 [&_h3]:mb-3 [&_h3]:text-lg [&_label]:mt-4 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold [&_.input]:w-full [&_.textarea]:w-full [&_.select]:w-full [&_small]:text-[#625a51] mb-5">
@@ -1161,12 +1243,112 @@ const planLabel = (plan: string) => planLabels[plan] ?? plan;
           initImageUploads(root);
         };
 
+        const pageTemplatesRoot = form.querySelector<HTMLElement>('[data-page-templates]');
+        const guidedProgress = document.querySelector<HTMLElement>('[data-guided-progress]');
+        const guidedNext = document.querySelector<HTMLButtonElement>('[data-guided-next]');
+        const advancedToggle = document.querySelector<HTMLButtonElement>('[data-toggle-advanced]');
+        const advancedLabel = advancedToggle?.dataset.advancedLabel || 'Advanced';
+        const guidedLabel = advancedToggle?.dataset.guidedLabel || 'Guided';
+        let advanced = false;
+        let activeSection: HTMLElement | null = null;
+        const updateGuided = () => {
+          if (advanced) return;
+          const nodes = sectionNodes();
+          if (!activeSection || !nodes.includes(activeSection)) activeSection = nodes[0] ?? null;
+          nodes.forEach((section) =>
+            section.toggleAttribute('data-active', section === activeSection),
+          );
+          const index = activeSection ? nodes.indexOf(activeSection) : -1;
+          if (guidedProgress)
+            guidedProgress.textContent = nodes.length ? `${index + 1} / ${nodes.length}` : '';
+          if (guidedNext) guidedNext.hidden = index < 0 || index >= nodes.length - 1;
+        };
+        const setActiveSection = (node: HTMLElement | null) => {
+          activeSection = node;
+          updateGuided();
+        };
+        const setAdvanced = (value: boolean) => {
+          advanced = value;
+          sectionsRoot.dataset.mode = value ? 'advanced' : 'guided';
+          advancedToggle?.setAttribute('aria-pressed', String(value));
+          if (advancedToggle) advancedToggle.textContent = value ? guidedLabel : advancedLabel;
+          if (value) {
+            sectionNodes().forEach((section) => section.removeAttribute('data-active'));
+            if (guidedProgress) guidedProgress.textContent = '';
+            if (guidedNext) guidedNext.hidden = true;
+          } else {
+            setActiveSection(activeSection ?? sectionNodes()[0] ?? null);
+          }
+        };
+        advancedToggle?.addEventListener('click', () => setAdvanced(!advanced));
+        guidedNext?.addEventListener('click', () => {
+          const nodes = sectionNodes();
+          const index = activeSection ? nodes.indexOf(activeSection) : -1;
+          const next = nodes[index + 1];
+          if (next) {
+            setActiveSection(next);
+            next.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+          }
+        });
+        form.addEventListener('click', (event) => {
+          if (advanced) return;
+          const target = event.target as HTMLElement;
+          if (target.closest('button')) return;
+          const section = target.closest<HTMLElement>('[data-section]');
+          if (!section) return;
+          const header = section.firstElementChild;
+          if (header && header.contains(target)) setActiveSection(section);
+        });
+
+        const templatesDialog = document.querySelector<HTMLDialogElement>('#templates-dialog');
+        document
+          .querySelectorAll<HTMLElement>('[data-open-templates]')
+          .forEach((button) =>
+            button.addEventListener('click', () => templatesDialog?.showModal()),
+          );
+        templatesDialog
+          ?.querySelector('[data-close-templates]')
+          ?.addEventListener('click', () => templatesDialog.close());
+        templatesDialog?.querySelectorAll<HTMLButtonElement>('[data-template]').forEach((button) =>
+          button.addEventListener('click', () => {
+            const key = button.dataset.template || '';
+            const wrapper = pageTemplatesRoot?.querySelector<HTMLElement>(
+              `[data-page-template="${key}"]`,
+            );
+            if (!wrapper) return;
+            if (
+              sectionNodes().length > 0 &&
+              !confirm(
+                document.documentElement.lang === 'en'
+                  ? 'Replace your current page with this template?'
+                  : 'Substituir sua página atual por este modelo?',
+              )
+            )
+              return;
+            sectionsRoot.innerHTML = '';
+            wrapper.querySelectorAll<HTMLElement>('[data-section]').forEach((tpl) => {
+              const node = tpl.cloneNode(true) as HTMLElement;
+              node.removeAttribute('data-template');
+              node.classList.remove('hidden');
+              setField(node, 'field-id', crypto.randomUUID().slice(0, 12));
+              sectionsRoot.append(node);
+              reinitUploads(node);
+            });
+            templatesDialog.close();
+            markChanged();
+            setActiveSection(sectionNodes()[0] ?? null);
+            updatePreview();
+          }),
+        );
+        setAdvanced(false);
+
         form.querySelector('#add-section')?.addEventListener('click', () => {
           const type = form.querySelector<HTMLSelectElement>('#add-section-type')?.value || 'hero';
           if (sectionNodes().length >= MAX_SECTIONS) return;
           const node = makeSection(type);
           sectionsRoot.append(node);
           reinitUploads(node);
+          setActiveSection(node);
           markChanged();
           updatePreview();
         });
@@ -1199,6 +1381,7 @@ const planLabel = (plan: string) => planLabels[plan] ?? plan;
           } else {
             return;
           }
+          updateGuided();
           markChanged();
           updatePreview();
         });
