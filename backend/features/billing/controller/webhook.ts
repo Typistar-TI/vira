@@ -12,6 +12,7 @@ import {
 } from '@backend/features/emails/service/emails';
 import { readText } from '@backend/platform/http';
 import { writeLog } from '@backend/features/logs/repository/logs';
+import { sendPushToAdmins, sendUserPush } from '@backend/features/push/service/send';
 
 async function updateSubscription(subscription: Stripe.Subscription) {
   const customerId =
@@ -59,9 +60,9 @@ async function updateSubscription(subscription: Stripe.Subscription) {
     )
       .bind(customerId)
       .first<{ id: string; email: string | null; slug: string }>();
+    const names = planNames(plan);
     if (owner?.email) {
       const [pageUrl, panelUrl] = await Promise.all([siteUrl(owner.slug), dashboardUrl()]);
-      const names = planNames(plan);
       await queueEmail(
         'subscription_created',
         `subscription-created:${subscription.id}`,
@@ -94,6 +95,19 @@ async function updateSubscription(subscription: Stripe.Subscription) {
         });
       }
     }
+    if (owner)
+      await sendUserPush(owner.id, 'billing', {
+        title: 'Pagamento confirmado',
+        body: `${names.pt}`,
+        url: '/app/plano',
+        tag: 'billing',
+      });
+    await sendPushToAdmins({
+      title: 'Nova assinatura',
+      body: `${owner?.email ?? customerId} · ${names.pt}`,
+      url: '/admin',
+      tag: `sale-${subscription.id}`,
+    });
   }
 }
 

@@ -171,6 +171,12 @@ const t = en
       planMonthlyHint: 'Billed every month.',
       planYearlyHint: 'Billed once a year, with savings.',
       account: 'Account and data',
+      notifications: 'Notifications',
+      notificationsHint: 'Receive alerts on this device.',
+      enableNotifications: 'Enable on this device',
+      disableNotifications: 'Disable',
+      notifyMetrics: 'Page performance (visits and clicks summary)',
+      notifyBilling: 'Account and billing (trial, payments, subscription)',
       exportData: 'Download my data',
       deleteAccount: 'Delete account',
       confirmEmail: 'Type your email to confirm',
@@ -306,6 +312,12 @@ const t = en
       planMonthlyHint: 'Cobrado todo mês.',
       planYearlyHint: 'Cobrado uma vez por ano, com economia.',
       account: 'Conta e dados',
+      notifications: 'Notificações',
+      notificationsHint: 'Receba avisos neste dispositivo.',
+      enableNotifications: 'Ativar neste dispositivo',
+      disableNotifications: 'Desativar',
+      notifyMetrics: 'Desempenho da página (resumo de visitas e cliques)',
+      notifyBilling: 'Conta e cobrança (teste, pagamentos, assinatura)',
       exportData: 'Baixar meus dados',
       deleteAccount: 'Excluir conta',
       confirmEmail: 'Digite seu e-mail para confirmar',
@@ -969,6 +981,43 @@ const planLabel = (plan: string) => planLabels[plan] ?? plan;
               </div>
             </div>
 
+            <div id="notificacoes" class="mt-8 border-t border-[#ead8bd] pt-6">
+              <h3>{t.notifications}</h3>
+              <div data-push-settings>
+                <p data-push-status class="mt-1 text-sm text-[#625a51]">
+                  {t.notificationsHint}
+                </p>
+                <div class="mt-3 flex flex-wrap gap-2.5">
+                  <button type="button" data-push-enable class="btn btn-outline">
+                    {t.enableNotifications}
+                  </button>
+                  <button type="button" data-push-disable class="btn btn-ghost" hidden>
+                    {t.disableNotifications}
+                  </button>
+                </div>
+                <div data-push-prefs hidden class="mt-4 space-y-3">
+                  <label class="flex! items-center gap-3 text-sm font-medium text-[#17130d]">
+                    <input
+                      type="checkbox"
+                      name="push-metrics"
+                      class="checkbox checkbox-primary shrink-0 border border-[#b88333]"
+                      checked
+                    />
+                    <span>{t.notifyMetrics}</span>
+                  </label>
+                  <label class="flex! items-center gap-3 text-sm font-medium text-[#17130d]">
+                    <input
+                      type="checkbox"
+                      name="push-billing"
+                      class="checkbox checkbox-primary shrink-0 border border-[#b88333]"
+                      checked
+                    />
+                    <span>{t.notifyBilling}</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
             <form id="delete-account-form" class="mt-8 border-t border-[#ead8bd] pt-6">
               <label for="delete-email">
                 {user.email
@@ -1011,6 +1060,7 @@ const planLabel = (plan: string) => planLabels[plan] ?? plan;
     import { updateAccountProfile } from '@frontend/api/accounts/profile';
     import { initAvatarPicker, applyAvatarToMenu } from '@frontend/pages/_scripts/avatar-picker';
     import { initSiteMetrics } from '@frontend/pages/_scripts/site-metrics';
+    import { initPushPrompt, initPushSettings } from '@frontend/pages/_scripts/push';
     import { reportError } from '@frontend/components/toast';
     document.addEventListener('astro:page-load', () => {
       const input = (scope: ParentNode, name: string) =>
@@ -1511,6 +1561,8 @@ const planLabel = (plan: string) => planLabels[plan] ?? plan;
           }
         });
       initSiteMetrics();
+      initPushPrompt();
+      document.querySelectorAll<HTMLElement>('[data-push-settings]').forEach(initPushSettings);
       if (document.querySelector('#domain-status')) {
         domainStatus()
           .then((data) => {

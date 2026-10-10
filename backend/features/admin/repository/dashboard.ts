@@ -44,7 +44,9 @@ export async function getAdminDashboard(
     domain,
   ] = await Promise.all([
     section === 'visao' || section === 'configuracoes'
-      ? env.DB.prepare('SELECT key, value, encrypted FROM app_settings ORDER BY key').all<{
+      ? env.DB.prepare(
+          "SELECT key, value, encrypted FROM app_settings WHERE key NOT LIKE 'VAPID%' ORDER BY key",
+        ).all<{
           key: string;
           value: string;
           encrypted: number;

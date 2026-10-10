@@ -7,6 +7,7 @@ import {
   queueEmail,
   siteUrl,
 } from '@backend/features/emails/service/emails';
+import { sendUserPush } from '@backend/features/push/service/send';
 
 export async function queueEndingReminders() {
   const now = Math.floor(Date.now() / 1000);
@@ -47,6 +48,12 @@ export async function queueEndingReminders() {
       end_date_en: date.en,
       site_url: await siteUrl(user.slug),
       dashboard_url: panelUrl,
+    });
+    await sendUserPush(user.id, 'billing', {
+      title: 'Seu acesso está terminando',
+      body: `${names.pt} · ${date.pt}`,
+      url: '/app/plano',
+      tag: `ending-${user.id}`,
     });
   }
 }

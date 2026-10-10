@@ -1,6 +1,7 @@
 import { env } from 'cloudflare:workers';
 import { queueEmail } from '@backend/features/emails/service/emails';
 import { rootDomain } from '@backend/platform/config';
+import { sendPushToAdmins } from '@backend/features/push/service/send';
 
 interface PendingLog {
   id: string;
@@ -46,6 +47,12 @@ export async function flushSecurityAlerts(limit = 20): Promise<void> {
           await queueEmail('security_alert', `security-alert:${log.id}:${email}`, email, variables);
         }
       }
+      await sendPushToAdmins({
+        title: 'Alerta de segurança',
+        body: `${log.action}${log.actor_id ? ` · ${log.actor_id}` : ''} (${log.severity})`,
+        url: '/admin/logs',
+        tag: `security-${log.id}`,
+      });
       await env.DB.prepare('UPDATE logs SET alerted_at = unixepoch() WHERE id = ?')
         .bind(log.id)
         .run();

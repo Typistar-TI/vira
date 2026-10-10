@@ -1455,9 +1455,11 @@ const deliveryStatus: Record<string, string> = {
     import { updateEmailTemplate } from '@frontend/api/admin/update-email-template';
     import { updateUser } from '@frontend/api/admin/update-user';
     import { initSiteMetrics } from '@frontend/pages/_scripts/site-metrics';
+    import { initPushPrompt } from '@frontend/pages/_scripts/push';
     import { reportError } from '@frontend/components/toast';
     document.addEventListener('astro:page-load', () => {
       initSiteMetrics();
+      initPushPrompt();
       const debounce = (fn: () => void, ms: number) => {
         let timer = 0;
         return () => {

@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.3.3",
+    "@block65/webcrypto-web-push": "^2.0.0",
     "@tailwindcss/vite": "^4.3.3",
     "@tanstack/query-core": "^5.104.0",
     "astro": "^7.3.5",
