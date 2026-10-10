@@ -12,10 +12,7 @@ const single = section.variant === 'single';
 ---
 
 {items.length > 0 && (
-  <section
-    class="px-5 py-16 text-[var(--fg)] sm:px-10 sm:py-24 lg:py-32"
-    data-vs-section="testimonials"
-  >
+  <section class="px-5 py-[var(--sec-py)] text-[var(--fg)] sm:px-10" data-vs-section="testimonials">
     <div class="mx-auto w-full max-w-[1180px]">
       <SectionHeading title={section.title} />
       <div

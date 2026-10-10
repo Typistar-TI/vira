@@ -11,7 +11,7 @@ const { section } = Astro.props;
 ---
 
 {(section.title || section.address) && (
-  <section class="px-5 py-16 sm:px-10 sm:py-24 lg:py-32" data-vs-section="map">
+  <section class="px-5 py-[var(--sec-py)] sm:px-10" data-vs-section="map">
     <div
       class:list={[
         'mx-auto w-full',

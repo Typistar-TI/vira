@@ -16,6 +16,15 @@ const L = en
       moveDown: 'Move down',
       remove: 'Remove block',
       variant: 'Style',
+      background: 'Background',
+      spacing: 'Spacing',
+      bgDefault: 'Default',
+      bgSoft: 'Soft',
+      bgAccent: 'Accent',
+      bgDark: 'Dark',
+      spSm: 'Small',
+      spMd: 'Medium',
+      spLg: 'Large',
       title: 'Heading',
       eyebrow: 'Small label',
       subtitle: 'Introduction',
@@ -50,6 +59,15 @@ const L = en
       moveDown: 'Mover para baixo',
       remove: 'Remover bloco',
       variant: 'Estilo',
+      background: 'Fundo',
+      spacing: 'Espaçamento',
+      bgDefault: 'Padrão',
+      bgSoft: 'Suave',
+      bgAccent: 'Destaque',
+      bgDark: 'Escuro',
+      spSm: 'Pequeno',
+      spMd: 'Médio',
+      spLg: 'Grande',
       title: 'Título',
       eyebrow: 'Etiqueta curta',
       subtitle: 'Apresentação',
@@ -172,6 +190,7 @@ const itemList =
               ? section.links
               : [];
 const variants = variantLabels[section.type];
+const layout = section.layout ?? { background: 'default', spacing: 'md' };
 ---
 
 <div
@@ -229,6 +248,39 @@ const variants = variantLabels[section.type];
         </select>
       </label>
     )}
+    <div class="grid grid-cols-2 gap-2">
+      <label class="flex flex-col gap-1 text-[0.8rem] font-bold text-[#4a4238]">
+        <span>{L.background}</span>
+        <select class="select select-bordered" name="field-layout-background">
+          <option value="default" selected={layout.background === 'default'}>
+            {L.bgDefault}
+          </option>
+          <option value="soft" selected={layout.background === 'soft'}>
+            {L.bgSoft}
+          </option>
+          <option value="accent" selected={layout.background === 'accent'}>
+            {L.bgAccent}
+          </option>
+          <option value="dark" selected={layout.background === 'dark'}>
+            {L.bgDark}
+          </option>
+        </select>
+      </label>
+      <label class="flex flex-col gap-1 text-[0.8rem] font-bold text-[#4a4238]">
+        <span>{L.spacing}</span>
+        <select class="select select-bordered" name="field-layout-spacing">
+          <option value="sm" selected={layout.spacing === 'sm'}>
+            {L.spSm}
+          </option>
+          <option value="md" selected={layout.spacing === 'md'}>
+            {L.spMd}
+          </option>
+          <option value="lg" selected={layout.spacing === 'lg'}>
+            {L.spLg}
+          </option>
+        </select>
+      </label>
+    </div>
 
     {section.type === 'hero' && (
       <>

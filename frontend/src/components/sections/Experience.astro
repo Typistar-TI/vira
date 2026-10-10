@@ -12,10 +12,7 @@ const timeline = section.variant === 'timeline';
 ---
 
 {items.length > 0 && (
-  <section
-    class="px-5 py-16 text-[var(--fg)] sm:px-10 sm:py-24 lg:py-32"
-    data-vs-section="experience"
-  >
+  <section class="px-5 py-[var(--sec-py)] text-[var(--fg)] sm:px-10" data-vs-section="experience">
     <div class="mx-auto w-full max-w-[900px]">
       <SectionHeading title={section.title} />
       <ul

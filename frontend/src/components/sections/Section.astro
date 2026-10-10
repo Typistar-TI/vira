@@ -21,20 +21,43 @@ interface Props {
   brand: string;
 }
 const { section, preview, productOffset = 0, brand } = Astro.props;
+
+const layout = section.layout ?? { background: 'default', spacing: 'md' };
+const backgroundClass: Record<string, string> = {
+  default: '',
+  soft: 'bg-[color-mix(in_srgb,var(--bg)_90%,var(--fg))]',
+  accent: 'bg-[color-mix(in_srgb,var(--bg)_84%,var(--accent))]',
+  dark: 'bg-[color-mix(in_srgb,var(--fg)_92%,var(--bg))]',
+};
+const spacing: Record<string, string> = { sm: '3rem', md: '5rem', lg: '7.5rem' };
+const darkStyle =
+  layout.background === 'dark'
+    ? '--fg:var(--bg);--muted:color-mix(in srgb,var(--bg) 72%,transparent)'
+    : '';
 ---
 
-{section.type === 'hero' && <Hero section={section} preview={preview} />}
-{section.type === 'about' && <About section={section} preview={preview} />}
-{section.type === 'services' && (
-  <Services section={section} preview={preview} productOffset={productOffset} />
-)}
-{section.type === 'gallery' && <Gallery section={section} preview={preview} />}
-{section.type === 'stats' && <Stats section={section} preview={preview} />}
-{section.type === 'steps' && <Steps section={section} preview={preview} />}
-{section.type === 'experience' && <Experience section={section} preview={preview} />}
-{section.type === 'testimonials' && <Testimonials section={section} preview={preview} />}
-{section.type === 'faq' && <Faq section={section} preview={preview} />}
-{section.type === 'video' && <Video section={section} preview={preview} />}
-{section.type === 'map' && <Map section={section} preview={preview} />}
-{section.type === 'contact' && <Contact section={section} preview={preview} />}
-{section.type === 'footer' && <Footer section={section} preview={preview} brand={brand} />}
+<div
+  class:list={[
+    'relative',
+    section.type === 'footer' && 'mt-auto',
+    backgroundClass[layout.background],
+  ]}
+  style={`--sec-py:${spacing[layout.spacing]};${darkStyle}`}
+  data-vs-layout={layout.background}
+>
+  {section.type === 'hero' && <Hero section={section} preview={preview} />}
+  {section.type === 'about' && <About section={section} preview={preview} />}
+  {section.type === 'services' && (
+    <Services section={section} preview={preview} productOffset={productOffset} />
+  )}
+  {section.type === 'gallery' && <Gallery section={section} preview={preview} />}
+  {section.type === 'stats' && <Stats section={section} preview={preview} />}
+  {section.type === 'steps' && <Steps section={section} preview={preview} />}
+  {section.type === 'experience' && <Experience section={section} preview={preview} />}
+  {section.type === 'testimonials' && <Testimonials section={section} preview={preview} />}
+  {section.type === 'faq' && <Faq section={section} preview={preview} />}
+  {section.type === 'video' && <Video section={section} preview={preview} />}
+  {section.type === 'map' && <Map section={section} preview={preview} />}
+  {section.type === 'contact' && <Contact section={section} preview={preview} />}
+  {section.type === 'footer' && <Footer section={section} preview={preview} brand={brand} />}
+</div>

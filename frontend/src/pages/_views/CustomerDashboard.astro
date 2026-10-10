@@ -993,6 +993,10 @@ const trialLeft = en
               type,
             };
             if (variant) base.variant = variant;
+            base.layout = {
+              background: input(node, 'field-layout-background') || 'default',
+              spacing: input(node, 'field-layout-spacing') || 'md',
+            };
             for (const key of TEXT_KEYS) {
               const field = node.querySelector(`[name="field-${key}"]`);
               if (field) base[key] = input(node, `field-${key}`);

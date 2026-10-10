@@ -11,6 +11,16 @@ export const imagePath = z.union([
 ]);
 const id = z.string().trim().min(1).max(40);
 
+/** Apresentação por seção (independente do conteúdo). */
+export const sectionBackgrounds = ['default', 'soft', 'accent', 'dark'] as const;
+export const sectionSpacings = ['sm', 'md', 'lg'] as const;
+export type SectionBackground = (typeof sectionBackgrounds)[number];
+export type SectionSpacing = (typeof sectionSpacings)[number];
+export const sectionLayout = z.object({
+  background: z.enum(sectionBackgrounds).default('default'),
+  spacing: z.enum(sectionSpacings).default('md'),
+});
+
 export const MAX_SECTIONS = 20;
 
 export const sectionTypes = [
@@ -173,19 +183,19 @@ const footer = z.object({
 });
 
 export const sectionSchema = z.discriminatedUnion('type', [
-  hero,
-  about,
-  services,
-  gallery,
-  stats,
-  steps,
-  experience,
-  testimonials,
-  faq,
-  video,
-  map,
-  contact,
-  footer,
+  hero.extend({ layout: sectionLayout.optional() }),
+  about.extend({ layout: sectionLayout.optional() }),
+  services.extend({ layout: sectionLayout.optional() }),
+  gallery.extend({ layout: sectionLayout.optional() }),
+  stats.extend({ layout: sectionLayout.optional() }),
+  steps.extend({ layout: sectionLayout.optional() }),
+  experience.extend({ layout: sectionLayout.optional() }),
+  testimonials.extend({ layout: sectionLayout.optional() }),
+  faq.extend({ layout: sectionLayout.optional() }),
+  video.extend({ layout: sectionLayout.optional() }),
+  map.extend({ layout: sectionLayout.optional() }),
+  contact.extend({ layout: sectionLayout.optional() }),
+  footer.extend({ layout: sectionLayout.optional() }),
 ]);
 
 export type Section = z.infer<typeof sectionSchema>;
@@ -233,7 +243,10 @@ const blank: { [T in SectionType]: () => SectionOf<T> } = {
 };
 
 export function blankSection<T extends SectionType>(type: T): SectionOf<T> {
-  return blank[type]() as SectionOf<T>;
+  return {
+    ...blank[type](),
+    layout: { background: 'default', spacing: 'md' },
+  } as SectionOf<T>;
 }
 
 /** One item template used by the editor and by empty sections. */

@@ -11,7 +11,7 @@ const items = section.items.filter((item) => item.value || item.label);
 ---
 
 {items.length > 0 && (
-  <section class="px-5 py-12 sm:px-10 sm:py-16 lg:py-20" data-vs-section="stats">
+  <section class="px-5 py-[var(--sec-py)] sm:px-10" data-vs-section="stats">
     <div class="mx-auto w-full max-w-[1180px]">
       <SectionHeading title={section.title} />
       <div

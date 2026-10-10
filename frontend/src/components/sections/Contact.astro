@@ -12,7 +12,7 @@ const links = section.links.filter((link) => link.label && link.url);
 ---
 
 {(section.title || section.body || section.primaryLabel || links.length > 0) && (
-  <section class="px-5 py-16 text-[var(--fg)] sm:px-10 sm:py-24 lg:py-32" data-vs-section="contact">
+  <section class="px-5 py-[var(--sec-py)] text-[var(--fg)] sm:px-10" data-vs-section="contact">
     <div
       class:list={[
         'mx-auto w-full max-w-[760px] text-center',
