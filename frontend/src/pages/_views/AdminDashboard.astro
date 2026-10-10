@@ -881,8 +881,27 @@ const deliveryStatus: Record<string, string> = {
 
           {emailTemplates.map((row) => (
             <dialog id={`email-modal-${row.key}`} class="modal">
-              <div class="modal-box max-w-3xl">
-                <h3 class="font-[Outfit] text-xl">{emailLabels[row.key]}</h3>
+              <div class="relative modal-box max-w-3xl">
+                <button
+                  class="btn btn-ghost btn-circle btn-sm absolute top-4 right-4 text-[#625a51] transition-colors hover:text-[#9b6823]"
+                  type="button"
+                  data-email-close
+                  aria-label="Fechar"
+                >
+                  <svg
+                    class="h-4 w-4"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M6 6l12 12M18 6 6 18"></path>
+                  </svg>
+                </button>
+                <h3 class="pr-10 font-[Outfit] text-xl">{emailLabels[row.key]}</h3>
                 <p class="mt-1 text-sm leading-relaxed text-[#625a51]">
                   {emailDescriptions[row.key]}
                 </p>
@@ -937,9 +956,6 @@ const deliveryStatus: Record<string, string> = {
                     data-email-preview
                   ></iframe>
                   <div class="modal-action">
-                    <button class="btn btn-ghost" type="button" data-email-close>
-                      Fechar
-                    </button>
                     <button class="btn btn-primary" type="submit">
                       Salvar modelo
                     </button>
@@ -1101,8 +1117,27 @@ const deliveryStatus: Record<string, string> = {
 
           {people.map((person) => (
             <dialog id={`user-modal-${person.role}-${person.id}`} class="modal">
-              <div class="modal-box max-w-lg">
-                <h3 class="font-[Outfit] text-xl">
+              <div class="relative modal-box max-w-lg">
+                <button
+                  class="btn btn-ghost btn-circle btn-sm absolute top-4 right-4 text-[#625a51] transition-colors hover:text-[#9b6823]"
+                  type="button"
+                  data-user-close
+                  aria-label="Fechar"
+                >
+                  <svg
+                    class="h-4 w-4"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M6 6l12 12M18 6 6 18"></path>
+                  </svg>
+                </button>
+                <h3 class="pr-10 font-[Outfit] text-xl">
                   {person.email || person.name || 'Conta antiga'}
                 </h3>
                 {person.role === 'admin' ? (
@@ -1118,9 +1153,6 @@ const deliveryStatus: Record<string, string> = {
                       />
                     </label>
                     <div class="modal-action">
-                      <button class="btn btn-ghost" type="button" data-user-close>
-                        Fechar
-                      </button>
                       <button class="btn btn-primary" type="submit">
                         Salvar
                       </button>
@@ -1180,9 +1212,6 @@ const deliveryStatus: Record<string, string> = {
                       />
                     </label>
                     <div class="modal-action sm:col-span-2">
-                      <button class="btn btn-ghost" type="button" data-user-close>
-                        Fechar
-                      </button>
                       <button class="btn btn-primary" type="submit">
                         Salvar
                       </button>
@@ -1197,8 +1226,27 @@ const deliveryStatus: Record<string, string> = {
           ))}
 
           <dialog id="user-create-modal" class="modal">
-            <div class="modal-box max-w-lg">
-              <h3 class="font-[Outfit] text-xl">Novo usuário</h3>
+            <div class="relative modal-box max-w-lg">
+              <button
+                class="btn btn-ghost btn-circle btn-sm absolute top-4 right-4 text-[#625a51] transition-colors hover:text-[#9b6823]"
+                type="button"
+                data-user-create-close
+                aria-label="Fechar"
+              >
+                <svg
+                  class="h-4 w-4"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M6 6l12 12M18 6 6 18"></path>
+                </svg>
+              </button>
+              <h3 class="pr-10 font-[Outfit] text-xl">Novo usuário</h3>
               <p class="mt-1 text-sm text-[#625a51]">
                 Crie um cliente ou um administrador. O acesso é feito por e-mail (código ou Google).
               </p>
@@ -1257,9 +1305,6 @@ const deliveryStatus: Record<string, string> = {
                   </label>
                 </div>
                 <div class="modal-action sm:col-span-2">
-                  <button class="btn btn-ghost" type="button" data-user-create-close>
-                    Fechar
-                  </button>
                   <button class="btn btn-primary" type="submit">
                     Criar usuário
                   </button>

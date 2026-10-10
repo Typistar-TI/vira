@@ -103,7 +103,7 @@ function ensurePopover(): HTMLElement {
   if (popover) return popover;
   popover = document.createElement('div');
   popover.className =
-    'fixed z-[120] hidden w-72 rounded-2xl border border-[#ead8bd] bg-white p-3 shadow-[0_24px_60px_-24px_rgba(95,59,12,0.4)]';
+    'picker-pop fixed z-[120] hidden w-72 rounded-2xl border border-[#ead8bd] bg-white p-3 shadow-[0_24px_60px_-24px_rgba(95,59,12,0.4)]';
   popover.innerHTML = `
     <div class="mb-2 flex items-center justify-between">
       <button type="button" data-prev class="btn btn-ghost btn-sm btn-circle" aria-label="Mês anterior">‹</button>
