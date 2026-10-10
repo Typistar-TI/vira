@@ -296,7 +296,7 @@ const trialLeft = en
     />
     <main
       class:list={[
-        'customer-dashboard mx-auto min-w-0',
+        'customer-dashboard panel mx-auto min-w-0',
         section === 'conteudo'
           ? 'w-full px-3 pb-5 pt-3 sm:px-5'
           : 'max-w-[1380px] px-5 pb-24 pt-8 sm:px-8',
@@ -611,7 +611,11 @@ const trialLeft = en
                         <option value={type}>{t.blockTypes[type]}</option>
                       ))}
                     </select>
-                    <button class="btn btn-outline btn-sm" type="button" id="add-section">
+                    <button
+                      class="btn btn-outline btn-sm w-full sm:w-auto"
+                      type="button"
+                      id="add-section"
+                    >
                       + {t.addBlock}
                     </button>
                   </div>

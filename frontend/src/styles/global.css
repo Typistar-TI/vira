@@ -174,3 +174,16 @@
 .select:hover {
   color: #9b6823;
 }
+
+/* No mobile, os botões de ação dos painéis ocupam a largura toda e empilham,
+   como os campos de formulário. Botões compactos (ícone, xs, sm, paginação)
+   permanecem inline. */
+@media (max-width: 639px) {
+  .panel .btn:not(.btn-circle):not(.btn-xs):not(.btn-sm):not(.join-item) {
+    width: 100%;
+  }
+
+  .panel .modal-action {
+    flex-direction: column;
+  }
+}
