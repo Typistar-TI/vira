@@ -34,7 +34,7 @@ const lastUsed = en ? 'Last used' : 'Último acesso';
   <main class="grid min-h-dvh bg-white text-[#17130d] lg:grid-cols-2">
     <section
       aria-label={en ? 'About Vira' : 'Sobre o Vira'}
-      class="relative flex flex-col items-center justify-center gap-2 overflow-hidden bg-[radial-gradient(130%_120%_at_15%_0%,#fff8ec_0%,#fff4df_46%,#f1ddbd_100%)] px-8 py-14 text-center lg:min-h-dvh"
+      class="relative hidden flex-col items-center justify-center gap-2 overflow-hidden bg-[radial-gradient(130%_120%_at_15%_0%,#fff8ec_0%,#fff4df_46%,#f1ddbd_100%)] px-8 py-14 text-center lg:flex lg:min-h-dvh"
     >
       <a
         href={en ? '/en' : '/'}
@@ -61,7 +61,17 @@ const lastUsed = en ? 'Last used' : 'Último acesso';
       </span>
     </section>
 
-    <section class="flex items-center justify-center bg-[#fffdf9] px-5 py-12 sm:px-12 lg:min-h-dvh lg:py-20">
+    <section class="flex flex-col items-center justify-center bg-[#fffdf9] px-5 py-8 sm:px-12 lg:min-h-dvh lg:py-20">
+      <div class="mb-5 flex items-center justify-center gap-2 lg:hidden">
+        <img src="/vira-mark-3d.png" alt="" width="40" height="38" class="h-9 w-9 object-contain" />
+        <img
+          src="/vira-wordmark-amber.png"
+          alt="Vira"
+          width="122"
+          height="50"
+          class="h-7 w-auto object-contain"
+        />
+      </div>
       <div
         data-login
         data-reset={reset ? 'true' : undefined}
@@ -75,7 +85,7 @@ const lastUsed = en ? 'Last used' : 'Último acesso';
           alt="Vira"
           width="122"
           height="50"
-          class="mx-auto h-8 w-auto object-contain"
+          class="mx-auto hidden h-8 w-auto object-contain lg:block"
         />
         <h1 class="mt-6 font-[Outfit] text-3xl leading-tight tracking-tight">
           {en ? 'Welcome to Vira.' : 'Boas-vindas ao Vira.'}
