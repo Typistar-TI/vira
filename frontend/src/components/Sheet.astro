@@ -23,15 +23,26 @@ const { id, label, closeLabel = 'Fechar', centered = false } = Astro.props;
       class="mx-auto mb-4 h-1.5 w-12 cursor-grab touch-none rounded-full bg-[#d8ae73]/60 active:cursor-grabbing"
       aria-hidden="true"
     ></div>
-    <div class="mb-5 flex items-center justify-between gap-4">
+    <div class="mb-4 flex items-center justify-between gap-4 border-b border-[#ead8bd] pb-4">
       <h2 class="font-[Outfit] text-xl font-medium">{label}</h2>
       <button
-        class="btn btn-ghost btn-circle btn-sm"
+        class="btn btn-ghost btn-circle btn-sm text-[#625a51] transition-colors hover:text-[#9b6823]"
         type="button"
         data-sheet-close
         aria-label={closeLabel}
       >
-        ×
+        <svg
+          class="h-4 w-4"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M6 6l12 12M18 6 6 18"></path>
+        </svg>
       </button>
     </div>
     <slot />
