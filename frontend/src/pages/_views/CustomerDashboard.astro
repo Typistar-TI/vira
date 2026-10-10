@@ -3,6 +3,7 @@ import Base from '@frontend/components/Base.astro';
 import CustomerHeader from '@frontend/components/CustomerHeader.astro';
 import ImageUpload from '@frontend/components/ImageUpload.astro';
 import SectionFields from '@frontend/components/sections/SectionFields.astro';
+import Section from '@frontend/components/sections/Section.astro';
 import { getPublicPrices } from '@frontend/api/billing/public-prices';
 import { getRootDomain } from '@frontend/api/config/root-domain';
 import { userHasAccess } from '@frontend/api/sites/has-access';
@@ -11,6 +12,7 @@ import {
   blankSection,
   sectionTypes,
   siteTemplates,
+  fontStacks,
   type SectionType,
 } from '@frontend/api/sites/parse-site';
 import { preferredLanguage } from '@frontend/i18n/preferred-language';
@@ -42,6 +44,9 @@ const barStyle = (type: string) => {
   };
   return `height:${heights[type] ?? 12}px;background:${colors[type] ?? '#d8ae73'}`;
 };
+const siteFonts = fontStacks[content.font];
+const siteBrand = (content.appName || content.title).trim();
+const siteTheme = `--bg:${content.backgroundColor};--fg:${content.textColor};--accent:${content.accentColor};--surface:color-mix(in srgb, var(--bg) 93%, var(--fg));--soft:color-mix(in srgb, var(--bg) 86%, var(--accent));--line:color-mix(in srgb, var(--fg) 16%, transparent);--muted:color-mix(in srgb, var(--fg) 62%, transparent);--font-display:${siteFonts.display};--font-body:${siteFonts.body};--font-mono:${siteFonts.mono}`;
 const active = userHasAccess(user);
 const en = preferredLanguage(Astro.request) === 'en';
 const sectionTitles: Record<string, [string, string]> = {
@@ -928,7 +933,19 @@ const planLabel = (plan: string) => planLabels[plan] ?? plan;
                   <h3>{t.blocks}</h3>
                   <div id="sections">
                     {content.sections.map((item) => (
-                      <SectionFields section={item} en={en} />
+                      <SectionFields section={item} en={en}>
+                        {item.type !== 'map' && item.type !== 'video' && (
+                          <div
+                            slot="preview"
+                            class="sec-mini h-28 overflow-hidden rounded-lg border border-[#e2d8c6]"
+                            aria-hidden="true"
+                          >
+                            <div class="sec-mini-inner" style={siteTheme}>
+                              <Section section={item} preview brand={siteBrand} />
+                            </div>
+                          </div>
+                        )}
+                      </SectionFields>
                     ))}
                   </div>
                   <div class="mt-3 flex flex-col gap-2 sm:flex-row">
@@ -1688,6 +1705,12 @@ const planLabel = (plan: string) => planLabels[plan] ?? plan;
           if (!section) return;
           if (button.matches('[data-remove-section]')) {
             section.remove();
+          } else if (button.matches('[data-duplicate-section]')) {
+            const clone = section.cloneNode(true) as HTMLElement;
+            setField(clone, 'field-id', crypto.randomUUID().slice(0, 12));
+            section.after(clone);
+            reinitUploads(clone);
+            setActiveSection(clone);
           } else if (button.matches('[data-move]')) {
             const direction = button.dataset.move;
             if (direction === 'up' && section.previousElementSibling)

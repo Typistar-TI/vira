@@ -197,6 +197,20 @@
 [data-drag-handle] {
   touch-action: none;
 }
+/* Mini prévia real do bloco no editor. */
+.sec-mini {
+  position: relative;
+}
+.sec-mini-inner {
+  transform: scale(0.32);
+  transform-origin: top left;
+  width: 312.5%;
+  pointer-events: none;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  line-height: 1.5;
+}
 
 /* No mobile, os botões de ação dos painéis ocupam a largura toda e empilham,
    como os campos de formulário. Botões compactos (ícone, xs, sm, paginação)
