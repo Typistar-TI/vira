@@ -124,6 +124,11 @@ export const siteSchema = z.object({
     .regex(/^#[0-9a-fA-F]{6}$/)
     .default('#b88333'),
   assistant: z.boolean().default(true),
+  assistantName: text(50).default(''),
+  assistantGreeting: text(160).default(''),
+  assistantTone: z.enum(['amigavel', 'profissional', 'direto']).default('amigavel'),
+  assistantInstructions: text(1200).default(''),
+  assistantSuggestions: z.array(text(60)).max(4).default([]),
   sections: z.array(sectionSchema).max(MAX_SECTIONS).default([]),
 });
 
@@ -144,6 +149,11 @@ export const defaultSite: SiteContent = {
   textColor: '#17130d',
   accentColor: '#b88333',
   assistant: true,
+  assistantName: '',
+  assistantGreeting: '',
+  assistantTone: 'amigavel',
+  assistantInstructions: '',
+  assistantSuggestions: [],
   sections: [],
 };
 

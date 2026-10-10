@@ -15,6 +15,10 @@ export function siteKnowledge(content: SiteContent, en: boolean): string {
   const name = content.appName || content.title;
   if (name) lines.push(`${en ? 'Name' : 'Nome'}: ${cut(name, 120)}`);
   if (content.title) lines.push(`${en ? 'Headline' : 'Título'}: ${cut(content.title, 160)}`);
+  if (content.assistantName)
+    lines.push(
+      `${en ? 'Assistant name' : 'Nome da assistente'}: ${cut(content.assistantName, 50)}`,
+    );
 
   const label = (pt: string, english: string) => (en ? english : pt);
   const list = <T>(items: T[], render: (item: T) => string, max: number) =>
@@ -134,6 +138,11 @@ export function siteKnowledge(content: SiteContent, en: boolean): string {
         break;
     }
   }
+
+  if (content.assistantInstructions)
+    lines.push(
+      `${label('Informações adicionais fornecidas pelo responsável', 'Additional information from the owner')}: ${cut(content.assistantInstructions, 1200)}`,
+    );
 
   return lines.join('\n');
 }

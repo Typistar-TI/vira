@@ -150,6 +150,11 @@ export function exampleSite(language: 'pt' | 'en'): SiteContent {
     textColor: '#17130d',
     accentColor: '#17130d',
     assistant: true,
+    assistantName: '',
+    assistantGreeting: '',
+    assistantTone: 'amigavel',
+    assistantInstructions: '',
+    assistantSuggestions: [],
     sections: exampleSections(language),
   };
 }

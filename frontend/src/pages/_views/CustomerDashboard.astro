@@ -152,6 +152,24 @@ const t = en
       aiAssistant: 'AI assistant',
       aiHint:
         'A chat assistant is included on your published page. It answers visitors using the content you write here. Publish to update what it knows.',
+      assistantName: 'Assistant name',
+      assistantNameHint: 'How the assistant introduces itself. Defaults to your project name.',
+      assistantGreeting: 'Welcome message',
+      assistantGreetingHint: 'The first message visitors see when they open the chat.',
+      assistantTone: 'Tone of voice',
+      toneFriendly: 'Friendly',
+      toneProfessional: 'Professional',
+      toneDirect: 'Direct',
+      assistantSuggestions: 'Suggested questions',
+      assistantSuggestionsHint: 'One per line, up to 4. Shown as shortcuts in the chat.',
+      assistantInstructions: 'Extra information',
+      assistantInstructionsHint:
+        'Add anything the assistant should know beyond your page: hours, delivery, policies, FAQ.',
+      assistantKnowledgeNote: 'The assistant always uses your published page content.',
+      currentPlan: 'Current plan',
+      changePlan: 'Switch to',
+      planMonthlyHint: 'Billed every month.',
+      planYearlyHint: 'Billed once a year, with savings.',
       account: 'Account and data',
       exportData: 'Download my data',
       deleteAccount: 'Delete account',
@@ -269,6 +287,24 @@ const t = en
       aiAssistant: 'Assistente de IA',
       aiHint:
         'Um assistente de chat acompanha sua página publicada. Ele responde aos visitantes com base no conteúdo que você escreve aqui. Publique para atualizar o que ele sabe.',
+      assistantName: 'Nome da assistente',
+      assistantNameHint: 'Como a assistente se apresenta. O padrão é o nome do seu projeto.',
+      assistantGreeting: 'Mensagem de boas-vindas',
+      assistantGreetingHint: 'A primeira mensagem que o visitante vê ao abrir o chat.',
+      assistantTone: 'Tom de voz',
+      toneFriendly: 'Amigável',
+      toneProfessional: 'Profissional',
+      toneDirect: 'Direto',
+      assistantSuggestions: 'Perguntas sugeridas',
+      assistantSuggestionsHint: 'Uma por linha, até 4. Aparecem como atalhos no chat.',
+      assistantInstructions: 'Informações adicionais',
+      assistantInstructionsHint:
+        'Adicione o que a assistente deve saber além da página: horários, entrega, políticas, dúvidas frequentes.',
+      assistantKnowledgeNote: 'A assistente sempre usa o conteúdo da sua página publicada.',
+      currentPlan: 'Plano atual',
+      changePlan: 'Mudar para',
+      planMonthlyHint: 'Cobrado todo mês.',
+      planYearlyHint: 'Cobrado uma vez por ano, com economia.',
       account: 'Conta e dados',
       exportData: 'Baixar meus dados',
       deleteAccount: 'Excluir conta',
@@ -296,6 +332,10 @@ const trialDays = Math.max(0, Math.ceil((user.trial_ends_at * 1000 - Date.now())
 const trialLeft = en
   ? `${trialDays} ${trialDays === 1 ? 'day left in your trial' : 'days left in your trial'}`
   : `${trialDays} ${trialDays === 1 ? 'dia restante de teste' : 'dias restantes de teste'}`;
+const planLabels: Record<string, string> = en
+  ? { trial: 'Free trial', monthly: 'Monthly', yearly: 'Yearly', expired: 'Expired' }
+  : { trial: 'Teste grátis', monthly: 'Mensal', yearly: 'Anual', expired: 'Expirado' };
+const planLabel = (plan: string) => planLabels[plan] ?? plan;
 ---
 
 <Base
@@ -393,7 +433,7 @@ const trialLeft = en
               <div class="rounded-2xl border border-[#ead8bd] bg-white p-6">
                 <h2 class="font-[Outfit] text-xl text-[#17130d]">{t.plans}</h2>
                 <p class="mt-3 text-sm text-[#625a51]">
-                  {user.plan === 'trial' ? trialLeft : user.plan}
+                  {user.plan === 'trial' ? trialLeft : planLabel(user.plan)}
                 </p>
                 <div class="mt-5">
                   <a class="btn btn-outline" href="/app/plano">
@@ -426,9 +466,13 @@ const trialLeft = en
             class="rounded-2xl border border-[#ead8bd] bg-white p-6 [&_h2]:mb-4 [&_h2]:text-[1.45rem] [&_h2]:text-[#17130d] [&_h3]:mt-6 [&_h3]:mb-3 [&_h3]:text-lg [&_label]:mt-4 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold [&_.input]:w-full [&_.textarea]:w-full [&_.select]:w-full [&_small]:text-[#625a51] mb-5"
             data-initial={JSON.stringify(content)}
           >
-            <label class="flex items-start gap-3 text-sm font-medium text-[#17130d]">
+            <h3>{t.aiAssistant}</h3>
+            <p class="text-sm text-[#625a51]">{t.aiHint}</p>
+            <p class="mt-2 text-xs text-[#8b8174]">{t.assistantKnowledgeNote}</p>
+
+            <label class="mt-4 flex items-center gap-3 text-sm font-medium text-[#17130d]">
               <input
-                class="checkbox checkbox-primary mt-0.5 shrink-0 border border-[#b88333]"
+                class="checkbox checkbox-primary shrink-0 border border-[#b88333]"
                 name="assistant"
                 type="checkbox"
                 checked={content.assistant}
@@ -436,6 +480,63 @@ const trialLeft = en
               <span>{t.assistantToggle}</span>
             </label>
             <small>{t.assistantToggleHint}</small>
+
+            <label for="assistantName">{t.assistantName}</label>
+            <input
+              class="input input-bordered"
+              id="assistantName"
+              name="assistantName"
+              maxlength="50"
+              value={content.assistantName}
+              placeholder={content.appName || content.title}
+            />
+            <small>{t.assistantNameHint}</small>
+
+            <label for="assistantGreeting">{t.assistantGreeting}</label>
+            <input
+              class="input input-bordered"
+              id="assistantGreeting"
+              name="assistantGreeting"
+              maxlength="160"
+              value={content.assistantGreeting}
+              placeholder={
+                en
+                  ? 'Hi! Ask me anything about this page.'
+                  : 'Oi! Pergunte o que quiser sobre esta página.'
+              }
+            />
+            <small>{t.assistantGreetingHint}</small>
+
+            <label for="assistantTone">{t.assistantTone}</label>
+            <select class="select select-bordered" id="assistantTone" name="assistantTone">
+              <option value="amigavel" selected={content.assistantTone === 'amigavel'}>
+                {t.toneFriendly}
+              </option>
+              <option value="profissional" selected={content.assistantTone === 'profissional'}>
+                {t.toneProfessional}
+              </option>
+              <option value="direto" selected={content.assistantTone === 'direto'}>
+                {t.toneDirect}
+              </option>
+            </select>
+
+            <label for="assistantSuggestions">{t.assistantSuggestions}</label>
+            <textarea
+              class="textarea textarea-bordered min-h-24"
+              id="assistantSuggestions"
+              name="assistantSuggestions"
+              maxlength="240"
+            >{content.assistantSuggestions.join('\n')}</textarea>
+            <small>{t.assistantSuggestionsHint}</small>
+
+            <label for="assistantInstructions">{t.assistantInstructions}</label>
+            <textarea
+              class="textarea textarea-bordered min-h-32"
+              id="assistantInstructions"
+              name="assistantInstructions"
+              maxlength="1200"
+            >{content.assistantInstructions}</textarea>
+            <small>{t.assistantInstructionsHint}</small>
 
             <div class="mt-5">
               <button class="btn btn-primary" type="submit">
@@ -540,9 +641,9 @@ const trialLeft = en
             <ImageUpload id="logo-file" name="" lang={en ? 'en' : 'pt'} src={content.logo} />
             <input type="hidden" name="logo" value={content.logo} />
             <small>{t.logoHint}</small>
-            <label class="mt-4 flex items-start gap-3 text-sm font-medium text-[#17130d]">
+            <label class="mt-4 flex items-center gap-3 text-sm font-medium text-[#17130d]">
               <input
-                class="checkbox checkbox-primary mt-0.5 shrink-0 border border-[#b88333]"
+                class="checkbox checkbox-primary shrink-0 border border-[#b88333]"
                 name="showInShowcase"
                 type="checkbox"
                 checked={content.showInShowcase}
@@ -723,37 +824,44 @@ const trialLeft = en
         {section === 'plano' && (
           <section class="rounded-2xl border border-[#ead8bd] bg-white p-6 shadow-none [&_h2]:font-['Outfit',sans-serif] [&_h2]:font-medium [&_h2]:tracking-[-0.03em] [&_h2]:mb-4 [&_h2]:text-[1.45rem] [&_h2]:text-[#17130d] [&_h3]:mt-7 [&_h3]:mb-3 [&_h3]:text-lg [&_label]:mt-4 [&_label]:mb-2 [&_label]:block [&_label]:text-sm [&_label]:font-bold [&_.input]:w-full [&_.textarea]:w-full [&_.select]:w-full [&_small]:text-[#625a51] mb-5">
             <h2>{t.plans}</h2>
-            <p class="text-[#625a51]">{user.plan === 'trial' ? trialLeft : user.plan}</p>
-            <div class="mt-5 flex flex-wrap gap-2.5">
-              <button
-                class="btn btn-outline"
-                data-plan="monthly"
-                data-label={t.monthly}
-                disabled={!priceReady.monthly_brl}
-              >
-                {t.monthly} · <span data-amount>{priceText('monthly')}</span>
-              </button>
-              <button
-                class="btn btn-outline"
-                data-plan="yearly"
-                data-label={t.yearly}
-                disabled={!priceReady.yearly_brl}
-              >
-                {t.yearly} · <span data-amount>{priceText('yearly')}</span>
-              </button>
+            <div class="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-[#ead8bd] bg-[#fcfaf6] p-4">
+              <div>
+                <span class="text-xs font-semibold uppercase tracking-wide text-[#9b6823]">
+                  {t.currentPlan}
+                </span>
+                <p class="font-[Outfit] text-lg text-[#17130d]">{planLabel(user.plan)}</p>
+              </div>
+              <p class="text-sm text-[#625a51]">
+                {user.plan === 'trial' ? trialLeft : active ? t.active : t.expired}
+              </p>
             </div>
-            <label for="currency">{en ? 'Checkout currency' : 'Moeda da compra'}</label>
-            <select
-              class="select select-bordered"
-              id="currency"
-              data-prices={JSON.stringify(priceMap)}
-              data-ready={JSON.stringify(priceReady)}
-            >
-              <option value="brl">BRL · R$</option>
-              <option value="usd">USD · $</option>
-            </select>
+            <div class="mt-5 grid gap-4 sm:grid-cols-2">
+              {(['monthly', 'yearly'] as const).map((plan) => (
+                <div class="flex flex-col rounded-2xl border border-[#ead8bd] bg-white p-5">
+                  <h3 class="font-[Outfit] text-lg text-[#17130d]">{planLabel(plan)}</h3>
+                  <p class="mt-1 font-[Outfit] text-2xl font-medium text-[#b88333]">
+                    {priceText(plan)}
+                  </p>
+                  <p class="mt-1 text-xs text-[#625a51]">
+                    {plan === 'monthly' ? t.planMonthlyHint : t.planYearlyHint}
+                  </p>
+                  <button
+                    type="button"
+                    class:list={[
+                      'mt-4',
+                      user.plan === plan ? 'btn btn-outline btn-disabled' : 'btn btn-primary',
+                    ]}
+                    data-plan={plan}
+                    data-label={planLabel(plan)}
+                    disabled={user.plan === plan || !priceReady[`${plan}_brl`]}
+                  >
+                    {user.plan === plan ? t.currentPlan : `${t.changePlan} ${planLabel(plan)}`}
+                  </button>
+                </div>
+              ))}
+            </div>
             {user.stripe_customer_id && (
-              <button class="btn btn-ghost mt-3" id="portal">
+              <button class="btn btn-ghost mt-5" id="portal">
                 {t.portal}
               </button>
             )}
@@ -1210,6 +1318,19 @@ const trialLeft = en
             textColor: field('textColor', snapshot().textColor),
             accentColor: field('accentColor', snapshot().accentColor),
             assistant: flag('assistant', snapshot().assistant),
+            assistantName: field('assistantName', snapshot().assistantName),
+            assistantGreeting: field('assistantGreeting', snapshot().assistantGreeting),
+            assistantTone: field('assistantTone', snapshot().assistantTone) || 'amigavel',
+            assistantInstructions: field('assistantInstructions', snapshot().assistantInstructions),
+            assistantSuggestions: (() => {
+              const el = form.querySelector<HTMLTextAreaElement>('[name="assistantSuggestions"]');
+              if (!el) return snapshot().assistantSuggestions ?? [];
+              return el.value
+                .split('\n')
+                .map((line) => line.trim().slice(0, 60))
+                .filter(Boolean)
+                .slice(0, 4);
+            })(),
             sections: finalSections,
           };
         }
@@ -1324,53 +1445,24 @@ const trialLeft = en
             reportError(error, 'Falha ao conectar domínio');
           }
         });
-      const currencySelect = document.querySelector<HTMLSelectElement>('#currency');
-      if (currencySelect) {
-        const priceMap = JSON.parse(currencySelect.dataset.prices || '{}') as Record<
-          string,
-          number
-        >;
-        const priceReady = JSON.parse(currencySelect.dataset.ready || '{}') as Record<
-          string,
-          boolean
-        >;
-        currencySelect.addEventListener('change', () => {
-          document.querySelectorAll<HTMLButtonElement>('[data-plan]').forEach((button) => {
-            const amount = priceMap[`${button.dataset.plan}_${currencySelect.value}`];
-            const label = button.querySelector<HTMLElement>('[data-amount]')!;
-            label.textContent = amount
-              ? new Intl.NumberFormat(currencySelect.value === 'brl' ? 'pt-BR' : 'en-US', {
-                  style: 'currency',
-                  currency: currencySelect.value.toUpperCase(),
-                }).format(amount / 100)
-              : document.documentElement.lang === 'en'
-                ? 'Coming soon'
-                : 'Em breve';
-            button.disabled = !priceReady[`${button.dataset.plan}_${currencySelect.value}`];
-          });
-        });
-        document.querySelectorAll<HTMLButtonElement>('[data-plan]').forEach((button) =>
-          button.addEventListener('click', async () => {
-            try {
-              const result = await checkout(
-                button.dataset.plan,
-                document.querySelector<HTMLSelectElement>('#currency')!.value,
-              );
-              location.href = result.url;
-            } catch (error) {
-              reportError(error, 'Falha ao iniciar compra');
-            }
-          }),
-        );
-        document.querySelector('#portal')?.addEventListener('click', async () => {
+      document.querySelectorAll<HTMLButtonElement>('[data-plan]').forEach((button) =>
+        button.addEventListener('click', async () => {
           try {
-            const result = await billingPortal();
+            const result = await checkout(button.dataset.plan, 'brl');
             location.href = result.url;
           } catch (error) {
-            reportError(error, 'Falha ao abrir cobrança');
+            reportError(error, 'Falha ao iniciar compra');
           }
-        });
-      }
+        }),
+      );
+      document.querySelector('#portal')?.addEventListener('click', async () => {
+        try {
+          const result = await billingPortal();
+          location.href = result.url;
+        } catch (error) {
+          reportError(error, 'Falha ao abrir cobrança');
+        }
+      });
       document.querySelectorAll<HTMLElement>('[data-avatar-picker]').forEach(initAvatarPicker);
       document
         .querySelector<HTMLFormElement>('#account-profile-form')

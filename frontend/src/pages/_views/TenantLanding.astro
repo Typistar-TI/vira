@@ -15,12 +15,19 @@ const canonical = `https://${url.hostname}/`;
 const hero = content?.sections.find((section) => section.type === 'hero');
 const description = hero && hero.type === 'hero' ? hero.subtitle : '';
 const heroImage = hero && hero.type === 'hero' ? hero.image : '';
+const assistantName = content ? content.assistantName || content.appName || content.title : '';
 const assistantGreeting = content
-  ? content.language === 'en'
-    ? 'Hi! Ask me anything about this page.'
-    : 'Oi! Pergunte o que quiser sobre esta página.'
+  ? content.assistantGreeting ||
+    (content.language === 'en'
+      ? 'Hi! Ask me anything about this page.'
+      : 'Oi! Pergunte o que quiser sobre esta página.')
   : '';
-const assistantName = content ? content.appName || content.title : '';
+const assistantSuggestions =
+  content && content.assistantSuggestions.length
+    ? content.assistantSuggestions
+    : content?.language === 'en'
+      ? ['What do you offer?', 'How can I contact you?']
+      : ['O que vocês oferecem?', 'Como entro em contato?'];
 const assistantPalette = content
   ? {
       surface: `color-mix(in srgb, ${content.backgroundColor} 93%, ${content.textColor})`,
@@ -78,11 +85,7 @@ const assistantPalette = content
         persist
         name={assistantName}
         greeting={assistantGreeting}
-        suggestions={
-          content.language === 'en'
-            ? ['What do you offer?', 'How can I contact you?']
-            : ['O que vocês oferecem?', 'Como entro em contato?']
-        }
+        suggestions={assistantSuggestions}
         colors={{
           accent: content.accentColor,
           text: content.textColor,
